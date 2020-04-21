@@ -1,0 +1,53 @@
+@import '../../../../styles/colors.less';
+@import '../../../../styles/destyle-lists.less';
+
+@expand-icons-size: 1rem;
+@space-for-expand-icons: @expand-icons-size;
+@level-indentation: 1rem;
+@list-elements-spacing: 0.5rem;
+@list-elements-padding: 0.1rem;
+
+.entry {
+  display: grid;
+  grid-template-columns: 13rem @space-for-expand-icons;
+  grid-template-areas: "label icon";
+  column-gap: @list-elements-spacing;
+  user-select: none;
+  align-items: center;
+  margin-left: @level-indentation;
+
+  & > span, & > ::ng-deep .icon {
+    padding: @list-elements-padding 2*@list-elements-padding @list-elements-padding 6*@list-elements-padding;
+    border-radius: 0.25rem;
+    font-size: @expand-icons-size;
+    line-height: @expand-icons-size;
+    margin-bottom: @list-elements-spacing;
+  }
+
+  & > span {
+    grid-area: label;
+  }
+  
+  & > ::ng-deep .icon {
+    grid-area: icon;
+    padding: @list-elements-padding;
+    width: @expand-icons-size;
+    height: @expand-icons-size;
+  }
+
+  & > .subentries {
+    display: none;
+  }
+
+  &.expanded {
+
+    & > span {
+      margin-bottom: @list-elements-spacing;
+    }
+
+    & > .subentries {
+      display: initial;
+    }
+  }
+}
+
