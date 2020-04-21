@@ -20,16 +20,16 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'wiki'`, () => {
+  it(`should have as title 'Notes Workshop'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('wiki');
+    expect(app.title).toEqual('Notes Workshop');
   });
 
   it('should render title', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement;
-    expect(compiled.querySelector('.content span').textContent).toContain('wiki app is running!');
+    expect(compiled.querySelector('.content span').textContent).toContain('Notes Workshop app is running!');
   });
 });

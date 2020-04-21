@@ -1,0 +1,63 @@
+@import '../../../../styles/colors.less';
+
+.search {
+  position: relative;
+
+  input {
+    height: 1rem;
+    width: 13rem;
+    line-height: 1rem;
+    padding: 0.25rem 2rem;
+    border-radius: 0.5rem;
+    border: 1px inset @primary-border-color;
+    color: @secondary-text-color;
+    background-color: @secondary-background-color;
+    font-size: 1rem;
+    font-family: Roboto-Light;
+
+    &.italic-text {
+      font-style: italic;
+    }
+  }
+
+  .icon.search {
+    width: 1rem;
+    height: 1rem;
+    margin-top: 1px;
+    position: absolute;
+    top: 0.25rem;
+    left: 0.5rem;
+    filter: opacity(0.5);
+  }
+
+  .submit-button {
+    width: 1rem;
+    height: 1rem;
+    margin-top: 1px;
+    position: absolute;
+    top: 0.25rem;
+    right: 0.5rem;
+    filter: opacity(0.75);
+    background: none;
+    cursor: pointer;
+    background-color: @action-secondary-background-color;
+    border: 1px solid @action-secondary-border-color;
+    border-radius: 0.25rem;
+    margin-top: 1px;
+
+    .icon.arrow-right {
+      width: 1rem;
+      height: 1rem;
+      position: absolute;
+      top: 0;
+      margin-top: -1px;
+
+      &:nth-of-type(1) {
+        left: -0.125rem;
+      }
+      &:nth-of-type(2) {
+        left: 0.125rem;
+      }
+    }
+  }
+}

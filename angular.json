@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "wiki": {
+    "notes-workshop": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/wiki",
+            "outputPath": "dist/notes-workshop",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -28,7 +28,7 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.less"
+              "src/styles/styles.less"
             ],
             "scripts": []
           },
@@ -66,18 +66,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "wiki:build"
+            "browserTarget": "notes-workshop:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "wiki:build:production"
+              "browserTarget": "notes-workshop:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "wiki:build"
+            "browserTarget": "notes-workshop:build"
           }
         },
         "test": {
@@ -92,7 +92,7 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.less"
+              "src/styles/styles.less"
             ],
             "scripts": []
           }
@@ -114,15 +114,15 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "wiki:serve"
+            "devServerTarget": "notes-workshop:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "wiki:serve:production"
+              "devServerTarget": "notes-workshop:serve:production"
             }
           }
         }
       }
     }},
-  "defaultProject": "wiki"
+  "defaultProject": "notes-workshop"
 }

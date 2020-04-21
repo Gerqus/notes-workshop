@@ -1,0 +1,33 @@
+@import './colors.less';
+
+.icon {
+  display: block;
+  width: 2rem;
+  height: 2rem;
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-size: contain;
+
+  &.text-bottom {
+    width: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 0 0 0;
+    border: 0;
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1rem;
+    width: initial;
+    height: initial;
+    color: black;
+    font-style: normal;
+  }
+
+  &.search {
+    background-image: url('/assets/icons/search-24px.svg');
+  }
+
+  &.arrow-right {
+    background-image: url('/assets/icons/arrow_right-24px.svg');
+  }
+}
