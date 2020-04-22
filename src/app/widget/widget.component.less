@@ -1,0 +1,38 @@
+@import '../../styles/colors.less';
+
+@widget-padding: 0.5rem;
+@border-width: 0.125rem;
+
+.widget-wrapper {
+  border: 2px solid @section-primary-border-color;
+  background-color: @section-primary-background-color;
+  padding: @widget-padding;
+  position: relative;
+
+  .widget-title {
+    @line-height: 1rem;
+    @elem-height: @line-height + 1.5 * @widget-padding;
+  
+    position: absolute;
+    padding: @widget-padding;
+    padding-top: @widget-padding / 2;
+    line-height: @line-height;
+    top: -(@elem-height / 2);
+    left: 2 * @widget-padding;
+    background-color: @section-primary-background-color;
+    font-family: Philosopher;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -@border-width / 2;
+      height: calc(@elem-height / 2 - @border-width);
+      width: calc(100% - @border-width);
+      border-style: solid;
+      border-color: @section-primary-border-color;
+      border-width: @border-width;
+      border-bottom: 0;
+    }
+  }
+}
