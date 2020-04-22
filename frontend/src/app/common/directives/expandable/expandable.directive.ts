@@ -13,7 +13,7 @@ export class ExpandableDirective {
       return;
     }
     this.iconElement.classList.toggle('expand-more');
-    this.iconElement.classList.toggle('arrow-right');
+    this.iconElement.classList.toggle('arrow-right-tip');
 
     this.hostElement.classList.toggle('expanded');
   }
@@ -30,7 +30,7 @@ export class ExpandableDirective {
     if (this.isHostExpanded) {
       this.iconElement.classList.add('expand-more');
     } else {
-      this.iconElement.classList.add('arrow-right');
+      this.iconElement.classList.add('arrow-right-tip');
     }
 
     this.iconElement.addEventListener('click', () => this.onClick());

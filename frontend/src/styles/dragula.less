@@ -25,3 +25,21 @@
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
   filter: alpha(opacity=20);
 }
+
+.handle {
+  cursor: move;
+  position: relative;
+  
+  &::after {
+    content: '';
+    width: 1em;
+    height: 1em;
+    background-image: url('/assets/icons/drag_indicator-24px.svg');
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-size: contain;
+    position: absolute;
+    right: 0;
+    top: 0.125em;
+  }
+}

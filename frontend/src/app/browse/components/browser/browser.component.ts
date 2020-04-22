@@ -105,7 +105,9 @@ export class BrowserComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.dragulaServie.createGroup('notes-groups', {
-
+      moves: (el, container, handle) => {
+        return handle.classList.contains('handle');
+      }
     });
     this.notesGroupsOrderSub = this.dragulaServie.dragend('notes-groups')
       .subscribe(this.changeGroupsOrder);

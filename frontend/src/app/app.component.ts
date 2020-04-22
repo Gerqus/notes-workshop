@@ -10,7 +10,9 @@ export class AppComponent implements OnInit {
   private imgsToPreloadSrcs: string[] = [
     '/assets/icons/expand_more-24px.svg',
     '/assets/icons/search-24px.svg',
-    '/assets/icons/arrow_right-24px.svg',
+    '/assets/icons/arrow_right_tip-24px.svg',
+    '/assets/icons/arrow_right_full-24px.svg',
+    '/assets/icons/drag_indicator-24px.svg',
   ];
 
   ngOnInit() {
