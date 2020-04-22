@@ -1,5 +1,5 @@
 <ng-container  *ngFor="let entry of entriesList; trackBy: entriesTrackingFn">
-  <li class="entry expandable" *ngIf="entry.subentries?.length" appExpandableList>
+  <li class="entry expandable" *ngIf="entry.subentries?.length" appExpandable>
     <span class="action-button">{{entry.name}}</span>
     <ul app-entries-list class="subentries"
       [entriesList]="entry.subentries"

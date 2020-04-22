@@ -11,11 +11,14 @@
 
   .widget-title {
     @line-height: 1rem;
-    @elem-height: @line-height + 1.5 * @widget-padding;
+    @elem-height: @line-height + 2 * @widget-padding;
   
     position: absolute;
-    padding: @widget-padding;
-    padding-top: @widget-padding / 2;
+    display: grid;
+    grid-template-columns: 1fr (@elem-height / 2);
+    column-gap: @widget-padding;
+    grid-template-areas: "title icon";
+    padding: @widget-padding / 2 calc(@widget-padding + 2px) 0 @widget-padding;
     line-height: @line-height;
     top: -(@elem-height / 2);
     left: 2 * @widget-padding;
@@ -25,14 +28,34 @@
     &::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: -@border-width / 2;
+      top: -@border-width;
+      left: -@border-width;
       height: calc(@elem-height / 2 - @border-width);
-      width: calc(100% - @border-width);
+      width: calc(100%);
       border-style: solid;
       border-color: @section-primary-border-color;
       border-width: @border-width;
       border-bottom: 0;
+      z-index: -1;
+      padding: 0;
+      margin: 0;
+    }
+
+    & > span {
+      grid-area: title;
+    }
+
+    & > ::ng-deep .icon {
+      grid-area: icon;
+      width: @elem-height / 2;
+      height: @elem-height / 2;
+    }
+
+    & + .widget-content {
+      display: none;
+    }
+    &.expanded + .widget-content {
+      display: initial;
     }
   }
 }

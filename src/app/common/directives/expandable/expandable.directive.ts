@@ -1,11 +1,12 @@
-import { Directive, ElementRef, HostListener, HostBinding, Renderer2 } from '@angular/core';
+import { Directive, ElementRef, HostBinding } from '@angular/core';
 
 @Directive({
-  selector: '[appExpandableList]'
+  selector: '[appExpandable]'
 })
-export class ExpandableListDirective {
+export class ExpandableDirective {
   private hostElement: HTMLElement;
   private iconElement: HTMLElement;
+  private isHostExpanded: boolean;
 
   private onClick(): void {
     if (!this.hostElement) {
@@ -22,10 +23,15 @@ export class ExpandableListDirective {
 
     this.iconElement = document.createElement('i');
     this.iconElement.classList.add('icon');
-    this.iconElement.classList.add('arrow-right');
     this.iconElement.classList.add('action-button');
 
-    this.hostElement.classList.remove('expanded');
+    this.isHostExpanded = (el.nativeElement as HTMLElement).classList.contains('expanded');
+
+    if (this.isHostExpanded) {
+      this.iconElement.classList.add('expand-more');
+    } else {
+      this.iconElement.classList.add('arrow-right');
+    }
 
     this.iconElement.addEventListener('click', () => this.onClick());
 
