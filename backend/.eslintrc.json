@@ -20,9 +20,11 @@
         "@typescript-eslint"
     ],
     "rules": {
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": ["error"],
         "indent": [
             "error",
-            4
+            2
         ],
         "linebreak-style": [
             "error",
@@ -35,6 +37,65 @@
         "semi": [
             "error",
             "always"
-        ]
+        ],
+        "no-extra-parens": "error",
+        "require-atomic-updates": "error",
+        "block-scoped-var": "error",
+        "class-methods-use-this": "error",
+        "complexity": [
+            "error",
+            15
+        ],
+        "consistent-return": [
+            "error",
+            {"treatUndefinedAsUnspecified": true}
+        ],
+        "dot-location": [
+            "error",
+            "property"
+        ],
+        "dot-notation": "error",
+        "eqeqeq": "error",
+        "guard-for-in": "error",
+        "no-eval": "error",
+        "no-implied-eval": "error",
+        "no-multi-spaces": "error",
+        "no-sequences": "error",
+        "radix": "error",
+        "require-await": "error",
+        "yoda": "error",
+        "no-unmodified-loop-condition": "error",
+        "no-shadow": "error",
+        "no-use-before-define": "error",
+        "no-new-require": "error",
+        "init-declarations": ["error", "always"],
+        "no-useless-return": "error",
+        "array-bracket-spacing": [
+            "error",
+            "never"
+        ],
+        "block-spacing": [
+            "error",
+            "always"
+        ],
+        "camelcase": "error",
+        "comma-dangle": [
+            "error",
+            {
+                "arrays": "always-multiline",
+                "objects": "always-multiline",
+                "imports": "never",
+                "exports": "always-multiline",
+                "functions": "never"
+            }
+        ],
+        "comma-spacing": [
+            "error",
+            {
+                "before": false,
+                "after": true
+            }
+        ],
+        "comma-style": "error"
     }
 }
