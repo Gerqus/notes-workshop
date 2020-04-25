@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { BrowserEntry } from '../../interfaces/browser-entry.interface';
+import { Note } from '@/interfaces/note.interface';
 
 @Component({
   selector: '[app-entries-list]',
@@ -7,12 +7,12 @@ import { BrowserEntry } from '../../interfaces/browser-entry.interface';
   styleUrls: ['./entries-list.component.less']
 })
 export class EntriesListComponent implements OnInit {
-  @Input() entriesList: BrowserEntry[];
+  @Input() entriesList: Note[];
 
   constructor() { }
 
   ngOnInit(): void {
   }
 
-  public entriesTrackingFn = (entry: BrowserEntry) => entry.id;
+  public entriesTrackingFn = (entry: Note) => entry.id;
 }

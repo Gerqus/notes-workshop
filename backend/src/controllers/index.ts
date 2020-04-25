@@ -1,8 +1,4 @@
-import * as express from 'express';
-
-interface controllerRoutes {
-  [path: string]: (req: express.Request, res: express.Response, next?: express.NextFunction) => void;
-}
+import { controllerRoutes } from 'src/interfaces/controller-routes.interface';
 
 export = {
   noteController: require('./note.controller'),

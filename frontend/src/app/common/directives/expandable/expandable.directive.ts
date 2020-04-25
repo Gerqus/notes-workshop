@@ -24,6 +24,7 @@ export class ExpandableDirective {
     this.iconElement = document.createElement('i');
     this.iconElement.classList.add('icon');
     this.iconElement.classList.add('action-button');
+    this.iconElement.classList.add('minor');
 
     this.isHostExpanded = (el.nativeElement as HTMLElement).classList.contains('expanded');
 

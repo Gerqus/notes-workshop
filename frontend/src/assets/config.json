@@ -1,0 +1,8 @@
+{
+  "api": {
+    "protocol": "http",
+    "host": "localhost:6040",
+    "root": "api",
+    "note": "note"
+  }
+}

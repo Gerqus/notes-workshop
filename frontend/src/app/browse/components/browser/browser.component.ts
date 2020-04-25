@@ -1,10 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ENTRIES_TYPES } from '../../enums';
-import { BrowserGroup } from '../../interfaces/browser-group.interface';
 
 import { Subscription } from 'rxjs';
 
 import { DragulaService } from 'ng2-dragula';
+import { Note } from '@/interfaces/note.interface';
 
 @Component({
   selector: 'app-browser',
@@ -12,89 +11,65 @@ import { DragulaService } from 'ng2-dragula';
   styleUrls: ['./browser.component.less']
 })
 export class BrowserComponent implements OnInit, OnDestroy {
-  public ENTRIES_TYPES = ENTRIES_TYPES;
   public notesGroupsOrderByNames: string[] = [];
   private notesGroupsOrderSub: Subscription;
 
-  public entries: BrowserGroup[] = [
+  public notes: Note[] = [
     {
-      name: 'favourites',
-      entries: [{
-        name: 'Favourite one has really long title that won\'t fit in one line...',
-        type: ENTRIES_TYPES.NOTE,
+      name: 'Favourite one has really long title that won\'t fit in one line...',
+      id: 'favourite-one',
+    }, {
+      name: 'Favourite two',
+      id: 'favourite-two',
+      subentries: [{
+        name: 'Favourite one',
         id: 'favourite-one',
       }, {
         name: 'Favourite two',
-        type: ENTRIES_TYPES.NOTE,
         id: 'favourite-two',
         subentries: [{
           name: 'Favourite one',
-          type: ENTRIES_TYPES.NOTE,
           id: 'favourite-one',
         }, {
           name: 'Favourite two',
-          type: ENTRIES_TYPES.NOTE,
           id: 'favourite-two',
-          subentries: [{
-            name: 'Favourite one',
-            type: ENTRIES_TYPES.NOTE,
-            id: 'favourite-one',
-          }, {
-            name: 'Favourite two',
-            type: ENTRIES_TYPES.NOTE,
-            id: 'favourite-two',
-          }]
         }]
-      }],
+      }]
     }, {
-      name: 'notes',
-      entries: [{
-        name: 'Some Notey',
-        type: ENTRIES_TYPES.NOTE,
-        id: 'some-notey',
+      name: 'Some Notey',
+      id: 'some-notey',
+      subentries: [{
+        name: 'Favourite one',
+        id: 'favourite-one',
+      }, {
+        name: 'Favourite two',
+        id: 'favourite-two',
         subentries: [{
           name: 'Favourite one',
-          type: ENTRIES_TYPES.NOTE,
           id: 'favourite-one',
         }, {
           name: 'Favourite two',
-          type: ENTRIES_TYPES.NOTE,
           id: 'favourite-two',
-          subentries: [{
-            name: 'Favourite one',
-            type: ENTRIES_TYPES.NOTE,
-            id: 'favourite-one',
-          }, {
-            name: 'Favourite two',
-            type: ENTRIES_TYPES.NOTE,
-            id: 'favourite-two',
-          }]
         }]
+      }]
+    }, {
+      name: 'Other Notey',
+      id: 'other-notey',
+    }, {
+      name: 'Some Folder also has long name that will take at least two or three lines',
+      id: 'some-folder',
+      subentries: [{
+        name: 'Favourite one',
+        id: 'favourite-one',
       }, {
-        name: 'Other Notey',
-        type: ENTRIES_TYPES.NOTE,
-        id: 'other-notey',
-      }, {
-        name: 'Some Folder also has long name that will take at least two or three lines',
-        type: ENTRIES_TYPES.FOLDER,
-        id: 'some-folder',
+        name: 'Favourite two',
+        id: 'favourite-two',
         subentries: [{
           name: 'Favourite one',
-          type: ENTRIES_TYPES.NOTE,
           id: 'favourite-one',
         }, {
           name: 'Favourite two',
-          type: ENTRIES_TYPES.NOTE,
           id: 'favourite-two',
-          subentries: [{
-            name: 'Favourite one',
-            type: ENTRIES_TYPES.NOTE,
-            id: 'favourite-one',
-          }, {
-            name: 'Favourite two',
-            type: ENTRIES_TYPES.NOTE,
-            id: 'favourite-two',
-          }]
         }]
       }]
     }
@@ -111,7 +86,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
     });
     this.notesGroupsOrderSub = this.dragulaServie.dragend('notes-groups')
       .subscribe(this.changeGroupsOrder);
-    this.notesGroupsOrderByNames = Object.keys(this.entries);
+    this.notesGroupsOrderByNames = Object.keys(this.notes);
   }
 
   ngOnDestroy(): void {

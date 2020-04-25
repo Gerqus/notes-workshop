@@ -1,13 +1,13 @@
 .header {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   align-items: center;
   
-  & *:not(:last-child) {
+  & *:first-child {
     justify-self: left;
   }
   
-  & *:last-child {
+  & * {
     justify-self: right;
   }
 }
