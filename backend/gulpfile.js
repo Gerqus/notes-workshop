@@ -21,6 +21,19 @@ gulp.task('ts:compile', (done) => {
 
 gulp.task('lint-than-compile', gulp.series('lint:eslint','ts:compile'));
 
+gulp.task('frontend:watch', () => {
+  gulp.watch(
+    '../frontend/dist/notes-workshop',
+    { ignoreInitial: false },
+    function copyFrontEndFiles(cb) {
+      gulp.src('../frontend/dist/notes-workshop/**/*')
+        .pipe(gulp.dest('./static'));
+      console.log('Files copied to /static ...')
+      cb();
+    }
+  );
+})
+
 gulp.task('run_nodemon_deamon_app', () => {
   return nodemon({
     script: './dist/app.js',
@@ -30,4 +43,4 @@ gulp.task('run_nodemon_deamon_app', () => {
   });
 });
 
-gulp.task('watch', gulp.series('lint-than-compile', 'run_nodemon_deamon_app'));
+gulp.task('watch', gulp.parallel('frontend:watch', gulp.series('lint-than-compile', 'run_nodemon_deamon_app')));
