@@ -95,6 +95,7 @@
                 "after": true
             }
         ],
-        "comma-style": "error"
+        "comma-style": "error",
+        "eol-last": "error"
     }
 }

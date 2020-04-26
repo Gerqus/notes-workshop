@@ -1,4 +1,3 @@
-
 export enum httpRequestTypes {
   POST = 'post',
   GET = 'get',

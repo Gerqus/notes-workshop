@@ -1,4 +1,4 @@
-import { controllerRoutes } from 'src/interfaces/controller-routes.interface';
+import { controllerRoutes } from '@/interfaces/controller-routes.interface';
 
 export = {
   noteController: require('./note.controller'),

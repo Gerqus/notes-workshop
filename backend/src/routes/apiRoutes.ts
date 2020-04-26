@@ -1,5 +1,5 @@
 import * as express from 'express';
-import routesModules = require('../controllers');
+import routesModules = require('@/controllers');
 
 const apiRouter = express.Router();
 

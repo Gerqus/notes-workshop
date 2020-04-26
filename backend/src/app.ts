@@ -1,9 +1,9 @@
 import express = require('express');
-import bodyParser = require('body-parser');
+import * as bodyParser from 'body-parser';
 import cookieParser = require('cookie-parser');
 import path = require('path');
 
-import apiRoutes = require('./routes/apiRoutes');
+import apiRoutes = require('@/routes/apiRoutes');
 
 const app = express();
 
@@ -19,5 +19,7 @@ app.use('/', express.static(path.join(__dirname, '../static')));
 const listeningPort = 6040;
 
 app.listen(listeningPort, () => {
-  console.log(`Listening on :${listeningPort}`);
+  console.log(`Server listening on :${listeningPort}`);
 });
+
+export default {foo: 'bar'};

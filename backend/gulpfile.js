@@ -2,6 +2,58 @@ const gulp = require('gulp');
 const cp = require('child_process');
 const eslint = require('gulp-eslint');
 const nodemon = require('gulp-nodemon');
+const ts = require('gulp-typescript');
+const nodeStream = require("stream");
+
+const tsProject = ts.createProject('./tsconfig.json');
+
+const pathFindingRegEx = /(?:from (?:'|")(.+?)(?:'|"))|(?:require\((?:'|")(.+?)(?:'|")\))/;
+
+function getPathToRoot(filePath) {
+  const depth = (filePath.match(/\//g) || []).length - 1;
+  return '../'.repeat(depth);
+}
+
+function replacePaths(projectPaths) {
+	if (!projectPaths) {
+		throw new Error("ts-paths-resolver", "Project paths must be specified.");
+  }
+  
+  const transformStream = new nodeStream.Transform({
+    objectMode: true,
+    transform: (file, encoding, callback) => {
+      if(file.isDirectory() || file.isStream() || file.isNull() || file.isSymbolic()) {
+        callback(null, file);
+      } else {
+        let fileContents;
+        if(file.isBuffer()) {
+          fileContents = file.contents.toString('utf8');
+        } else {
+          fileContents = file.contents;
+        }
+
+        const lines = fileContents.split("\n");
+        const fileRootPath = file.path.replace(file.base, '');
+        lines.forEach((line, lineNumber) => {
+          if(pathFindingRegEx.test(line)) {
+            Object.keys(projectPaths).forEach(tsPath => {
+              const serachedPath = tsPath.replace(/\*+$/, '');
+              let targetPath = projectPaths[tsPath][0].replace(/\*+$/, '').replace('src/', '');
+              targetPath = getPathToRoot(fileRootPath) + targetPath.replace(/^\.?\//, '');
+              targetPath = targetPath.startsWith('..') ? targetPath : `./${targetPath}`;
+              lines[lineNumber] = line.replace(serachedPath, targetPath);
+            })
+          }
+        })
+
+        file.contents = new Buffer.from(lines.join("\n"));
+        callback(null, file);
+      }
+    }
+  });
+
+  return transformStream;
+}
 
 gulp.task('lint:eslint', () => {
   return gulp.src('src/**/*.ts')
@@ -11,12 +63,10 @@ gulp.task('lint:eslint', () => {
 });
 
 gulp.task('ts:compile', (done) => {
-  try {
-    cp.spawnSync('tsc', { stdio: 'inherit' });
-  } catch {
-    console.log('TypeScript compilation failed. Will try again on file change.');
-  }
-  done();
+  return gulp.src('./src/**/*.ts')
+    .pipe(tsProject()).js
+    .pipe(replacePaths(tsProject.config.compilerOptions.paths))
+    .pipe(gulp.dest('./dist'));
 });
 
 gulp.task('lint-than-compile', gulp.series('lint:eslint','ts:compile'));

@@ -10,7 +10,7 @@
       "dom"
     ],
     "paths": {
-      "@/*": [ "src/*" ],
+      "@/*": [ "./src/*" ], // scisle powiazane z moim pluginem do gulpa. To jest jedyna sciezka, ktora jest obslugiwana
     },
     "noImplicitAny": true,
     "removeComments": true,
