@@ -84,12 +84,14 @@ gulp.task('frontend:watch', () => {
   );
 })
 
-gulp.task('run_nodemon_deamon_app', () => {
+gulp.task('run_nodemon_deamon_app', (done) => {
   return nodemon({
     script: './dist/app.js',
     watch: './src/**',
     ext: '*',
     tasks: ['lint-than-compile'],
+    delay: 200,
+    done
   });
 });
 
