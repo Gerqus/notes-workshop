@@ -17,7 +17,9 @@ dbService.connect('mongodb://localhost:27017')
     
     app.use('/api', apiRoutes);
     
-    app.use('/', express.static(path.join(__dirname, '../static')));
+    app.use('/', express.static(path.join(__dirname, '../static/')));
+
+    app.use('/*', express.static(path.join(__dirname, '../static/')));
     
     const listeningPort = 6040;
     
