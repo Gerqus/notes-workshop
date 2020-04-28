@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
+import { RouterModule } from '@angular/router';
 
 import { ProjectCommonModule } from '../common/common.module';
 
@@ -18,7 +19,8 @@ import { DragulaModule } from 'ng2-dragula';
     CommonModule,
     BrowserModule,
     DragulaModule.forRoot(),
-    ProjectCommonModule
+    ProjectCommonModule,
+    RouterModule,
   ],
   exports: [
     BrowserComponent

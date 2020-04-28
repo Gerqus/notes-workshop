@@ -20,10 +20,9 @@ export class EntriesListComponent implements OnInit {
 
   public deleteNote(noteId: INoteRecord['_id']) {
     console.log('deleting note with id', noteId, 'now...')
-    this.apiService.deleteNote(noteId)
-      .then(() => {
-        console.log('Updating notes list...');
-        this.apiService.updateNotesList();
+    const sub = this.apiService.deleteNote(noteId)
+      .subscribe(() => {
+        sub.unsubscribe();
       });
   }
 }

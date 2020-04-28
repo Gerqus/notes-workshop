@@ -6,6 +6,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { HeaderModule } from './header/header.module';
 import { BrowseModule } from './browse/browse.module';
 import { WidgetModule } from './widget/widget.module';
+import { NotesViewModule } from './notes-view/notes-view.module';
 
 import { AppComponent } from './app.component';
 
@@ -20,6 +21,7 @@ import { AppComponent } from './app.component';
     BrowseModule,
     WidgetModule,
     HttpClientModule,
+    NotesViewModule
   ],
   providers: [],
   bootstrap: [AppComponent]

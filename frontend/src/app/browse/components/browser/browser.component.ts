@@ -14,6 +14,7 @@ import { INoteRecord } from 'types';
 export class BrowserComponent implements OnInit, OnDestroy {
   public notesGroupsOrderByNames: string[] = [];
   private notesGroupsOrderSub: Subscription;
+  private notesListSub: Subscription;
 
   public notes: INoteRecord[];
 
@@ -23,12 +24,11 @@ export class BrowserComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.apiService.getNotesListSubject()
+    this.notesListSub = this.apiService.getNotesListSubject()
       .subscribe((resp) => {
         console.log('notes recived');
-        this.notes = resp.object;
+        this.notes = resp;
       });
-    this.apiService.updateNotesList();
 
     this.dragulaServie.createGroup('notes-groups', {
       moves: (el, container, handle) => {
@@ -41,6 +41,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.notesGroupsOrderSub.unsubscribe();
+    this.notesListSub.unsubscribe();
   }
 
   changeGroupsOrder(...args: any): void {

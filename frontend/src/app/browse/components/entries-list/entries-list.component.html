@@ -7,7 +7,7 @@
   </li> -->
   <!-- <li class="entry" *ngIf="!entry.subentries?.length"> -->
   <li class="entry">
-    <span class="action-button minor">{{entry.title}}</span>
+    <span class="action-button minor" [routerLink]="['note', entry._id]">{{entry.title}}</span>
     <i class="icon delete" (click)="deleteNote(entry._id)"></i>
   </li>
 </ng-container>
