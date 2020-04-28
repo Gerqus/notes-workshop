@@ -1,5 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { Note } from '@/interfaces/note.interface';
+import { INoteRecord } from 'types';
+import { ApiService } from '@/api.service';
 
 @Component({
   selector: '[app-entries-list]',
@@ -7,12 +8,22 @@ import { Note } from '@/interfaces/note.interface';
   styleUrls: ['./entries-list.component.less']
 })
 export class EntriesListComponent implements OnInit {
-  @Input() entriesList: Note[];
+  @Input() entriesList: INoteRecord[];
 
-  constructor() { }
+  constructor(
+    private apiService: ApiService
+  ) {}
 
-  ngOnInit(): void {
+  ngOnInit(): void {}
+
+  public entriesTrackingFn = (entry: INoteRecord) => entry.title;
+
+  public deleteNote(noteId: INoteRecord['_id']) {
+    console.log('deleting note with id', noteId, 'now...')
+    this.apiService.deleteNote(noteId)
+      .then(() => {
+        console.log('Updating notes list...');
+        this.apiService.updateNotesList();
+      });
   }
-
-  public entriesTrackingFn = (entry: Note) => entry.id;
 }

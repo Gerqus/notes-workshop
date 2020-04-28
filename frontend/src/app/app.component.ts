@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import * as imgsToPreloadSrcs from  './imgsToPreloadSrcs.json';
 
 @Component({
   selector: 'app-root',
@@ -7,16 +8,9 @@ import { Component, OnInit } from '@angular/core';
 })
 export class AppComponent implements OnInit {
   title = 'Notes Workshop';
-  private imgsToPreloadSrcs: string[] = [
-    '/assets/icons/expand_more-24px.svg',
-    '/assets/icons/search-24px.svg',
-    '/assets/icons/arrow_right_tip-24px.svg',
-    '/assets/icons/arrow_right_full-24px.svg',
-    '/assets/icons/drag_indicator-24px.svg',
-  ];
 
   ngOnInit() {
-    this.imgsToPreloadSrcs.forEach(this.preloadImage);
+    (imgsToPreloadSrcs as any as {default: string[]}).default.forEach(this.preloadImage);
   }
 
   private preloadImage(imgSrc: string): void {

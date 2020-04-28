@@ -14,10 +14,13 @@ export class ActionsComponent implements OnInit {
   }
 
   public newNote() {
-    this.apiService.addNote()
-      .subscribe((resp) => {
-        console.log('Response recived:', resp)
+    this.apiService.addNote({
+      title: 'test note title form frontend',
+      content: 'sample note content',
+    })
+      .then(() => {
+        console.log('Updating notes list...');
+        this.apiService.updateNotesList();
       });
   }
-
 }
