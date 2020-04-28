@@ -73,23 +73,26 @@ function noteDelete(req: express.Request, res: express.Response) {
 function notePatch(req: express.Request, res: express.Response) {
   console.log('Called endpoint PATH', req.url);
   console.log('Updating note of id', req.params.noteId);
+
+  // TODO: Must add note title, content and tags sanitization to remove malicious html tags like <script>
+
   noteModel.findByIdAndUpdate(
-    {_id: (req.body as INoteRecord)._id},
+    (req.body as INoteRecord)._id,
     req.body as INoteRecord,
     { new: true }
   )
     .then((noteDocument) => {
-      console.log(`Note of id "${req.params.noteId}" has been deleted`);
+      console.log(`Note of id "${req.params.noteId}" has been updated`);
       const toSend: INoteResponse = {
-        message: `Note of id "${req.params.noteId}" has been deleted`,
+        message: `Note of id "${req.params.noteId}" has been updated`,
         object: noteDocument as INoteRecord,
       };
       res.send(toSend);
     })
     .catch(({error}) => {
-      console.error(`Could not delete note of id "${req.params.noteId}"`, error);
+      console.error(`Could not update note of id "${req.params.noteId}"`, error);
       const toSend: INoteResponse = {
-        message: `Could not delete note of id "${req.params.noteId}": ${error}`,
+        message: `Could not update note of id "${req.params.noteId}": ${error}`,
         object: null,
       };
       res.send(toSend);

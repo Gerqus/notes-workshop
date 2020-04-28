@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router'
 
-import { Subscription } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
 
 import { INoteRecord } from 'types';
 
@@ -13,6 +13,9 @@ import { ApiService } from '@/api.service';
   styleUrls: ['./note-view.component.less']
 })
 export class NoteViewComponent implements OnInit, OnDestroy {
+  @ViewChild('noteTitle') noteTitleElement: {nativeElement: HTMLDivElement};
+  @ViewChild('noteContent') noteContentElement: {nativeElement: HTMLDivElement};
+
   private routeNoteIdSubscription: Subscription;
   private noteId: INoteRecord['_id'];
   public note: INoteRecord;
@@ -24,9 +27,9 @@ export class NoteViewComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.routeNoteIdSubscription = this.activatedRoute.params
-      .subscribe(params => {
+      .subscribe(async params => {
         this.noteId = params['noteId'];
-        this.note = this.apiService.fetchNote(this.noteId);
+        this.note = await this.apiService.fetchNote(this.noteId);
       });
   }
 
@@ -35,8 +38,14 @@ export class NoteViewComponent implements OnInit, OnDestroy {
   }
 
   public saveNote() {
-    const sub = this.apiService.saveNote(this.note)
-      .subscribe(() => {
+    const sub = this.apiService.saveNote({
+      _id: this.note._id,
+      title: this.noteTitleElement.nativeElement.innerHTML.replace(/<br>$/, ''),
+      content: this.noteContentElement.nativeElement.innerHTML.replace(/<br>$/, ''),
+    })
+      .subscribe((newNote) => {
+        console.log('inside subscription')
+        this.note = newNote;
         sub.unsubscribe();
       });
   }

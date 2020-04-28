@@ -8,13 +8,17 @@ import { ConfigService } from './config.service';
 
 import { joinURLSegments } from '@/utils';
 
+interface indexedNotes {
+  [noteId: string]: INoteRecord;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
   private endpointsUrl: string;
   private notesListSubject = new Subject<INoteRecord[]>();
-  private indexedNotes: { [noteId: string]: INoteRecord } = {};
+  private indexedNotes: indexedNotes = {};
 
   private getEndpointFor(endpointName: string, ...params: string[]) {
     if (this.configService.api[endpointName] === undefined) {
@@ -31,7 +35,6 @@ export class ApiService {
   }
 
   private updateNotesList(): void {
-    console.log('GET', this.getEndpointFor('note'));
     this.fetchNotes()
       .subscribe(res => {
         res.forEach(note => {
@@ -68,8 +71,18 @@ export class ApiService {
     .pipe(map(noteResp => noteResp.object as INoteRecord[]));
   }
 
-  public fetchNote(searchedNoteId: INoteRecord['_id']): INoteRecord {
-    return this.indexedNotes[searchedNoteId];
+  public async fetchNote(searchedNoteId: INoteRecord['_id']): Promise<INoteRecord> {
+    return new Promise((resolve) => {
+      if (this.indexedNotes[searchedNoteId]) {
+        resolve(this.indexedNotes[searchedNoteId]);
+      } else {
+        this.notesListSubject
+          .subscribe(() => {
+            resolve(this.indexedNotes[searchedNoteId])
+          });
+        this.updateNotesList();
+      }
+    })
   }
 
   public deleteNote(noteId: INoteRecord['_id']): Observable<INoteRecord> {
@@ -82,8 +95,11 @@ export class ApiService {
     .pipe(tap(() => this.updateNotesList()));
   }
 
-  public saveNote(noteToSave: INoteRecord) {
+  public saveNote(noteToSave: INoteRecord): Observable<INoteRecord> {
     console.log('PATCH', this.getEndpointFor('note', noteToSave._id));
+    // if (!noteToSave.title) {
+    //   throw new Error('Note must have a title. Aborting note saving.');
+    // }
     return this.httpClient.patch<INoteResponse>(
       this.getEndpointFor('note', noteToSave._id),
       noteToSave

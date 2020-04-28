@@ -1,9 +1,7 @@
 <ng-container *ngIf="note">
-  <div class="note-title">
-    {{note.title}}
+  <div #noteTitle class="note-title" contenteditable [innerHTML]="note.title">
   </div>
-  <div class="note-content" contenteditable>
-    {{note.content}}
+  <div #noteContent class="note-content" contenteditable [innerHTML]="note.content">
   </div>
   <div class="note-variables">
     notes variables will be listed here
