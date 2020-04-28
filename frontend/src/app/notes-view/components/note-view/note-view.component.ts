@@ -34,4 +34,11 @@ export class NoteViewComponent implements OnInit, OnDestroy {
     this.routeNoteIdSubscription.unsubscribe();
   }
 
+  public saveNote() {
+    const sub = this.apiService.saveNote(this.note)
+      .subscribe(() => {
+        sub.unsubscribe();
+      });
+  }
+
 }

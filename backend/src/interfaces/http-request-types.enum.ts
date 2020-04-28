@@ -1,6 +1,6 @@
 export enum httpRequestTypes {
   POST = 'post',
   GET = 'get',
-  PATH = 'path',
+  PATCH = 'patch',
   DELETE = 'delete'
 }

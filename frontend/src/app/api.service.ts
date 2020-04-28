@@ -49,11 +49,11 @@ export class ApiService {
     this.updateNotesList();
   }
 
-  public addNote(note: INoteModel): Observable<INoteRecord> {
+  public addNote(noteToAdd: INoteModel): Observable<INoteRecord> {
     console.log('POST', this.getEndpointFor('note'));
     return this.httpClient.post<INoteResponse>(
       this.getEndpointFor('note'),
-      note
+      noteToAdd
     )
     .pipe(map(noteResp => noteResp.object as INoteRecord))
     .pipe(tap(() => this.updateNotesList()));
@@ -78,6 +78,17 @@ export class ApiService {
       this.getEndpointFor('note', noteId),
       {}
     )
+    .pipe(map(noteResp => noteResp.object as INoteRecord))
+    .pipe(tap(() => this.updateNotesList()));
+  }
+
+  public saveNote(noteToSave: INoteRecord) {
+    console.log('PATCH', this.getEndpointFor('note', noteToSave._id));
+    return this.httpClient.patch<INoteResponse>(
+      this.getEndpointFor('note', noteToSave._id),
+      noteToSave
+    )
+    .pipe(tap((resp) => console.log('test of path resp:', resp)))
     .pipe(map(noteResp => noteResp.object as INoteRecord))
     .pipe(tap(() => this.updateNotesList()));
   }
