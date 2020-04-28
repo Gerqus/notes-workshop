@@ -1,9 +1,13 @@
 import * as mongoose from 'mongoose';
+import { INoteModel } from 'types';
 
-const NoteSchema = new mongoose.Schema({
-  title: {type: String, required: true, max: 100},
-  content: {type: Number, required: true},
+
+export interface INoteDocument extends INoteModel, mongoose.Document {}
+
+const NoteSchema = new mongoose.Schema<INoteModel>({
+  title: {type: String, required: true, max: 255},
+  content: {type: String, required: true},
   tags: {type: Array},
 });
 
-export = mongoose.model('Product', NoteSchema);
+export default mongoose.model<INoteDocument>('Note', NoteSchema);

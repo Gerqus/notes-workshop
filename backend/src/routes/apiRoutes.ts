@@ -1,15 +1,20 @@
 import * as express from 'express';
 import routesModules = require('@/controllers');
+import { httpRequestTypes } from '@/interfaces/http-request-types.enum';
 
-const apiRouter = express.Router();
+declare type normalizedRouter = {
+  [request in httpRequestTypes]?: express.IRouterMatcher<express.IRouter>
+}
+
+const apiRouter: normalizedRouter = express.Router();
 
 Object.keys(routesModules).forEach((controllerName: keyof typeof routesModules) => {
-  Object.keys(routesModules[controllerName]).forEach((method) => {
-    Object.keys((routesModules as any)[controllerName][method]).forEach((path) => {
-      const routerMethod = (apiRouter[method as keyof typeof apiRouter] as any).bind(apiRouter);
-      routerMethod(path, (routesModules as any)[controllerName][method][path]);
+  Object.keys(routesModules[controllerName]).forEach((path) => {
+    Object.keys((routesModules as any)[controllerName][path]).forEach((method: httpRequestTypes) => {
+      const routerMethod = (apiRouter[method]).bind(apiRouter);
+      routerMethod(path, routesModules[controllerName][path][method]);
     });
   });
 });
 
-export = apiRouter;
+export = apiRouter as express.Router;

@@ -62,7 +62,7 @@ gulp.task('lint:eslint', () => {
     .pipe(eslint.failAfterError());
 });
 
-gulp.task('ts:compile', (done) => {
+gulp.task('ts:compile', () => {
   return gulp.src('./src/**/*.ts')
     .pipe(tsProject()).js
     .pipe(replacePaths(tsProject.config.compilerOptions.paths))
@@ -73,12 +73,12 @@ gulp.task('lint-than-compile', gulp.series('lint:eslint','ts:compile'));
 
 gulp.task('frontend:watch', () => {
   gulp.watch(
-    '../frontend/dist/notes-workshop',
+    '../frontend/dist/notes-workshop/**',
     { ignoreInitial: false },
     function copyFrontEndFiles(cb) {
       gulp.src('../frontend/dist/notes-workshop/**/*')
         .pipe(gulp.dest('./static'));
-      console.log('Files copied to /static ...')
+      console.log('Files copied to /static ...');
       cb();
     }
   );

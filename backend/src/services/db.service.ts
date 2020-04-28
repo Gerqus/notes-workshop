@@ -1,5 +1,11 @@
 import mongoose = require('mongoose');
 
+interface dbResponse {
+  response: any,
+  error?: string,
+  affectedCount?: number,
+}
+
 class dbService {
   private connection: mongoose.Connection;
   private connectionStates = new Map(Object.entries({
@@ -36,6 +42,45 @@ class dbService {
   
       mongoose.connect(address, {useNewUrlParser: true, useUnifiedTopology: true});
       console.error('Connecting to MongoDB...');
+    });
+  }
+
+  public save<T extends mongoose.Document>(object: T): Promise<dbResponse> {
+    return new Promise((resolve, reject) => {
+      object.save((error: string, response: T) => {
+        if (error) {
+          console.error(error);
+          reject({error});
+        } else {
+          resolve({response});
+        }
+      });
+    });
+  }
+
+  public find<T extends mongoose.Model<any>>(object: T): Promise<dbResponse> {
+    return new Promise((resolve, reject) => {
+      object.find((error: string, response: T, affectedCount: number) => {
+        if (error) {
+          console.error(error);
+          reject({error});
+        } else {
+          resolve({response, affectedCount});
+        }
+      });
+    });
+  }
+
+  public delete<T extends mongoose.Model<any>>(object: T, objectId: string): Promise<dbResponse> {
+    return new Promise((resolve, reject) => {
+      object.deleteOne({_id: objectId}, (error: string) => {
+        if (error) {
+          console.error(error);
+          reject({error});
+        } else {
+          resolve({response: null});
+        }
+      });
     });
   }
 }
