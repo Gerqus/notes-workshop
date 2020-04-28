@@ -12,5 +12,5 @@ export interface INoteRecord extends INoteModel, IRecord {}
 
 export interface INoteResponse {
   message: string;
-  object: Array<INoteRecord>;
+  object: Array<INoteRecord> | INoteRecord;
 }
