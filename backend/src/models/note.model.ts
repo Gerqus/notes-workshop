@@ -6,7 +6,7 @@ export interface INoteDocument extends INoteModel, mongoose.Document {}
 
 const NoteSchema = new mongoose.Schema<INoteModel>({
   title: {type: String, required: true, max: 255},
-  content: {type: String, required: true},
+  content: {type: String},
   tags: {type: Array},
 });
 
