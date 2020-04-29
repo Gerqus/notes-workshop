@@ -40,7 +40,12 @@ class dbService {
         reject();
       });
   
-      mongoose.connect(address, {useNewUrlParser: true, useUnifiedTopology: true});
+      mongoose.connect(address, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useFindAndModify: false,
+        useCreateIndex: true,
+      });
       console.error('Connecting to MongoDB...');
     });
   }

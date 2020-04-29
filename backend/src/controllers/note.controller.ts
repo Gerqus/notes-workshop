@@ -4,14 +4,15 @@ import { httpRequestTypes } from '@/interfaces/http-request-types.enum';
 
 import dbService from '@/services/db.service';
 import noteModel, { INoteDocument } from '@/models/note.model';
-import { INoteModel, INoteResponse, INoteRecord } from 'types';
+import { Note } from 'types';
+import * as sanitizeHtml from 'sanitize-html';
 
 function noteGet(req: express.Request, res: express.Response) {
   console.log('Called endpoint GET', req.url);
   dbService.find(noteModel)
     .then(({response}) => {
       console.log('Notes fetched');
-      const toSend: INoteResponse = {
+      const toSend: Note.Response = {
         message: 'Notes fetched',
         object: response,
       };
@@ -19,7 +20,7 @@ function noteGet(req: express.Request, res: express.Response) {
     })
     .catch(({error}) => {
       console.error('Could not fetch notes', error);
-      const toSend: INoteResponse = {
+      const toSend: Note.Response = {
         message: `Could not fetch notes: ${error}`,
         object: null,
       };
@@ -29,11 +30,11 @@ function noteGet(req: express.Request, res: express.Response) {
 
 function notePost(req: express.Request, res: express.Response) {
   console.log('Called endpoint POST', req.url);
-  const newNote: INoteDocument = new noteModel<INoteModel>(req.body as INoteModel);
+  const newNote: INoteDocument = new noteModel<Note.Model>(req.body as Note.Model);
   dbService.save(newNote)
     .then(({response}) => {
       console.log('New note has been created');
-      const toSend: INoteResponse = {
+      const toSend: Note.Response = {
         message: 'New note has been created',
         object: response,
       };
@@ -41,7 +42,7 @@ function notePost(req: express.Request, res: express.Response) {
     })
     .catch(({error}) => {
       console.error('Could not create note:', error);
-      const toSend: INoteResponse = {
+      const toSend: Note.Response = {
         message: `Could not create note: ${error}`,
         object: null,
       };
@@ -54,7 +55,7 @@ function noteDelete(req: express.Request, res: express.Response) {
   dbService.delete(noteModel, req.params.noteId)
     .then(({response}) => {
       console.log(`Note of id "${req.params.noteId}" has been deleted`);
-      const toSend: INoteResponse = {
+      const toSend: Note.Response = {
         message: `Note of id "${req.params.noteId}" has been deleted`,
         object: response,
       };
@@ -62,7 +63,7 @@ function noteDelete(req: express.Request, res: express.Response) {
     })
     .catch(({error}) => {
       console.error(`Could not delete note of id "${req.params.noteId}"`, error);
-      const toSend: INoteResponse = {
+      const toSend: Note.Response = {
         message: `Could not delete note of id "${req.params.noteId}": ${error}`,
         object: null,
       };
@@ -74,24 +75,27 @@ function notePatch(req: express.Request, res: express.Response) {
   console.log('Called endpoint PATH', req.url);
   console.log('Updating note of id', req.params.noteId);
 
-  // TODO: Must add note title, content and tags sanitization to remove malicious html tags like <script>
+  const sanitizedNote: Note.Model = {
+    title: sanitizeHtml((req.body as Note.Record).title, { allowedTags: [] }),
+    content: sanitizeHtml((req.body as Note.Record).content),
+  };
 
   noteModel.findByIdAndUpdate(
-    (req.body as INoteRecord)._id,
-    req.body as INoteRecord,
+    (req.body as Note.Record)._id,
+    sanitizedNote,
     { new: true }
   )
     .then((noteDocument) => {
       console.log(`Note of id "${req.params.noteId}" has been updated`);
-      const toSend: INoteResponse = {
+      const toSend: Note.Response = {
         message: `Note of id "${req.params.noteId}" has been updated`,
-        object: noteDocument as INoteRecord,
+        object: noteDocument as Note.Record,
       };
       res.send(toSend);
     })
     .catch(({error}) => {
       console.error(`Could not update note of id "${req.params.noteId}"`, error);
-      const toSend: INoteResponse = {
+      const toSend: Note.Response = {
         message: `Could not update note of id "${req.params.noteId}": ${error}`,
         object: null,
       };

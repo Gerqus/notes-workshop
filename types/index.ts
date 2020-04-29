@@ -1,16 +1,32 @@
-interface IRecord {
+interface MongoDBRecord {
   _id: string;
 }
 
-export interface INoteModel {
-  title: string;
-  content: string;
-  tags?: string[];
+export namespace Note {
+  export interface Model {
+    title: string;
+    content: string;
+    tags?: string[];
+  }
+
+  export interface Record extends Model, MongoDBRecord {}
+
+  export interface Response {
+    message: string;
+    object: Array<Record> | Record;
+  }
 }
 
-export interface INoteRecord extends INoteModel, IRecord {}
+export namespace NotesCategory {
+  export interface Model {
+    title: string;
+    notes: Note.Record[];
+  }
 
-export interface INoteResponse {
-  message: string;
-  object: Array<INoteRecord> | INoteRecord;
+  export interface Record extends Model, MongoDBRecord {}
+
+  export interface Response {
+    message: string;
+    object: Array<Record> | Record;
+  }
 }

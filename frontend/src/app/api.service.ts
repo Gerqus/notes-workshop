@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { INoteModel, INoteRecord, INoteResponse } from 'types';
+import { Note } from 'types';
 
 import { ConfigService } from './config.service';
 
 import { joinURLSegments } from '@/utils';
 
 interface indexedNotes {
-  [noteId: string]: INoteRecord;
+  [noteId: string]: Note.Record;
 }
 
 @Injectable({
@@ -17,7 +17,7 @@ interface indexedNotes {
 })
 export class ApiService {
   private endpointsUrl: string;
-  private notesListSubject = new Subject<INoteRecord[]>();
+  private notesListSubject = new Subject<Note.Record[]>();
   private indexedNotes: indexedNotes = {};
 
   private getEndpointFor(endpointName: string, ...params: string[]) {
@@ -52,26 +52,26 @@ export class ApiService {
     this.updateNotesList();
   }
 
-  public addNote(noteToAdd: INoteModel): Observable<INoteRecord> {
+  public addNote(noteToAdd: Note.Model): Observable<Note.Record> {
     console.log('POST', this.getEndpointFor('note'));
-    return this.httpClient.post<INoteResponse>(
+    return this.httpClient.post<Note.Response>(
       this.getEndpointFor('note'),
       noteToAdd
     )
-    .pipe(map(noteResp => noteResp.object as INoteRecord))
+    .pipe(map(noteResp => noteResp.object as Note.Record))
     .pipe(tap(() => this.updateNotesList()));
   }
 
-  public fetchNotes(): Observable<INoteRecord[]> {
+  public fetchNotes(): Observable<Note.Record[]> {
     console.log('GET', this.getEndpointFor('note'));
-    return this.httpClient.get<INoteResponse>(
+    return this.httpClient.get<Note.Response>(
       this.getEndpointFor('note'),
       {}
     )
-    .pipe(map(noteResp => noteResp.object as INoteRecord[]));
+    .pipe(map(noteResp => noteResp.object as Note.Record[]));
   }
 
-  public async fetchNote(searchedNoteId: INoteRecord['_id']): Promise<INoteRecord> {
+  public async fetchNote(searchedNoteId: Note.Record['_id']): Promise<Note.Record> {
     return new Promise((resolve) => {
       if (this.indexedNotes[searchedNoteId]) {
         resolve(this.indexedNotes[searchedNoteId]);
@@ -85,31 +85,31 @@ export class ApiService {
     })
   }
 
-  public deleteNote(noteId: INoteRecord['_id']): Observable<INoteRecord> {
+  public deleteNote(noteId: Note.Record['_id']): Observable<Note.Record> {
     console.log('DELETE', this.getEndpointFor('note', noteId));
-    return this.httpClient.delete<INoteResponse>(
+    return this.httpClient.delete<Note.Response>(
       this.getEndpointFor('note', noteId),
       {}
     )
-    .pipe(map(noteResp => noteResp.object as INoteRecord))
+    .pipe(map(noteResp => noteResp.object as Note.Record))
     .pipe(tap(() => this.updateNotesList()));
   }
 
-  public saveNote(noteToSave: INoteRecord): Observable<INoteRecord> {
+  public saveNote(noteToSave: Note.Record): Observable<Note.Record> {
     console.log('PATCH', this.getEndpointFor('note', noteToSave._id));
     // if (!noteToSave.title) {
     //   throw new Error('Note must have a title. Aborting note saving.');
     // }
-    return this.httpClient.patch<INoteResponse>(
+    return this.httpClient.patch<Note.Response>(
       this.getEndpointFor('note', noteToSave._id),
       noteToSave
     )
     .pipe(tap((resp) => console.log('test of path resp:', resp)))
-    .pipe(map(noteResp => noteResp.object as INoteRecord))
+    .pipe(map(noteResp => noteResp.object as Note.Record))
     .pipe(tap(() => this.updateNotesList()));
   }
 
-  public getNotesListSubject(): Subject<INoteRecord[]> {
+  public getNotesListSubject(): Subject<Note.Record[]> {
     return this.notesListSubject;
   }
 }

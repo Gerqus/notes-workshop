@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router'
 
 import { Subscription, Subject } from 'rxjs';
 
-import { INoteRecord } from 'types';
+import { Note } from 'types';
 
 import { ApiService } from '@/api.service';
 
@@ -17,8 +17,8 @@ export class NoteViewComponent implements OnInit, OnDestroy {
   @ViewChild('noteContent') noteContentElement: {nativeElement: HTMLDivElement};
 
   private routeNoteIdSubscription: Subscription;
-  private noteId: INoteRecord['_id'];
-  public note: INoteRecord;
+  private noteId: Note.Record['_id'];
+  public note: Note.Record;
 
   constructor(
     private activatedRoute: ActivatedRoute,

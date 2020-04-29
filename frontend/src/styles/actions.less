@@ -11,9 +11,9 @@
   
     padding: 0.5rem;
     border-radius: 0.75rem;
-    width: 100%;
-    height: 100%;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
     text-align: center;
     font-family: "Georgia";
@@ -41,9 +41,9 @@
       box-shadow: 0 0 3px 0 @shadow-color;
       background-image: linear-gradient(
         to bottom,
-        fade(darken(@action-secondary-background-color, 10%), 20%),
-        fade(lighten(@action-secondary-background-color, 10%), 20%),
-        fade(darken(@action-secondary-background-color, 10%), 20%)
+        fade(darken(@action-secondary-background-color, 10%), 30%),
+        fade(lighten(@action-secondary-background-color, 10%), 30%),
+        fade(darken(@action-secondary-background-color, 10%), 30%)
       );
       
       top: 0;

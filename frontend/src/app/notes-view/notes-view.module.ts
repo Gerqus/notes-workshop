@@ -1,7 +1,10 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LayoutComponent } from './components/layout/layout.component';
 import { AppRoutingModule } from '@/app-routing.module';
+
+import { WidgetModule } from '@/widget/widget.module';
+
+import { LayoutComponent } from './components/layout/layout.component';
 import { NoteViewComponent } from './components/note-view/note-view.component';
 
 @NgModule({
@@ -11,6 +14,7 @@ import { NoteViewComponent } from './components/note-view/note-view.component';
   ],
   imports: [
     CommonModule,
+    WidgetModule,
     AppRoutingModule
   ],
   exports: [

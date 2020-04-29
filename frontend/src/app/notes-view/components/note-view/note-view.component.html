@@ -1,12 +1,21 @@
-<ng-container *ngIf="note">
-  <div #noteTitle class="note-title" contenteditable [innerHTML]="note.title">
+<app-widget title="Notes view">
+  <div class="note-view" *ngIf="note">
+
+    <div class="note-title section">
+      <div #noteTitle class="input" contenteditable [innerHTML]="note.title"></div>
+    </div>
+
+    <div class="note-variables section">
+      notes variables will be listed here
+    </div>
+
+    <div class="note-content section">
+      <div #noteContent class="input" contenteditable [innerHTML]="note.content"></div>
+    </div>
+
+    <div class="note-actions">
+      <div class="action-button major" (click)="saveNote()">Save note</div>
+    </div>
+
   </div>
-  <div #noteContent class="note-content" contenteditable [innerHTML]="note.content">
-  </div>
-  <div class="note-variables">
-    notes variables will be listed here
-  </div>
-  <div class="actions">
-    <div class="action-button major" (click)="saveNote()">Save note</div>
-  </div>
-</ng-container>
+</app-widget>

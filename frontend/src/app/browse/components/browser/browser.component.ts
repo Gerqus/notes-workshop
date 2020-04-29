@@ -4,7 +4,7 @@ import { ApiService } from '@/api.service';
 import { Subscription } from 'rxjs';
 
 import { DragulaService } from 'ng2-dragula';
-import { INoteRecord } from 'types';
+import { Note } from 'types';
 
 @Component({
   selector: 'app-browser',
@@ -16,7 +16,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
   private notesGroupsOrderSub: Subscription;
   private notesListSub: Subscription;
 
-  public notes: INoteRecord[];
+  public notes: Note.Record[];
 
   constructor(
     private dragulaServie: DragulaService,
