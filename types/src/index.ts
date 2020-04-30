@@ -7,6 +7,8 @@ interface MongoDBRecord {
   _id: string;
 }
 
+export type endpointName = string;
+
 export type IModelDefinition<T> = {
   [key in keyof T]: mongoose.SchemaTypeOpts<() => T[key]>;
 };

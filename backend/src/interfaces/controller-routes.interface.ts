@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { httpRequestTypes } from './http-request-types.enum';
+import { httpRequestTypes } from 'types';
 
 export type controllerRoutes = {
   [path: string]: {

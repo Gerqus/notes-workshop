@@ -3,6 +3,7 @@ export * from './enums';
 interface MongoDBRecord {
     _id: string;
 }
+export declare type endpointName = string;
 export declare type IModelDefinition<T> = {
     [key in keyof T]: mongoose.SchemaTypeOpts<() => T[key]>;
 };

@@ -1,6 +1,6 @@
 import * as express from 'express';
 import routesModules = require('@/controllers');
-import { httpRequestTypes } from '@/interfaces/http-request-types.enum';
+import { httpRequestTypes } from 'types/';
 
 declare type normalizedRouter = {
   [request in httpRequestTypes]?: express.IRouterMatcher<express.IRouter>
