@@ -8,7 +8,6 @@ import { Note } from 'types';
 import * as sanitizeHtml from 'sanitize-html';
 
 function noteGet(req: express.Request, res: express.Response) {
-  console.log('Called endpoint GET', req.url);
   dbService.find(noteModel)
     .then(({response}) => {
       console.log('Notes fetched');
@@ -29,7 +28,6 @@ function noteGet(req: express.Request, res: express.Response) {
 }
 
 function notePost(req: express.Request, res: express.Response) {
-  console.log('Called endpoint POST', req.url);
   const newNote: INoteDocument = new noteModel<Note.Model>(req.body as Note.Model);
   dbService.save(newNote)
     .then(({response}) => {
@@ -50,7 +48,6 @@ function notePost(req: express.Request, res: express.Response) {
     });
 }
 function noteDelete(req: express.Request, res: express.Response) {
-  console.log('Called endpoint DELETE', req.url);
   console.log('Deleting note of id', req.params.noteId);
   dbService.delete(noteModel, req.params.noteId)
     .then(({response}) => {
@@ -72,7 +69,6 @@ function noteDelete(req: express.Request, res: express.Response) {
 }
 
 function notePatch(req: express.Request, res: express.Response) {
-  console.log('Called endpoint PATH', req.url);
   console.log('Updating note of id', req.params.noteId);
 
   const sanitizedNote: Note.Model = {
