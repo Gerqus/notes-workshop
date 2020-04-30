@@ -5,7 +5,7 @@ import { Subscription, Subject } from 'rxjs';
 
 import { Note } from 'types';
 
-import { ApiService } from '@/api.service';
+import { NoteApiService } from '@/api-service/note.api.service';
 
 @Component({
   selector: 'app-note-view',
@@ -22,14 +22,14 @@ export class NoteViewComponent implements OnInit, OnDestroy {
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private apiService: ApiService,
+    private noteApiService: NoteApiService,
   ) { }
 
   ngOnInit(): void {
     this.routeNoteIdSubscription = this.activatedRoute.params
       .subscribe(async params => {
         this.noteId = params['noteId'];
-        this.note = await this.apiService.fetchNote(this.noteId);
+        this.note = await this.noteApiService.fetchNote(this.noteId);
       });
   }
 
@@ -38,7 +38,7 @@ export class NoteViewComponent implements OnInit, OnDestroy {
   }
 
   public saveNote() {
-    const sub = this.apiService.saveNote({
+    const sub = this.noteApiService.saveNote({
       _id: this.note._id,
       title: this.noteTitleElement.nativeElement.innerHTML.replace(/<br>$/, ''),
       content: this.noteContentElement.nativeElement.innerHTML.replace(/<br>$/, ''),

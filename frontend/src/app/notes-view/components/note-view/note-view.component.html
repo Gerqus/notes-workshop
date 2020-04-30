@@ -1,19 +1,19 @@
 <app-widget title="Notes view">
   <div class="note-view" *ngIf="note">
 
-    <div class="note-title section">
+    <div class="note-title section-secondary">
       <div #noteTitle class="input" contenteditable [innerHTML]="note.title"></div>
     </div>
 
-    <div class="note-variables section">
+    <div class="note-variables section-secondary">
       notes variables will be listed here
     </div>
 
-    <div class="note-content section">
+    <div class="note-content section-secondary">
       <div #noteContent class="input" contenteditable [innerHTML]="note.content"></div>
     </div>
 
-    <div class="note-actions">
+    <div class="note-actions section-secondary">
       <div class="action-button major" (click)="saveNote()">Save note</div>
     </div>
 

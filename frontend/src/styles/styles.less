@@ -6,8 +6,8 @@
 
 html {
   font-size: 16px;
-  color: @primary-text-color;
-  background-color: @primary-background-color;
+  color: @text-primary-color;
+  background-color: @background-primary-color;
 }
 
 p {
@@ -18,9 +18,15 @@ p {
   font-size: 1rem;
 }
 
-.section {
-  border: 1px solid @section-primary-border-color;
+.section-primary {
+  border: 2px solid @section-primary-border-color;
   background-color: @section-primary-background-color;
+  border-radius: 0.5rem;
+}
+
+.section-secondary {
+  border: 1px solid @section-secondary-border-color;
+  background-color: @section-secondary-background-color;
   border-radius: 0.5rem;
 }
 
@@ -29,9 +35,9 @@ p {
   line-height: 1rem;
   padding: 0.25rem 0.5rem;
   border-radius: 0.5rem;
-  border: 1px inset @primary-border-color;
-  color: @secondary-text-color;
-  background-color: @secondary-background-color;
+  border: 1px ridge @input-border-color;
+  color: @text-primary-color;
+  background-color: @input-background-color;
   font-family: Roboto-Light;
 
   &.with-icon-left {

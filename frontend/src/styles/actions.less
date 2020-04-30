@@ -1,19 +1,21 @@
 .action-button {
   cursor: pointer;
-  background-color: @action-secondary-background-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &.minor {
+    background-color: @action-secondary-background-color;
     border: 1px solid @action-secondary-border-color;
+    border-radius: 0.25rem;
   }
 
   &.major {
-    @shadow-color: fade(darken(@action-secondary-background-color, 80%), 60%);
+    @shadow-color: fade(darken(@action-primary-background-color, 80%), 60%);
   
+    background-color: @action-primary-background-color;
     padding: 0.5rem;
     border-radius: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     position: relative;
     text-align: center;
     font-family: "Georgia";
@@ -37,13 +39,13 @@
     }
 
     &::after {
-      border: 2px solid @action-secondary-border-color;
+      border: 2px solid @action-primary-border-color;
       box-shadow: 0 0 3px 0 @shadow-color;
       background-image: linear-gradient(
         to bottom,
-        fade(darken(@action-secondary-background-color, 10%), 30%),
-        fade(lighten(@action-secondary-background-color, 10%), 30%),
-        fade(darken(@action-secondary-background-color, 10%), 30%)
+        fade(darken(@action-primary-background-color, 10%), 30%),
+        fade(lighten(@action-primary-background-color, 10%), 30%),
+        fade(darken(@action-primary-background-color, 10%), 30%)
       );
       
       top: 0;

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ApiService } from '@/api.service';
+import { NoteApiService } from '@/api-service/note.api.service';
 
 @Component({
   selector: 'app-actions',
@@ -8,13 +8,13 @@ import { ApiService } from '@/api.service';
 })
 export class ActionsComponent implements OnInit {
 
-  constructor(private apiService: ApiService) { }
+  constructor(private noteApiService: NoteApiService) { }
 
   ngOnInit(): void {
   }
 
   public newNote() {
-    const sub = this.apiService.addNote({
+    const sub = this.noteApiService.addNote({
       title: 'New Note',
       content: '',
     })

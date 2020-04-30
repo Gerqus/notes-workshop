@@ -1,17 +1,18 @@
-@primary-text-color: rgba(21, 19, 15, 1);
-@secondary-text-color: rgba(82, 75, 59, 1);
+@theme-color: rgba(82, 75, 59, 1);
 
-@primary-background-color: rgba(252, 250, 246, 1);
-@secondary-background-color: rgba(255, 253, 250, 1);
+@text-primary-color: mix(black, @theme-color, 95%);
+@text-secondary-color: mix(white, @text-primary-color, 45%);
+@background-primary-color: mix(white, @theme-color, 95%);
 
-@section-primary-background-color: rgba(250, 248, 246, 1);
-@section-secondary-background-color: rgba(245, 232, 241, 1);
+@section-primary-background-color: mix(white, @theme-color, 95%);
+@section-secondary-background-color: mix(black, @section-primary-background-color, 2%);
+@section-primary-border-color: mix(white, @theme-color, 80%);
+@section-secondary-border-color: mix(black, @section-primary-border-color, 2%);
 
-@action-secondary-background-color: rgba(236, 233, 229, 1);
+@action-primary-border-color: mix(white, @theme-color, 95%);
+@action-secondary-border-color: mix(black, @action-primary-border-color, 10%);
+@action-primary-background-color: mix(white, @theme-color, 90%);
+@action-secondary-background-color: mix(black, @action-primary-background-color, 2%);
 
-@primary-border-color: rgba(153, 139, 114, 1);
-
-@section-primary-border-color: rgba(234, 231, 228, 1);
-@section-secondary-border-color: rgba(229, 226, 223, 1);
-
-@action-secondary-border-color: rgba(227, 223, 216, 1);
+@input-background-color: mix(white, @theme-color, 97%);
+@input-border-color: mix(black, @input-background-color, 10%);

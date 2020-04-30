@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ApiService } from '@/api.service';
+import { NoteApiService } from '@/api-service/note.api.service';
 
 import { Subscription } from 'rxjs';
 
@@ -20,11 +20,11 @@ export class BrowserComponent implements OnInit, OnDestroy {
 
   constructor(
     private dragulaServie: DragulaService,
-    private apiService: ApiService,
+    private noteApiService: NoteApiService,
   ) {}
 
   ngOnInit(): void {
-    this.notesListSub = this.apiService.getNotesListSubject()
+    this.notesListSub = this.noteApiService.getNotesListSubject()
       .subscribe((resp) => {
         console.log('notes recived');
         this.notes = resp;

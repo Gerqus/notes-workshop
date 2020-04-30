@@ -1,6 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Note } from 'types';
-import { ApiService } from '@/api.service';
+import { NoteApiService } from '@/api-service/note.api.service';
 
 @Component({
   selector: '[app-entries-list]',
@@ -11,7 +11,7 @@ export class EntriesListComponent implements OnInit {
   @Input() entriesList: Note.Record[];
 
   constructor(
-    private apiService: ApiService
+    private noteApiService: NoteApiService
   ) {}
 
   ngOnInit(): void {}
@@ -20,7 +20,7 @@ export class EntriesListComponent implements OnInit {
 
   public deleteNote(noteId: Note.Record['_id']) {
     console.log('deleting note with id', noteId, 'now...')
-    const sub = this.apiService.deleteNote(noteId)
+    const sub = this.noteApiService.deleteNote(noteId)
       .subscribe(() => {
         sub.unsubscribe();
       });
