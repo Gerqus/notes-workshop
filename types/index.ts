@@ -1,6 +1,12 @@
+import * as mongoose from 'mongoose';
+
 interface MongoDBRecord {
   _id: string;
 }
+
+export type IModelDefinition<T> = {
+  [key in keyof T]: mongoose.SchemaTypeOpts<() => T[key]>;
+};
 
 export namespace Note {
   export interface Model {
