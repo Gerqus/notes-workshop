@@ -78,11 +78,23 @@ gulp.task('frontend:watch', () => {
     function copyFrontEndFiles(cb) {
       gulp.src('../frontend/dist/notes-workshop/**/*')
         .pipe(gulp.dest('./static'));
-      console.log('Files copied to /static ...');
       cb();
     }
   );
-})
+});
+
+gulp.task('types:watch', () => {
+  gulp.watch(
+    '../types/src/**',
+    { ignoreInitial: false },
+    function buildTypes(cb) {
+      cp.execSync('npm run build', {
+        cwd: '../types'
+      })
+      cb();
+    }
+  );
+});
 
 gulp.task('run_nodemon_deamon_app', (done) => {
   return nodemon({
@@ -95,4 +107,8 @@ gulp.task('run_nodemon_deamon_app', (done) => {
   });
 });
 
-gulp.task('watch', gulp.parallel('frontend:watch', gulp.series('lint-than-compile', 'run_nodemon_deamon_app')));
+gulp.task('watch', gulp.parallel(
+  'frontend:watch',
+  'types:watch',
+  gulp.series('lint-than-compile', 'run_nodemon_deamon_app')
+));

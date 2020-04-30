@@ -9,5 +9,5 @@ const notesCategorySchema: IModelDefinition<NotesCategory.Model> = {
   notes: {type: Array},
 };
 
-const NoteSchema = new mongoose.Schema<NotesCategory.Model>(notesCategorySchema);
-export default mongoose.model<INotesCategoryDocument>('Note', NoteSchema);
+const NotesCategorySchema = new mongoose.Schema<NotesCategory.Model>(notesCategorySchema);
+export default mongoose.model<INotesCategoryDocument>('Note', NotesCategorySchema);

@@ -4,7 +4,7 @@ import { Observable, Subject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { Note } from 'types';
 
-import { ConfigService } from './config.service';
+import { ConfigService } from '../config.service';
 
 import { joinURLSegments } from '@/utils';
 
@@ -15,7 +15,7 @@ interface indexedNotes {
 @Injectable({
   providedIn: 'root'
 })
-export class ApiService {
+export class NotesCategoryApiService {
   private endpointsUrl: string;
   private notesListSubject = new Subject<Note.Record[]>();
   private indexedNotes: indexedNotes = {};
