@@ -69,7 +69,7 @@ function noteDelete(req: express.Request, res: express.Response) {
 }
 
 function notePatch(req: express.Request, res: express.Response) {
-  // TODO: dodać obsługę updateowania parentNote i ChildNotes[]
+  // TODO: dodać obsługę updateowania ChildNotes[]
   console.log('Updating note of id', req.params.noteId);
 
   const sanitizedNote: Pick<Note['Model'], 'title' | 'content'> = {
