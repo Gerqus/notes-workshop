@@ -4,8 +4,14 @@ const eslint = require('gulp-eslint');
 const nodemon = require('gulp-nodemon');
 const ts = require('gulp-typescript');
 const nodeStream = require("stream");
+const EventEmitter = require('events');
 
 const tsProject = ts.createProject('./tsconfig.json');
+const readiness = {
+  types: new EventEmitter(),
+  fe:  new EventEmitter(),
+  be:  new EventEmitter(),
+};
 
 const pathFindingRegEx = /(?:from (?:'|")(.+?)(?:'|"))|(?:require\((?:'|")(.+?)(?:'|")\))/;
 
@@ -62,53 +68,80 @@ gulp.task('lint:eslint', () => {
     .pipe(eslint.failAfterError());
 });
 
-gulp.task('ts:compile', () => {
+gulp.task('backend:compile', () => {
   return gulp.src('./src/**/*.ts')
     .pipe(tsProject()).js
     .pipe(replacePaths(tsProject.config.compilerOptions.paths))
-    .pipe(gulp.dest('./dist'));
+    .pipe(gulp.dest('./dist'))
 });
 
-gulp.task('lint-than-compile', gulp.series('lint:eslint','ts:compile'));
-
-gulp.task('frontend:watch', () => {
-  gulp.watch(
-    '../frontend/dist/notes-workshop/**',
+gulp.task('backend:watch', function() {
+  return gulp.watch(
+    ['./src/**/*.ts', '../types/lib/**'],
     { ignoreInitial: false },
-    function copyFrontEndFiles(cb) {
-      gulp.src('../frontend/dist/notes-workshop/**/*')
-        .pipe(gulp.dest('./static'));
-      cb();
-    }
+    gulp.series('lint:eslint','backend:compile', async function signalReadiness() { readiness.be.emit('ready') })
   );
 });
 
+gulp.task('frontend:copy', () => {
+  return gulp.src('../frontend/dist/notes-workshop/**/*')
+    .pipe(gulp.dest('./static'));
+});
+
+gulp.task('frontend:watch', () => {
+  return gulp.watch(
+    '../frontend/dist/notes-workshop/**',
+    { ignoreInitial: false },
+    gulp.series('frontend:copy', async function signalReadiness() { readiness.fe.emit('ready') })
+  );
+});
+
+gulp.task('types:build', (done) => {
+  cp.execSync('npm run build', {
+    cwd: '../types'
+  });
+  done();
+});
+
 gulp.task('types:watch', () => {
-  gulp.watch(
+  return gulp.watch(
     '../types/src/**',
     { ignoreInitial: false },
-    function buildTypes(cb) {
-      cp.execSync('npm run build', {
-        cwd: '../types'
-      })
-      cb();
-    }
+    gulp.series('types:build', async function signalReadiness() { readiness.types.emit('ready') })
   );
 });
 
 gulp.task('run_nodemon_deamon_app', (done) => {
   return nodemon({
     script: './dist/app.js',
-    watch: './src/**',
+    watch: './dist/**',
     ext: '*',
-    tasks: ['lint-than-compile'],
     delay: 200,
     done
   });
 });
 
-gulp.task('watch', gulp.parallel(
-  'frontend:watch',
-  'types:watch',
-  gulp.series('lint-than-compile', 'run_nodemon_deamon_app')
-));
+gulp.task('default', function () {
+  readiness.types.once('ready', () => console.log('Types watcher ready...'));
+  readiness.types.once('ready', gulp.parallel('frontend:watch', 'backend:watch'));
+  const feReady = new Promise(resolve => {
+    readiness.fe.once('ready', () => {
+      console.log('Front-end watcher ready...');
+      resolve();
+    })
+  });
+  const beReady = new Promise(resolve => {
+    readiness.be.once('ready', () => {
+      console.log('Back-end watcher ready...');
+      resolve();
+    })
+  });
+  
+  Promise.all([feReady, beReady])
+    .then(() => {
+      console.log('Starting Nodemon with server!');
+      gulp.series('run_nodemon_deamon_app')();
+    });
+
+  gulp.parallel('types:watch')();
+});
