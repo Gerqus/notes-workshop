@@ -11,3 +11,5 @@ bazowa ścieżka dla zmiennych. Np. wpisujemy w notatce ${base.INT} i będzie to
 Możliwość eksportowania z notatki nie tlyko zmiennych, ale i funkcji (np. z czaru możemy wyeksportować funkcję liczącą rzut kością dla tego czaru)
 
 namespaces - przestrzenie notatek. Chciałbym np. mieć osobną przestrzeń dla TODO i osobną na RPGi, a właściwie to osobną dla każdej sesji. Namespace wybierałoby się z dropdownu. Namespace powodowałby wyświetlanie w browserze tylko notatki z danego namespace. Może przyda się też no-namespace mode czyli wyświetlanie wszystkich notatek w ogóle, tylko z namespaceami jako kategoriami? Albo w ogóle zrobić filtrowanie po kategoriach z możliwością ich zagnieżdżania? Lub zrezygnować z kategorii i uprościć wszystko do notatek z możlwiością przestawiania ich kolejności i pozycji w drzewie, oraz filtrowania notatek w browserze tylko do tych podrzędnych danej notatce? Brzmi ok
+
+ikony. Niech każda notatka może (ale nie musi) mieć swoją ikonę, która wyświetli się na liście - w ten sposób łatwiej będzie je znaleźć i zorganizować
