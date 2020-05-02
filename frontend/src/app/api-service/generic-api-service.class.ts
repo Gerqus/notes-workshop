@@ -82,13 +82,17 @@ export class GenericApiService<T extends DataModel> {
   protected _fetchItemById(searchedItemId: T['Record']['_id']): Observable<T['Record']> {
     return new Observable<T['Record']>((subscriber) => {
       if (this.indexedItems[searchedItemId]) {
-        subscriber.next(this.indexedItems[searchedItemId]);
-        subscriber.complete();
+        setTimeout(() => {
+          subscriber.next(this.indexedItems[searchedItemId]);
+          subscriber.complete();
+        });
       } else {
         this.indexedItemsSubject
           .subscribe(() => {
-            subscriber.next(this.indexedItems[searchedItemId])
-            subscriber.complete();
+            setTimeout(() => {
+              subscriber.next(this.indexedItems[searchedItemId]);
+              subscriber.complete();
+            });
           });
           this._updateEndpointItemsIndex();
       }
