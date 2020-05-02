@@ -1,14 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
-import { Note } from 'types';
+import { Note, PartialWith } from 'types';
 
 import { GenericApiService } from './generic-api-service.class';
 
 import { ConfigService } from '../config.service';
-
-interface indexedNotes {
-  [noteId: string]: Note['Record'];
-}
 
 export class NoteApiService extends GenericApiService<Note> {
   constructor(
@@ -19,9 +15,9 @@ export class NoteApiService extends GenericApiService<Note> {
     this._updateEndpointItemsIndex();
   }
 
-  public addNote(noteToAdd: Note['Model']): Observable<Note['Record']> {
+  public addNote(): Observable<Note['Record']> {
     console.log('add note');
-    return this._addItem(noteToAdd)
+    return this._addItem({} as Note['Model']);
   }
 
   // wydaje sie, że na razie żadna część kodu tego nie potrzebuje - cache utrzymywane jest wewnętrznie
@@ -30,7 +26,7 @@ export class NoteApiService extends GenericApiService<Note> {
   //   return this._fetchAll();
   // }
 
-  public fetchNoteById(searchedNoteId: Note['Record']['_id']): Promise<Note['Record']> {
+  public fetchNoteById(searchedNoteId: Note['Record']['_id']): Observable<Note['Record']> {
     console.log('fetch note by id');
     return this._fetchItemById(searchedNoteId);
   }
@@ -40,7 +36,7 @@ export class NoteApiService extends GenericApiService<Note> {
     return this._deleteItem(noteId);
   }
 
-  public saveNote(noteToSave: Note['Record']): Observable<Note['Record']> {
+  public saveNote(noteToSave: PartialWith<Note['Record'], '_id'>): Observable<Note['Record']> {
     console.log('save note');
     if (!noteToSave.title) {
       throw new Error('Note must have a title. Aborting note saving.');

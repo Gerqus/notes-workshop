@@ -29,10 +29,10 @@ export class BrowserComponent implements OnInit, OnDestroy {
         this.notes = resp;
       });
 
-    this.dragulaServie.createGroup('notes-groups', {
-      moves: (el, container, handle) => {
-        return handle.classList.contains('handle');
-      }
+    this.dragulaServie.createGroup('notes-group', {
+      // moves(el, container, handle): {
+      //   return handle.classList.contains('handle');
+      // }
     });
     this.notesGroupsOrderSub = this.dragulaServie.dragend('notes-groups')
       .subscribe(this.changeGroupsOrder);
@@ -43,7 +43,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this.notesListSub.unsubscribe();
   }
 
-  changeGroupsOrder(...args: any): void {
+  public changeGroupsOrder(...args: any): void {
     console.log(args);
   }
 }

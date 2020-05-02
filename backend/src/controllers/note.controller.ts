@@ -46,6 +46,7 @@ function notePost(req: express.Request, res: express.Response) {
       res.send(toSend);
     });
 }
+
 function noteDelete(req: express.Request, res: express.Response) {
   console.log('Deleting note of id', req.params.noteId);
   dbService.delete(noteModel, req.params.noteId)
@@ -68,9 +69,10 @@ function noteDelete(req: express.Request, res: express.Response) {
 }
 
 function notePatch(req: express.Request, res: express.Response) {
+  // TODO: dodać obsługę updateowania parentNote i ChildNotes[]
   console.log('Updating note of id', req.params.noteId);
 
-  const sanitizedNote: Note['Model'] = {
+  const sanitizedNote: Pick<Note['Model'], 'title' | 'content'> = {
     title: sanitizeHtml((req.body as Note['Record']).title, { allowedTags: [] }),
     content: sanitizeHtml((req.body as Note['Record']).content),
   };

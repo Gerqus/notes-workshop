@@ -6,7 +6,7 @@ import { ConfigService } from '../config.service';
 
 import { joinURLSegments } from '@/utils';
 
-import { DataModel } from 'types';
+import { DataModel, PartialWith } from 'types';
 
 export class GenericApiService<T extends DataModel> {
   private indexedItemsSubject = new Subject<DataModel['Record'][]>();
@@ -35,27 +35,23 @@ export class GenericApiService<T extends DataModel> {
       );
   }
 
-  static logResponse(resp: DataModel['Response']) {
+  static logResponse(resp: DataModel['Response']): void {
     console.log('Response from server:', resp.message);
+    console.log(resp.object);
   }
 
   protected _updateEndpointItemsIndex(): void {
-    console.time('notes list fetching');
     if(this.updatingList) {
       return;
     }
     this.updatingList = true;
     this._fetchAll()
       .subscribe(res => {
-        console.timeStamp('in subscription');
         res.forEach(note => {
           this.indexedItems[note._id] = note;
         });
-        console.timeStamp('after indexing');
         this.indexedItemsSubject.next(res);
         this.updatingList = false;
-        console.timeStamp('after calling next');
-        console.timeEnd('notes list fetching');
       });
   }
 
@@ -83,19 +79,20 @@ export class GenericApiService<T extends DataModel> {
       .pipe(map(noteResp => noteResp.object as T['Record'][]));
   }
 
-  protected async _fetchItemById(searchedItemId: T['Record']['_id']): Promise<T['Record']> {
-    // TODO: przerobić tak, żeby funckja zwracała observable
-    return new Promise((resolve) => {
+  protected _fetchItemById(searchedItemId: T['Record']['_id']): Observable<T['Record']> {
+    return new Observable<T['Record']>((subscriber) => {
       if (this.indexedItems[searchedItemId]) {
-        resolve(this.indexedItems[searchedItemId]);
+        subscriber.next(this.indexedItems[searchedItemId]);
+        subscriber.complete();
       } else {
         this.indexedItemsSubject
           .subscribe(() => {
-            resolve(this.indexedItems[searchedItemId])
+            subscriber.next(this.indexedItems[searchedItemId])
+            subscriber.complete();
           });
           this._updateEndpointItemsIndex();
       }
-    })
+    });
   }
 
   protected _deleteItem(itemId: T['Record']['_id']): Observable<T['Record']> {
@@ -107,7 +104,7 @@ export class GenericApiService<T extends DataModel> {
       .pipe(map(noteResp => noteResp.object as T['Record']));
   }
 
-  protected _updateItem(modifiedItem: T['Record']): Observable<T['Record']> {
+  protected _updateItem(modifiedItem: PartialWith<T['Record'], '_id'>): Observable<T['Record']> {
     const fullEndpoint = this.getEndpoint(modifiedItem._id);
     console.log('PATCH', fullEndpoint);
     // if (!noteToSave.title) {

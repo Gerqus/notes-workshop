@@ -14,9 +14,6 @@ export class ActionsComponent implements OnInit {
   }
 
   public newNote() {
-    this.apiService.note.addNote({
-      title: 'New Note',
-      content: '',
-    }).subscribe();
+    this.apiService.note.addNote().subscribe();
   }
 }

@@ -33,19 +33,16 @@
     height: @expand-icons-size;
   }
 
+  & > ::ng-deep .icon {
+    grid-area: icon;
+  }
+
   & > .subentries {
     display: none;
   }
 
-  &.expanded {
-
-    & > span {
-      margin-bottom: @list-elements-spacing;
-    }
-
-    & > .subentries {
-      display: initial;
-    }
+  &.expanded > .subentries {
+    display: initial;
   }
 }
 

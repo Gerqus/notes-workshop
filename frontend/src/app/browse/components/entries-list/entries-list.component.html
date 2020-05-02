@@ -1,15 +1,15 @@
-<ng-container  *ngFor="let entry of entriesList; trackBy: entriesTrackingFn">
-  <!-- <li class="entry expandable" *ngIf="entry.subentries?.length" appExpandable>
-    <span class="action-button minor">{{entry.name}}</span>
-    <ul app-entries-list class="subentries"
-      [entriesList]="entry.subentries"
-    ></ul>
-  </li> -->
-  <!-- <li class="entry" *ngIf="!entry.subentries?.length"> -->
-  <li class="entry">
-    <span class="action-button minor note-title" [routerLink]="['note', entry._id]">{{entry.title}}</span>
-    <div class="action-button minor note-delete" (click)="deleteNoteById(entry._id)">
+<ng-container *ngFor="let note of notes">
+  <li class="entry" [appExpandable]="note.childNotes?.length > 0">
+    <span class="action-button minor note-title" [routerLink]="['note', note._id]">
+      {{note.title}}
+    </span>
+    <!-- <div class="action-button minor note-delete" (click)="deleteNoteById(note._id)">
       <i class="icon delete"></i>
-    </div>
+    </div> -->
+    <ul *ngIf="note.childNotes?.length > 0"
+      class="subentries"
+      app-entries-list
+      [notes]="note.childNotes"
+    ></ul>
   </li>
 </ng-container>

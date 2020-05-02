@@ -1,16 +1,28 @@
-
 import * as mongoose from 'mongoose';
-
 export * from './enums';
 
 interface MongoDBRecord {
   _id: string;
 }
 
+interface IModelDefinitionEntry<T> {
+  type: () => T;
+  default?: T;
+  max?: number;
+}
+
+export type PartialWith<T, K extends keyof T> = Partial<T> & {[key in K]: T[K]};
+
 export type endpointName = string;
 
 export type IModelDefinition<T> = {
-  [key in keyof T]: mongoose.SchemaTypeOpts<() => T[key]>;
+  [key in keyof T]:
+    T extends Required<Pick<T, key>>
+    ?
+      ({ required: boolean } | { default: T[key] }) &
+      IModelDefinitionEntry<T[key]>
+    :
+      IModelDefinitionEntry<T[key]>
 };
 
 export interface DataModel {
@@ -26,7 +38,7 @@ export interface Note extends DataModel {
   Model: {
     title: string;
     content: string;
-    tags?: string[];
+    childNotes?: Array<Note['Record']['_id']>;
   }
 
   Record: Note['Model'] & MongoDBRecord;
@@ -34,19 +46,5 @@ export interface Note extends DataModel {
   Response: {
     message: string;
     object: Array<Note['Record']> | Note['Record'];
-  }
-}
-
-export interface NotesCategory extends DataModel {
-  Model: {
-    title: string;
-    notes: Array<NotesCategory['Record']>;
-  }
-
-  Record: NotesCategory['Model'] & MongoDBRecord;
-
-  Response: {
-    message: string;
-    object: Array<NotesCategory['Record']> | NotesCategory['Record'];
   }
 }

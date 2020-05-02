@@ -1,8 +1,7 @@
-<div class="browser" dragula="notes-groups" [(dragulaModel)]="notes">
-  <!-- <div class="entries-group" *ngFor="let note of notes"> -->
-    <!-- <div class="entries-group-name handle">{{notes.name}}</div> -->
-    <ul app-entries-list
-      [entriesList]="notes"
-    ></ul>
-  <!-- </div> -->
-</div>
+<ul
+  class="browser"
+  dragula="notes-group"
+  [(dragulaModel)]="notes"
+  app-entries-list
+  [notes]="notes">
+</ul>
