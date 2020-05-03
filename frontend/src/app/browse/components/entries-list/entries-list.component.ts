@@ -9,7 +9,7 @@ import { ApiService } from '@/api-service';
   styleUrls: ['./entries-list.component.less']
 })
 export class EntriesListComponent implements OnInit {
-  @Input() notes: Partial<Note['Record']>[];
+  @Input() notes: Note['Record'][];
   public fetchedNotes: {[K: string] : Note['Record'][]} = {};
 
   constructor(

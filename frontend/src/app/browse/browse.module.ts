@@ -9,12 +9,14 @@ import { BrowserComponent } from './components/browser/browser.component';
 import { EntriesListComponent } from './components/entries-list/entries-list.component';
 
 import { DraggableDirective } from './directives/draggable.directive';
+import { DraggableNoteEntryComponent } from './components/draggable-note-entry/draggable-note-entry.component';
 
 @NgModule({
   declarations: [
     BrowserComponent,
     EntriesListComponent,
     DraggableDirective,
+    DraggableNoteEntryComponent,
   ],
   imports: [
     CommonModule,

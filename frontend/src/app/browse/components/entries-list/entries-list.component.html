@@ -1,9 +1,9 @@
 <ul>
   <ng-container *ngFor="let note of notes; trackBy: notesTrackingFn">
     <li class="entry" [appExpandable]="note.childNotes?.length > 0">
-      <span appDraggable class="drop-zone action-button minor note-title" [routerLink]="['note', note._id]">
-        {{note.title}}
-      </span>
+      <app-draggable-note-entry [note]="note">
+      </app-draggable-note-entry>
+      <!-- icon for expandable note placeholder -->
       <app-entries-list
         *ngIf="note.childNotes?.length > 0 && fetchedNotes[note._id]"
         class="subentries"
