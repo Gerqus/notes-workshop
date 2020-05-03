@@ -47,4 +47,25 @@ export class NoteApiService extends GenericApiService<Note> {
   public getNotesListSubject(): Subject<Note['Record'][]> {
     return this._getIndexedItemsSubject();
   }
+
+  public moveNote(noteToBeMoved: Note['Record'], oldParentNote: Note['Record'] | null, newParentNote: Note['Record']) {
+    if (newParentNote._id === noteToBeMoved._id) {
+      throw new Error('Note can\'t be child of itself. Aborting note moving.');
+    }
+    newParentNote.childNotes.push(noteToBeMoved._id);
+
+    if (oldParentNote) {
+      const movedNoteIndex = oldParentNote.childNotes.indexOf(noteToBeMoved._id);
+      if (movedNoteIndex === -1) {
+        throw new Error('Index of child note was not found in parent note. Something is messed. Aborting note moving.');
+      }
+      oldParentNote.childNotes.splice(movedNoteIndex, 1);
+
+      const notesSubscription = this._updateItems([oldParentNote, newParentNote])
+        .subscribe(() => notesSubscription.unsubscribe());
+    } else {
+      const newParentNoteSubscription = this._updateItem(newParentNote)
+        .subscribe(() => newParentNoteSubscription.unsubscribe());
+    }
+  }
 }

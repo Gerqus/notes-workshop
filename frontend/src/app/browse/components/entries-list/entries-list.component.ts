@@ -9,6 +9,7 @@ import { ApiService } from '@/api-service';
   styleUrls: ['./entries-list.component.less']
 })
 export class EntriesListComponent implements OnInit {
+  @Input() parentNote: Note['Record'];
   @Input() notes: Note['Record'][];
   public fetchedNotes: {[K: string] : Note['Record'][]} = {};
 

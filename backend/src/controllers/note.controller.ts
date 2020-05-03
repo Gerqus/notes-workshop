@@ -69,13 +69,20 @@ function noteDelete(req: express.Request, res: express.Response) {
 }
 
 function notePatch(req: express.Request, res: express.Response) {
-  // TODO: dodać obsługę updateowania ChildNotes[]
   console.log('Updating note of id', req.params.noteId);
 
-  const sanitizedNote: Pick<Note['Model'], 'title' | 'content'> = {
+  const sanitizedNote: Partial<Note['Model']> = {
     title: sanitizeHtml((req.body as Note['Record']).title, { allowedTags: [] }),
     content: sanitizeHtml((req.body as Note['Record']).content),
   };
+
+  if ((req.body as Partial<Note['Record']>).childNotes) {
+    sanitizedNote.childNotes = req.body.childNotes;
+  }
+
+  if ((req.body as Partial<Note['Record']>).isCategory) {
+    sanitizedNote.isCategory = req.body.isCategory;
+  }
 
   noteModel.findByIdAndUpdate(
     (req.body as Note['Record'])._id,

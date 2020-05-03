@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, forkJoin } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 
 import { ConfigService } from '../config.service';
@@ -111,13 +111,21 @@ export class GenericApiService<T extends DataModel> {
   protected _updateItem(modifiedItem: PartialWith<T['Record'], '_id'>): Observable<T['Record']> {
     const fullEndpoint = this.getEndpoint(modifiedItem._id);
     console.log('PATCH', fullEndpoint);
-    // if (!noteToSave.title) {
-    //   throw new Error('Note must have a title. Aborting note saving.');
-    // }
     return this.httpClient.patch<T['Response']>(fullEndpoint, modifiedItem)
       .pipe(tap(GenericApiService.logResponse))
       .pipe(tap(() => this._updateEndpointItemsIndex()))
       .pipe(map(noteResp => noteResp.object as T['Record']));
+  }
+
+  protected _updateItems(modifiedItems: PartialWith<T['Record'], '_id'>[]): Observable<T['Record'][]> {
+    return forkJoin(modifiedItems.map(modifiedItem => {
+      const fullEndpoint = this.getEndpoint(modifiedItem._id);
+      console.log('PATCH', fullEndpoint);
+      return this.httpClient.patch<T['Response']>(fullEndpoint, modifiedItem)
+        .pipe(tap(GenericApiService.logResponse))
+        .pipe(map(noteResp => noteResp.object as T['Record']));
+    }))
+    .pipe(tap(() => this._updateEndpointItemsIndex()))
   }
 
   protected _getIndexedItemsSubject(): Subject<T['Record'][]> {

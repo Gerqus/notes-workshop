@@ -1,6 +1,12 @@
 import { Component, Input, OnInit, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { Note } from 'types';
+import { ApiService } from '@/api-service';
+
+interface noteDropEventData {
+  parentNote: Note['Record'],
+  movedNote: Note['Record']
+}
 
 @Component({
   selector: 'app-draggable-note-entry',
@@ -8,12 +14,14 @@ import { Note } from 'types';
   styleUrls: ['./draggable-note-entry.component.less'],
 })
 export class DraggableNoteEntryComponent implements OnInit {
-  @Input('note') public note: Note['Record'];
+  @Input() parentNote: Note['Record'];
+  @Input() note: Note['Record'];
   private shouldEnableRouter = true;
 
   constructor(
     private router: Router,
-    private el: ElementRef<HTMLSpanElement>
+    private el: ElementRef<HTMLSpanElement>,
+    private apiService: ApiService,
   ) { }
 
   ngOnInit(): void {}
@@ -48,8 +56,8 @@ export class DraggableNoteEntryComponent implements OnInit {
 
   public dragstartListener() { return false };
 
-  public handleNoteDrop(e: CustomEvent<Note['Record']>) {
-    // this.apiService
+  public handleNoteDrop(e: CustomEvent<noteDropEventData>) {
+    this.apiService.note.moveNote(e.detail.movedNote, e.detail.parentNote, this.note);
   }
 
   private canDropHere(elementToCheck: HTMLElement) {
@@ -99,9 +107,12 @@ export class DraggableNoteEntryComponent implements OnInit {
 
       if (this.canDropHere(event.target as HTMLElement)) {
         this.shouldEnableRouter = false;
-        const noteDropEvent = new CustomEvent<Note['Record']>('notedrop', {
+        const noteDropEvent = new CustomEvent<noteDropEventData>('notedrop', {
           bubbles: false,
-          detail: this.note,
+          detail: {
+            parentNote: this.parentNote,
+            movedNote: this.note
+          },
         });
         event.target.dispatchEvent(noteDropEvent);
       }
