@@ -96,6 +96,15 @@ gulp.task('frontend:watch', () => {
   );
 });
 
+gulp.task('frontend:watch:passive', () => {
+  readiness.fe.emit('ready');
+  return gulp.watch(
+    '../frontend/dist/notes-workshop/**',
+    { ignoreInitial: false },
+    function feLogger() { console.log('Frontend files updated') }
+  );
+});
+
 gulp.task('types:build', (done) => {
   cp.execSync('npm run build', {
     cwd: '../types'
@@ -123,7 +132,7 @@ gulp.task('run_nodemon_deamon_app', (done) => {
 
 gulp.task('default', function () {
   readiness.types.once('ready', () => console.log('Types watcher ready...'));
-  readiness.types.once('ready', gulp.parallel('frontend:watch', 'backend:watch'));
+  readiness.types.once('ready', gulp.parallel('frontend:watch:passive', 'backend:watch'));
   const feReady = new Promise(resolve => {
     readiness.fe.once('ready', () => {
       console.log('Front-end watcher ready...');
