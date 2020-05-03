@@ -6,7 +6,7 @@ import { Component, OnInit, Input } from '@angular/core';
   styleUrls: ['./widget.component.less']
 })
 export class WidgetComponent implements OnInit {
-  @Input() title: string;
+  @Input() widgetTitle: string;
 
   constructor() { }
 

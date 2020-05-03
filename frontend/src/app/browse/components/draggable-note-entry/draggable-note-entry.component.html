@@ -1,6 +1,8 @@
 <span
-  appDraggable
   class="drop-zone action-button minor note-title"
-  (click)="openNote()">
+  (click)="openNote()"
+  (mousedown)="mousedownListener($event)"
+  (dragstart)="dragstartListener()"
+  (notedrop)="handleNoteDrop($event)">
   {{note.title}}
 </span>
