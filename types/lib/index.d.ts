@@ -30,6 +30,7 @@ export interface Note extends DataModel {
     Model: {
         title: string;
         content: string;
+        isCategory: boolean;
         childNotes?: Array<Note['Record']['_id']>;
     };
     Record: Note['Model'] & MongoDBRecord;

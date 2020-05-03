@@ -7,6 +7,7 @@ export interface INoteDocument extends NoteModel, mongoose.Document {}
 const noteSchema: IModelDefinition<Note['Model']> = {
   title: {type: String, default: 'New note', max: 255},
   content: {type: String, default: ''},
+  isCategory: {type: Boolean, default: false},
   childNotes: {type: Array},
 };
 

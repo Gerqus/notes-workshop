@@ -38,6 +38,7 @@ export interface Note extends DataModel {
   Model: {
     title: string;
     content: string;
+    isCategory: boolean; // jeżeli notatka traktowana jest jako kategoria, to używamy jej tytułu, ale ignorujemy treść i wyświetlamy tytuł pogrubiony,w iększy itd...
     childNotes?: Array<Note['Record']['_id']>;
   }
 
