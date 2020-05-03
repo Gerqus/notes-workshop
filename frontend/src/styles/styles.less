@@ -1,13 +1,18 @@
 @import './fonts.less';
 @import './colors.less';
 @import './icons.less';
-@import './dragula.less';
 @import './actions.less';
 
 html {
   font-size: 16px;
   color: @text-primary-color;
   background-color: @background-primary-color;
+}
+
+body {
+  &.drag-ongoing * {
+    cursor: move;
+  }
 }
 
 p {
@@ -46,4 +51,8 @@ p {
   &.with-icon-right {
     padding-right: 2rem;
   }
+}
+
+[draggable] {
+  user-select: none;
 }

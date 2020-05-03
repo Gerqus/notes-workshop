@@ -3,7 +3,6 @@ import { ApiService } from '@/api-service/';
 
 import { Subscription } from 'rxjs';
 
-import { DragulaService } from 'ng2-dragula';
 import { Note } from 'types';
 
 @Component({
@@ -19,7 +18,6 @@ export class BrowserComponent implements OnInit, OnDestroy {
   public notes: Note['Record'][];
 
   constructor(
-    private dragulaServie: DragulaService,
     private apiService: ApiService,
   ) {}
 
@@ -28,22 +26,10 @@ export class BrowserComponent implements OnInit, OnDestroy {
       .subscribe((resp) => {
         this.notes = resp;
       });
-
-    this.dragulaServie.createGroup('notes-group', {
-      // moves(el, container, handle): {
-      //   return handle.classList.contains('handle');
-      // }
-    });
-    this.notesGroupsOrderSub = this.dragulaServie.dragend('notes-groups')
-      .subscribe(this.changeGroupsOrder);
   }
 
   ngOnDestroy(): void {
     this.notesGroupsOrderSub.unsubscribe();
     this.notesListSub.unsubscribe();
-  }
-
-  public changeGroupsOrder(...args: any): void {
-    console.log(args);
   }
 }

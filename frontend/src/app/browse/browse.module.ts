@@ -8,17 +8,17 @@ import { ProjectCommonModule } from '../common/common.module';
 import { BrowserComponent } from './components/browser/browser.component';
 import { EntriesListComponent } from './components/entries-list/entries-list.component';
 
-import { DragulaModule } from 'ng2-dragula';
+import { DraggableDirective } from './directives/draggable.directive';
 
 @NgModule({
   declarations: [
     BrowserComponent,
-    EntriesListComponent
+    EntriesListComponent,
+    DraggableDirective,
   ],
   imports: [
     CommonModule,
     BrowserModule,
-    DragulaModule.forRoot(),
     ProjectCommonModule,
     RouterModule,
   ],
