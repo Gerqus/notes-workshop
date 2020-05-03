@@ -4,7 +4,7 @@ import { Note } from 'types';
 import { ApiService } from '@/api-service';
 
 @Component({
-  selector: '[app-entries-list]',
+  selector: 'app-entries-list',
   templateUrl: './entries-list.component.html',
   styleUrls: ['./entries-list.component.less']
 })
@@ -33,9 +33,4 @@ export class EntriesListComponent implements OnInit {
   public getChildNotes(childNotesIds: Note['Record']['_id'][]) {
     return forkJoin(childNotesIds.map(childNoteId => this.apiService.note.fetchNoteById(childNoteId)));
   }
-
-  // public deleteNoteById(noteId: Note['Record']['_id']) {
-  //   console.log('deleting note with id', noteId, 'now...')
-  //   this.apiService.note.deleteNoteById(noteId).subscribe();
-  // }
 }
