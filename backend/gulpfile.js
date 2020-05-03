@@ -79,7 +79,7 @@ gulp.task('backend:watch', function() {
   return gulp.watch(
     ['./src/**/*.ts', '../types/lib/**'],
     { ignoreInitial: false },
-    gulp.series('lint:eslint','backend:compile', async function signalReadiness() { readiness.be.emit('ready') })
+    gulp.series('lint:eslint','backend:compile', function signalReadiness(done) { readiness.be.emit('ready'); done(); })
   );
 });
 
@@ -92,16 +92,15 @@ gulp.task('frontend:watch', () => {
   return gulp.watch(
     '../frontend/dist/notes-workshop/**',
     { ignoreInitial: false },
-    gulp.series('frontend:copy', async function signalReadiness() { readiness.fe.emit('ready') })
+    gulp.series('frontend:copy', function signalReadiness(done) { readiness.fe.emit('ready'); done(); })
   );
 });
 
 gulp.task('frontend:watch:passive', () => {
   readiness.fe.emit('ready');
   return gulp.watch(
-    '../frontend/dist/notes-workshop/**',
-    { ignoreInitial: false },
-    function feLogger() { console.log('Frontend files updated') }
+    './static',
+    function feLogger(done) { console.log('Frontend files updated'); done(); }
   );
 });
 
@@ -116,7 +115,7 @@ gulp.task('types:watch', () => {
   return gulp.watch(
     '../types/src/**',
     { ignoreInitial: false },
-    gulp.series('types:build', async function signalReadiness() { readiness.types.emit('ready') })
+    gulp.series('types:build', function signalReadiness(done) { readiness.types.emit('ready'); done(); })
   );
 });
 
