@@ -1,18 +1,21 @@
 <ul>
   <ng-container *ngFor="let note of notes; trackBy: notesTrackingFn">
-    <li class="entry" [appExpandable]="note.childNotes?.length > 0">
+    <li
+      #entryLabel
+      *ngIf="notesChildrenObservables[note._id]"
+      class="entry"
+      [appExpandable]="notesChildrenObservables[note._id].length > 0"
+    >
       <app-draggable-note-entry
-        [parentNote]="parentNote"
         [note]="note">
       </app-draggable-note-entry>
       <!-- icon for expandable note placeholder -->
       <app-entries-list
-        *ngIf="note.childNotes?.length > 0 && fetchedNotes[note._id]"
+        *ngIf="notesChildrenObservables[note._id].length > 0 && entryLabel.classList.contains('expanded')"
         class="subentries"
         app-entries-list
-        [parentNote]="note"
-        [notes]="fetchedNotes[note._id]">
-      </app-entries-list>
+        [notes]="notesChildrenObservables[note._id]"
+      ></app-entries-list>
     </li>
   </ng-container>
 </ul>

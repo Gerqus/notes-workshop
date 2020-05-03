@@ -22,9 +22,10 @@ export class BrowserComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.notesListSub = this.apiService.note.getNotesListSubject()
-      .subscribe((resp) => {
-        this.notes = resp;
+    this.notesListSub = this.apiService.note.getTopMostNotes()
+      .subscribe((topNotes) => {
+        console.log('fetched top')
+        this.notes = topNotes;
       });
   }
 

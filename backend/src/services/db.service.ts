@@ -63,9 +63,9 @@ class dbService {
     });
   }
 
-  public find<T extends mongoose.Model<any>>(object: T): Promise<dbResponse> {
+  public find<T extends mongoose.Model<any>>(object: T, filter: mongoose.FilterQuery<T> = {}): Promise<dbResponse> {
     return new Promise((resolve, reject) => {
-      object.find((error: string, response: T, affectedCount: number) => {
+      object.find(filter, (error: string, response: T, affectedCount: number) => {
         if (error) {
           console.error(error);
           reject({error});

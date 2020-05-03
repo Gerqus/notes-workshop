@@ -8,7 +8,7 @@ const noteSchema: IModelDefinition<Note['Model']> = {
   title: {type: String, default: 'New note', max: 255},
   content: {type: String, default: ''},
   isCategory: {type: Boolean, default: false},
-  childNotes: {type: Array},
+  parentNote: {type: String, default: null},
 };
 
 const NoteSchema = new mongoose.Schema<Note['Model']>(noteSchema);

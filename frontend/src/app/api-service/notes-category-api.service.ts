@@ -72,7 +72,7 @@
 //     .pipe(map(noteResp => noteResp.object as Note['Record'][]));
 //   }
 
-//   public async fetchNoteById(searchedNoteId: Note['Record']['_id']): Promise<Note['Record']> {
+//   public async getNoteById(searchedNoteId: Note['Record']['_id']): Promise<Note['Record']> {
 //     return new Promise((resolve) => {
 //       if (this.indexedNotes[searchedNoteId]) {
 //         resolve(this.indexedNotes[searchedNoteId]);

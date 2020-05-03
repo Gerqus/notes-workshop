@@ -7,7 +7,7 @@ import { Note, httpRequestTypes } from 'types';
 import * as sanitizeHtml from 'sanitize-html';
 
 function noteGet(req: express.Request, res: express.Response) {
-  dbService.find(noteModel)
+  dbService.find(noteModel, req.query && req.query.filter ? JSON.parse(req.query.filter as string) : {})
     .then(({response}) => {
       console.log('Notes fetched');
       const toSend: Note['Response'] = {
@@ -76,8 +76,8 @@ function notePatch(req: express.Request, res: express.Response) {
     content: sanitizeHtml((req.body as Note['Record']).content),
   };
 
-  if ((req.body as Partial<Note['Record']>).childNotes) {
-    sanitizedNote.childNotes = req.body.childNotes;
+  if ((req.body as Partial<Note['Record']>).parentNote) {
+    sanitizedNote.parentNote = req.body.parentNote;
   }
 
   if ((req.body as Partial<Note['Record']>).isCategory) {

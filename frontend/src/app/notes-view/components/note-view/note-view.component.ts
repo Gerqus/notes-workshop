@@ -29,7 +29,7 @@ export class NoteViewComponent implements OnInit, OnDestroy {
     this.routeNoteIdSubscription = this.activatedRoute.params
       .subscribe(async params => {
         this.noteId = params['noteId'];
-        this.apiService.note.fetchNoteById(this.noteId)
+        this.apiService.note.getNoteById(this.noteId)
           .subscribe((fetchedNote) => {
             this.note = fetchedNote;
           });

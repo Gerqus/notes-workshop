@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, Subject, forkJoin } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 
@@ -97,6 +97,20 @@ export class GenericApiService<T extends DataModel> {
           this._updateEndpointItemsIndex();
       }
     });
+  }
+
+  protected _fetchItemsQuery(searchedItemQuery: Partial<T['Record']>): Observable<T['Record'][]> {
+    const stringifiedFilter = JSON.stringify(searchedItemQuery);
+    console.log(searchedItemQuery)
+    const fullEndpoint = this.getEndpoint();
+    console.log('GET', fullEndpoint);
+    return this.httpClient.get<T['Response']>(fullEndpoint, {
+      params: {
+        filter: stringifiedFilter
+      }
+    })
+      .pipe(tap(GenericApiService.logResponse))
+      .pipe(map(noteResp => noteResp.object as T['Record'][]));
   }
 
   protected _deleteItem(itemId: T['Record']['_id']): Observable<T['Record']> {
