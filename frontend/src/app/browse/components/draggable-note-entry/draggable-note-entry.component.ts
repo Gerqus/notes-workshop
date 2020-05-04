@@ -99,14 +99,15 @@ export class DraggableNoteEntryComponent implements OnInit {
         subscriber.next(false);
         subscriber.complete();
       } else {
-        const sub = this.apiService.note.getNoteById(noteToCheck.parentNoteId)
+        const noteSub = this.apiService.note.getNoteById(noteToCheck.parentNoteId)
           .subscribe(fetchedNote => {
-            this.isNoteInTreeOfId(fetchedNote, potentialParentId)
+            const recursiveSub = this.isNoteInTreeOfId(fetchedNote, potentialParentId)
               .subscribe((isInTree) => {
                 subscriber.next(isInTree);
                 subscriber.complete();
+                setTimeout(() => recursiveSub.unsubscribe());
               })
-            sub.unsubscribe();
+              setTimeout(() => noteSub.unsubscribe());
           });
       }
     })

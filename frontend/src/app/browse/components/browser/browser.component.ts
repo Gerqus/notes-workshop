@@ -25,7 +25,6 @@ export class BrowserComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.topNotesListSub = this.apiService.note.getChildNotesListSub(this.apiService.note.topNotesParentKey)
       .subscribe((topNotes) => {
-        console.log('fetched top notes:', topNotes)
         this.notes = topNotes;
       });
     this.apiService.note.refreshChildrenFor(this.apiService.note.topNotesParentKey);

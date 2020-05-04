@@ -23,13 +23,11 @@ export class NoteApiService extends GenericApiService<Note> {
   }
 
   public addNote(noteData?: Note['Model']): Observable<Note['Record']> {
-    console.log('add note');
     return this._addItem(noteData ? noteData : {} as Note['Model'])
       .pipe(tap((newNote) => this.refreshChildrenFor(newNote.parentNoteId)));
   }
 
   public getNoteById(searchedNoteId: Note['Record']['_id']): Observable<Note['Record']> {
-    console.log('fetch note by id');
     return this._fetchItemById(searchedNoteId);
   }
 
@@ -40,7 +38,6 @@ export class NoteApiService extends GenericApiService<Note> {
       } else {
         this._fetchItemsQuery({parentNoteId: parentNote._id})
           .subscribe((childNotes) => {
-            console.log('for parent id', parentNote._id, 'server returned child notes', childNotes);
             this.indexedChildNotes[parentNote._id] = childNotes;
             observer.next(this.indexedChildNotes[parentNote._id])
           });
@@ -54,12 +51,19 @@ export class NoteApiService extends GenericApiService<Note> {
   }
 
   public deleteNote(note: Note['Record']): Observable<Note['Record']> {
-    console.log('delete note');
     return this._deleteItem(note._id)
+      .pipe(tap(
+        () => {
+          if (this.notesChildrenSubs[note._id]) {
+            this.notesChildrenSubs[note._id].complete();
+            delete this.notesChildrenSubs[note._id];
+          }
+          this.refreshChildrenFor(note.parentNoteId);
+        }
+      ))
   }
 
   public saveNote(noteToSave: PartialWith<Note['Record'], '_id'>): Observable<Note['Record']> {
-    console.log('save note');
     if (!noteToSave.title) {
       throw new Error('Note must have a title. Aborting note saving.');
     }
@@ -88,9 +92,12 @@ export class NoteApiService extends GenericApiService<Note> {
     const oldParentId = noteToBeMoved.parentNoteId;
     noteToBeMoved.parentNoteId = newParentId;
 
-    const noteSubscription = this._updateItem(noteToBeMoved)
-      .pipe(tap(() => this.refreshChildrenFor(oldParentId)))
-      .pipe(tap(() => this.refreshChildrenFor(newParentId)))
-      .subscribe(() => noteSubscription.unsubscribe());
+    this._updateItem(noteToBeMoved)
+      .pipe(tap(
+        () => {
+          this.refreshChildrenFor(oldParentId);
+          this.refreshChildrenFor(newParentId);
+        }
+      )).subscribe();
   }
 }

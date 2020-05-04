@@ -27,7 +27,6 @@ export class EntriesListComponent implements OnChanges, OnDestroy {
       if (!savedNotesIds.includes(note._id)) {
         this.notesChildrenSubs[note._id] = this.apiService.note.getChildNotesListSub(note._id)
           .subscribe((childNotes) => {
-            console.log('fetched children for', note._id, 'note:', childNotes)
             this.notesChildren[note._id] = childNotes;
           });
         this.apiService.note.refreshChildrenFor(note._id);
@@ -36,7 +35,6 @@ export class EntriesListComponent implements OnChanges, OnDestroy {
       }
       savedNotesIds.forEach(obsoleteNoteId => {
         if (this.notesChildrenSubs[obsoleteNoteId]) {
-          this.notesChildrenSubs[obsoleteNoteId].unsubscribe();
           delete this.notesChildrenSubs[obsoleteNoteId];
         }
       })
