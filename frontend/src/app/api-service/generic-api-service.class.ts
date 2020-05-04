@@ -101,7 +101,9 @@ export class GenericApiService<T extends DataModel> {
 
   protected _fetchItemsQuery(searchedItemQuery: Partial<T['Record']>): Observable<T['Record'][]> {
     const normalizedParams = Object.keys(searchedItemQuery).reduce((accumulator, key) => {
-      accumulator[key] = searchedItemQuery[key].toString();
+      if (typeof searchedItemQuery[key] !== 'undefined') {
+        accumulator[key] = searchedItemQuery[key].toString();
+      }
       return accumulator;
     }, {});
     const fullEndpoint = this.getEndpoint();

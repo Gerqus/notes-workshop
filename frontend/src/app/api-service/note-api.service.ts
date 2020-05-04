@@ -56,7 +56,6 @@ export class NoteApiService extends GenericApiService<Note> {
   public deleteNote(note: Note['Record']): Observable<Note['Record']> {
     console.log('delete note');
     return this._deleteItem(note._id)
-      .pipe(tap(() => this.refreshChildrenFor(note.parentNoteId)));
   }
 
   public saveNote(noteToSave: PartialWith<Note['Record'], '_id'>): Observable<Note['Record']> {
@@ -64,7 +63,8 @@ export class NoteApiService extends GenericApiService<Note> {
     if (!noteToSave.title) {
       throw new Error('Note must have a title. Aborting note saving.');
     }
-    return this._updateItem(noteToSave);
+    return this._updateItem(noteToSave)
+      .pipe(tap((savedNote) => {this.refreshChildrenFor(savedNote.parentNoteId)}));;
   }
 
   public getChildNotesListSub(parentNoteId: Note['Record']['_id']): Observable<Note['Record'][]> {
