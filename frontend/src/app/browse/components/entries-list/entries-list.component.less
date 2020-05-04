@@ -15,13 +15,17 @@
   column-gap: @list-elements-spacing;
   user-select: none;
   align-items: center;
-  margin-left: @level-indentation;
-  
-  .note-delete {
-    grid-area: icon;
-    padding: @list-elements-padding;
-    width: @expand-icons-size;
-    height: @expand-icons-size;
+
+  & > .subentries {
+    margin-left: @level-indentation;
+  }
+
+  .note-title {
+    padding: 0.1rem 0.2rem 0.1rem 0.6rem;
+    font-size: 1rem;
+    line-height: 1rem;
+    grid-area: title;
+    justify-content: left;
   }
 
   & > ::ng-deep .icon {
@@ -34,5 +38,13 @@
 
   &.expanded > .subentries {
     display: initial;
+  }
+}
+
+.drop-zone {
+  &.indicate-drop-zone {
+    border-style: dashed;
+    margin-left: 0.125rem;
+    margin-right: -0.125rem;
   }
 }

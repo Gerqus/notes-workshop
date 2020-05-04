@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ElementRef } from '@angular/core';
+import { Component, Input, OnInit, ElementRef, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { Note } from 'types';
 import { ApiService } from '@/api-service';
@@ -10,6 +10,7 @@ import { ApiService } from '@/api-service';
 })
 export class DraggableNoteEntryComponent implements OnInit {
   @Input() note: Note['Record'];
+
   private shouldEnableRouter = true;
 
   constructor(
@@ -20,6 +21,7 @@ export class DraggableNoteEntryComponent implements OnInit {
 
   ngOnInit(): void {}
 
+  @HostListener('click')
   public openNote(): void {
     if (this.shouldEnableRouter) {
       this.router.navigate(['note', this.note._id]);
@@ -40,6 +42,7 @@ export class DraggableNoteEntryComponent implements OnInit {
   private mouseOverHandlerBinded = this.mouseOverHandler.bind(this);
   private mouseOutHandlerBinded = this.mouseOutHandler.bind(this);
 
+  @HostListener('mousedown', ['$event'])
   public mousedownListener(event: MouseEvent) {
     this.clickCoordinates.x = event.clientX;
     this.clickCoordinates.y = event.clientY;
@@ -48,6 +51,7 @@ export class DraggableNoteEntryComponent implements OnInit {
     document.addEventListener('mouseup', this.mouseUpHandlerBinded);
   };
 
+  @HostListener('dragstart')
   public dragstartListener() { return false };
 
   public handleNoteDrop(e: CustomEvent<Note['Record']>) {

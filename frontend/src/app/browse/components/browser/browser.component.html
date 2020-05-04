@@ -1,5 +1,5 @@
 <app-entries-list
   *ngIf="notes"
-  class="browser"
+  [appDropZone]="topNotesParentKey"
   [notes]="notes">
 </app-entries-list>

@@ -16,6 +16,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
   private topNotesListSub: Subscription;
 
   public notes: Note['Record'][];
+  public topNotesParentKey = this.apiService.note.topNotesParentKey;
 
   constructor(
     private apiService: ApiService,
