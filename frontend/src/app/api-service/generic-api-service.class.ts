@@ -55,11 +55,11 @@ export class GenericApiService<T extends DataModel> {
       });
   }
 
-  private getEndpoint(...params: string[]) {
+  private getEndpoint(pathSegments: string[] = [], getParams: {[K: string]: string} = {}) {
     return joinURLSegments(
         this.endpoint,
-        ...params.map(encodeURI)
-      );
+        ...pathSegments.map(encodeURI)
+      ) + '?' + Object.entries(getParams).map(entry => entry.join('=')).join('&');
   }
 
   protected _addItem(dataToAdd: T['Model']): Observable<T['Record']> {
@@ -106,17 +106,15 @@ export class GenericApiService<T extends DataModel> {
       }
       return accumulator;
     }, {});
-    const fullEndpoint = this.getEndpoint();
+    const fullEndpoint = this.getEndpoint([], normalizedParams);
     console.log('GET', fullEndpoint);
-    return this.httpClient.get<T['Response']>(fullEndpoint, {
-      params: normalizedParams
-    })
+    return this.httpClient.get<T['Response']>(fullEndpoint)
       .pipe(tap(GenericApiService.logResponse))
       .pipe(map(noteResp => noteResp.object as T['Record'][]));
   }
 
   protected _deleteItem(itemId: T['Record']['_id']): Observable<T['Record']> {
-    const fullEndpoint = this.getEndpoint(itemId);
+    const fullEndpoint = this.getEndpoint([itemId]);
     console.log('DELETE', fullEndpoint);
     return this.httpClient.delete<T['Response']>(fullEndpoint)
       .pipe(tap(GenericApiService.logResponse))
@@ -125,7 +123,7 @@ export class GenericApiService<T extends DataModel> {
   }
 
   protected _updateItem(modifiedItem: PartialWith<T['Record'], '_id'>): Observable<T['Record']> {
-    const fullEndpoint = this.getEndpoint(modifiedItem._id);
+    const fullEndpoint = this.getEndpoint([modifiedItem._id]);
     console.log('PATCH', fullEndpoint);
     return this.httpClient.patch<T['Response']>(fullEndpoint, modifiedItem)
       .pipe(tap(GenericApiService.logResponse))
@@ -135,7 +133,7 @@ export class GenericApiService<T extends DataModel> {
 
   protected _updateItems(modifiedItems: PartialWith<T['Record'], '_id'>[]): Observable<T['Record'][]> {
     return forkJoin(modifiedItems.map(modifiedItem => {
-      const fullEndpoint = this.getEndpoint(modifiedItem._id);
+      const fullEndpoint = this.getEndpoint([modifiedItem._id]);
       console.log('PATCH', fullEndpoint);
       return this.httpClient.patch<T['Response']>(fullEndpoint, modifiedItem)
         .pipe(tap(GenericApiService.logResponse))
