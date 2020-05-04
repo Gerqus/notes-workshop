@@ -7,7 +7,7 @@ import { Note, httpRequestTypes } from 'types';
 import * as sanitizeHtml from 'sanitize-html';
 
 function noteGet(req: express.Request, res: express.Response) {
-  dbService.find(noteModel, req.query && req.query.filter ? JSON.parse(req.query.filter as string) : {})
+  dbService.find(noteModel, req.query)
     .then(({response}) => {
       console.log('Notes fetched');
       const toSend: Note['Response'] = {
@@ -50,11 +50,11 @@ function notePost(req: express.Request, res: express.Response) {
 function noteDelete(req: express.Request, res: express.Response) {
   console.log('Deleting note of id', req.params.noteId);
   dbService.delete(noteModel, req.params.noteId)
-    .then(({response}) => {
+    .then(() => {
       console.log(`Note of id "${req.params.noteId}" has been deleted`);
       const toSend: Note['Response'] = {
         message: `Note of id "${req.params.noteId}" has been deleted`,
-        object: response,
+        object: null,
       };
       res.send(toSend);
     })
@@ -76,8 +76,8 @@ function notePatch(req: express.Request, res: express.Response) {
     content: sanitizeHtml((req.body as Note['Record']).content),
   };
 
-  if ((req.body as Partial<Note['Record']>).parentNote) {
-    sanitizedNote.parentNote = req.body.parentNote;
+  if ((req.body as Partial<Note['Record']>).parentNoteId) {
+    sanitizedNote.parentNoteId = req.body.parentNoteId;
   }
 
   if ((req.body as Partial<Note['Record']>).isCategory) {

@@ -1,5 +1,5 @@
-import { Component, OnInit, Input, ChangeDetectionStrategy } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Component, OnChanges, OnDestroy, Input } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { Note } from 'types';
 import { ApiService } from '@/api-service';
 
@@ -8,9 +8,12 @@ import { ApiService } from '@/api-service';
   templateUrl: './entries-list.component.html',
   styleUrls: ['./entries-list.component.less']
 })
-export class EntriesListComponent implements OnInit {
+export class EntriesListComponent implements OnChanges, OnDestroy {
   @Input() notes: Note['Record'][];
-  public notesChildrenObservables: {
+  public notesChildrenSubs: {
+    [K: string]: Subscription
+  } = {};
+  public notesChildren: {
     [K: string]: Note['Record'][]
   } = {};
 
@@ -18,15 +21,31 @@ export class EntriesListComponent implements OnInit {
     private apiService: ApiService
   ) {}
 
-  ngOnInit(): void {
-    console.log('notes:', this.notes);
+  ngOnChanges(): void {
+    const savedNotesIds = Object.keys(this.notesChildrenSubs);
     this.notes.forEach(note => {
-      this.apiService.note.getNotesChildren(note)
-        .subscribe(childNotes => {
-          this.notesChildrenObservables[note._id] = childNotes;
-        })
+      if (!savedNotesIds.includes(note._id)) {
+        this.notesChildrenSubs[note._id] = this.apiService.note.getChildNotesListSub(note._id)
+          .subscribe((childNotes) => {
+            console.log('fetched children for', note._id, 'note:', childNotes)
+            this.notesChildren[note._id] = childNotes;
+          });
+        this.apiService.note.refreshChildrenFor(note._id);
+      } else {
+        savedNotesIds.splice(savedNotesIds.indexOf(note._id), 1);
+      }
+      savedNotesIds.forEach(obsoleteNoteId => {
+        this.notesChildrenSubs[obsoleteNoteId].unsubscribe();
+        delete this.notesChildrenSubs[obsoleteNoteId];
+      })
     });
   }
 
-  public notesTrackingFn = (note: Note['Record']) => note._id;
+  ngOnDestroy(): void {
+    Object.keys(this.notesChildrenSubs).forEach(noteId => {
+      this.notesChildrenSubs[noteId].unsubscribe();
+    });
+  }
+
+  public notesTrackingFn = (note: Note['Record']) => [note._id, ...((this.notesChildren[note._id] || []).map(note => note._id).sort())].join('.');
 }

@@ -51,8 +51,8 @@ export class NoteViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  public deleteNoteById(noteId: Note['Record']['_id']) {
-    console.log('deleting note with id', noteId, 'now...')
-    this.apiService.note.deleteNoteById(noteId).subscribe();
+  public deleteNote(note: Note['Record']) {
+    console.log('deleting note with id', note._id, 'now...')
+    this.apiService.note.deleteNote(note).subscribe();
   }
 }

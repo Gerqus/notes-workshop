@@ -100,14 +100,14 @@ export class GenericApiService<T extends DataModel> {
   }
 
   protected _fetchItemsQuery(searchedItemQuery: Partial<T['Record']>): Observable<T['Record'][]> {
-    const stringifiedFilter = JSON.stringify(searchedItemQuery);
-    console.log(searchedItemQuery)
+    const normalizedParams = Object.keys(searchedItemQuery).reduce((accumulator, key) => {
+      accumulator[key] = searchedItemQuery[key].toString();
+      return accumulator;
+    }, {});
     const fullEndpoint = this.getEndpoint();
     console.log('GET', fullEndpoint);
     return this.httpClient.get<T['Response']>(fullEndpoint, {
-      params: {
-        filter: stringifiedFilter
-      }
+      params: normalizedParams
     })
       .pipe(tap(GenericApiService.logResponse))
       .pipe(map(noteResp => noteResp.object as T['Record'][]));

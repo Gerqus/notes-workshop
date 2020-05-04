@@ -1,31 +1,33 @@
-import { Directive, ElementRef, Input, OnInit } from '@angular/core';
+import { Directive, ElementRef, Input, OnChanges } from '@angular/core';
 
 @Directive({
   selector: '[appExpandable]'
 })
-export class ExpandableDirective implements OnInit {
-  @Input('appExpandable') appExpandable: boolean;
-  private hostElement: HTMLElement;
+export class ExpandableDirective implements OnChanges {
+  @Input('appExpandable') appExpandable: boolean = true;
   private iconElement: HTMLElement;
   private isHostExpanded: boolean;
 
   private onClick(): void {
-    if (!this.hostElement) {
+    if (!this.el.nativeElement) {
       return;
     }
     this.iconElement.classList.toggle('expand-more');
     this.iconElement.classList.toggle('arrow-right-tip');
 
-    this.hostElement.classList.toggle('expanded');
+    this.el.nativeElement.classList.toggle('expanded');
   }
 
   constructor(private el: ElementRef) {}
 
-  ngOnInit() {
-    if (!this.appExpandable) {
+  ngOnChanges() {
+    if (this.appExpandable === false) {
+      if (this.iconElement) {
+        this.iconElement.remove();
+      }
+      this.el.nativeElement.classList.remove('expanded');
       return;
     }
-    this.hostElement = this.el.nativeElement;
 
     this.iconElement = document.createElement('i');
     this.iconElement.classList.add('icon');

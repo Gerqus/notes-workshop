@@ -13,7 +13,7 @@ import { Note } from 'types';
 export class BrowserComponent implements OnInit, OnDestroy {
   public notesGroupsOrderByNames: string[] = [];
   private notesGroupsOrderSub: Subscription;
-  private notesListSub: Subscription;
+  private topNotesListSub: Subscription;
 
   public notes: Note['Record'][];
 
@@ -22,15 +22,16 @@ export class BrowserComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.notesListSub = this.apiService.note.getTopMostNotes()
+    this.topNotesListSub = this.apiService.note.getChildNotesListSub(this.apiService.note.topNotesParentKey)
       .subscribe((topNotes) => {
-        console.log('fetched top')
+        console.log('fetched top notes:', topNotes)
         this.notes = topNotes;
       });
+    this.apiService.note.refreshChildrenFor(this.apiService.note.topNotesParentKey);
   }
 
   ngOnDestroy(): void {
     this.notesGroupsOrderSub.unsubscribe();
-    this.notesListSub.unsubscribe();
+    this.topNotesListSub.unsubscribe();
   }
 }

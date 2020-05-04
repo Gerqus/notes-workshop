@@ -9,6 +9,10 @@ import { ConfigService } from '../config.service';
 
 export class NoteApiService extends GenericApiService<Note> {
   public indexedChildNotes: {[K: string] : Note['Record'][]} = {};
+  public topNotesParentKey = 'top'; //any arbitrary string really that won't collide with acrtual notes ids
+  public notesChildrenSubs: {
+    [K: string] : Subject<Note['Record'][]>
+  } = {};
 
   constructor(
     configService: ConfigService,
@@ -18,9 +22,10 @@ export class NoteApiService extends GenericApiService<Note> {
     this._updateEndpointItemsIndex();
   }
 
-  public addNote(): Observable<Note['Record']> {
+  public addNote(noteData?: Note['Model']): Observable<Note['Record']> {
     console.log('add note');
-    return this._addItem({} as Note['Model']);
+    return this._addItem(noteData ? noteData : {} as Note['Model'])
+      .pipe(tap((newNote) => this.refreshChildrenFor(newNote.parentNoteId)));
   }
 
   public getNoteById(searchedNoteId: Note['Record']['_id']): Observable<Note['Record']> {
@@ -33,9 +38,9 @@ export class NoteApiService extends GenericApiService<Note> {
       if (this.indexedChildNotes[parentNote._id]) {
         observer.next(this.indexedChildNotes[parentNote._id])
       } else {
-        this._fetchItemsQuery({parentNote: parentNote._id})
+        this._fetchItemsQuery({parentNoteId: parentNote._id})
           .subscribe((childNotes) => {
-            console.log('for parent id', parentNote._id, 'server returned notes', childNotes);
+            console.log('for parent id', parentNote._id, 'server returned child notes', childNotes);
             this.indexedChildNotes[parentNote._id] = childNotes;
             observer.next(this.indexedChildNotes[parentNote._id])
           });
@@ -48,9 +53,10 @@ export class NoteApiService extends GenericApiService<Note> {
       .pipe(map(childNotes => childNotes.length > 0))
   }
 
-  public deleteNoteById(noteId: Note['Record']['_id']): Observable<Note['Record']> {
+  public deleteNote(note: Note['Record']): Observable<Note['Record']> {
     console.log('delete note');
-    return this._deleteItem(noteId);
+    return this._deleteItem(note._id)
+      .pipe(tap(() => this.refreshChildrenFor(note.parentNoteId)));
   }
 
   public saveNote(noteToSave: PartialWith<Note['Record'], '_id'>): Observable<Note['Record']> {
@@ -61,18 +67,30 @@ export class NoteApiService extends GenericApiService<Note> {
     return this._updateItem(noteToSave);
   }
 
-  public getTopMostNotes(): Observable<Note['Record'][]> {
-    return this._fetchItemsQuery({parentNote: null});
+  public getChildNotesListSub(parentNoteId: Note['Record']['_id']): Observable<Note['Record'][]> {
+    if (!this.notesChildrenSubs[parentNoteId]) {
+      this.notesChildrenSubs[parentNoteId] = new Subject<Note['Record'][]>() ;
+    }
+    return this.notesChildrenSubs[parentNoteId];
+  }
+
+  public refreshChildrenFor(parentNoteId: Note['Record']['_id']): void {
+    this._fetchItemsQuery({parentNoteId})
+      .subscribe((childNotes) => {
+        this.notesChildrenSubs[parentNoteId].next(childNotes);
+      });
   }
 
   public moveNote(noteToBeMoved: Note['Record'], newParentId: Note['Record']['_id']) {
     if (newParentId === noteToBeMoved._id) {
       throw new Error('Note can\'t be child of itself. Aborting note moving.');
     }
-
-    noteToBeMoved.parentNote = newParentId;
+    const oldParentId = noteToBeMoved.parentNoteId;
+    noteToBeMoved.parentNoteId = newParentId;
 
     const noteSubscription = this._updateItem(noteToBeMoved)
+      .pipe(tap(() => this.refreshChildrenFor(oldParentId)))
+      .pipe(tap(() => this.refreshChildrenFor(newParentId)))
       .subscribe(() => noteSubscription.unsubscribe());
   }
 }
