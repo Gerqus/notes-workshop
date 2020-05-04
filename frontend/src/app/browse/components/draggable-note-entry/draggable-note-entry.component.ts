@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, ElementRef, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
+import { Observable, concat } from 'rxjs';
 import { Note } from 'types';
 import { ApiService } from '@/api-service';
 
@@ -58,37 +59,76 @@ export class DraggableNoteEntryComponent implements OnInit {
     this.apiService.note.moveNote(e.detail, this.note._id);
   }
 
-  private canDropHere(elementToCheck: HTMLElement) {
-    if (elementToCheck === this.el.nativeElement) {
-      return false;
-    }
-    let hostLiElement: HTMLElement = this.el.nativeElement;
-    while (hostLiElement !== null && !hostLiElement.classList.contains('entry')) {
-      hostLiElement = hostLiElement.parentElement;
-    }
-    let targetLiElement: HTMLElement = elementToCheck;
-    while (targetLiElement !== null && !targetLiElement.classList.contains('entry')) {
-      targetLiElement = targetLiElement.parentElement;
-    }
+  private canDropHere(elementToCheck: HTMLElement): Observable<boolean> {
+    const targetNoteId = elementToCheck.getAttribute('noteId');
 
-    return elementToCheck.classList.contains('drop-zone') &&
-    hostLiElement !== targetLiElement
+    return new Observable(subscriber => {
+      if (
+      !elementToCheck.classList.contains('drop-zone') ||
+      !targetNoteId ||
+      targetNoteId === this.note._id ||
+      targetNoteId === this.note.parentNoteId
+      ) {
+        subscriber.next(false);
+        subscriber.complete();
+      } else if (
+      targetNoteId === this.apiService.note.topNotesParentKey
+      ) {
+        subscriber.next(true);
+        subscriber.complete();
+      } else {
+        this.apiService.note.getNoteById(targetNoteId)
+          .subscribe((targetNote) => {
+            this.isNoteInTreeOfId(targetNote, this.note._id)
+              .subscribe((isInTree) => {
+                subscriber.next(!isInTree);
+                subscriber.complete();
+              });
+          });
+      }
+    });
   }
 
-  private mouseOverHandler(event: MouseEvent) {
-    if (this.canDropHere(event.target as HTMLElement)) {
-      (event.target as HTMLElement).classList.add('indicate-drop-zone');
+  private isNoteInTreeOfId(noteToCheck: Note['Record'], potentialParentId: Note['Record']['_id']): Observable<boolean> {
+    return new Observable((subscriber) => {
+      if (noteToCheck.parentNoteId === potentialParentId) {
+        subscriber.next(true);
+        subscriber.complete();
+      }
+      else if (noteToCheck.parentNoteId === this.apiService.note.topNotesParentKey || !potentialParentId) {
+        subscriber.next(false);
+        subscriber.complete();
+      } else {
+        const sub = this.apiService.note.getNoteById(noteToCheck.parentNoteId)
+          .subscribe(fetchedNote => {
+            this.isNoteInTreeOfId(fetchedNote, potentialParentId)
+              .subscribe((isInTree) => {
+                subscriber.next(isInTree);
+                subscriber.complete();
+              })
+            sub.unsubscribe();
+          });
+      }
+    })
+  }
 
-      // TODO: add copying drag mode (for example with ctrl pressed) and indicate it with cursor
-      // switch (this.getMovingMode()) {
-      //   case 'copy': "(or link)"
-      //     "set cursor to copy (or link) cursor";
-      //     break;
-      //   case 'move':
-      //     "set cursor to copy cursor";
-      //     break;
-      // }
-    }
+  private mouseOverHandler(event: MouseEvent): void {
+    this.canDropHere(event.target as HTMLElement)
+      .subscribe((canBeDropped) => {
+        if (canBeDropped) {
+          (event.target as HTMLElement).classList.add('indicate-drop-zone');
+    
+          // TODO: add copying drag mode (for example with ctrl pressed) and indicate it with cursor
+          // switch (this.getMovingMode()) {
+          //   case 'copy': "(or link)"
+          //     "set cursor to copy (or link) cursor";
+          //     break;
+          //   case 'move':
+          //     "set cursor to copy cursor";
+          //     break;
+          // }
+        }
+      });
   }
 
   private mouseOutHandler(event: MouseEvent) {
@@ -103,14 +143,17 @@ export class DraggableNoteEntryComponent implements OnInit {
       document.body.classList.remove('drag-ongoing');
       this.mouseOutHandler(event);
 
-      if (this.canDropHere(event.target as HTMLElement)) {
-        this.shouldEnableRouter = false;
-        const noteDropEvent = new CustomEvent<Note['Record']>('notedrop', {
-          bubbles: false,
-          detail: this.note,
+      this.canDropHere(event.target as HTMLElement)
+        .subscribe((canBeDropped) => {
+          if (canBeDropped) {
+            this.shouldEnableRouter = false;
+            const noteDropEvent = new CustomEvent<Note['Record']>('notedrop', {
+              bubbles: false,
+              detail: this.note,
+            });
+            event.target.dispatchEvent(noteDropEvent);
+          }
         });
-        event.target.dispatchEvent(noteDropEvent);
-      }
     }
     this.readyToDrag = false;
 

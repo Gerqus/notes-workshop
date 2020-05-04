@@ -35,8 +35,10 @@ export class EntriesListComponent implements OnChanges, OnDestroy {
         savedNotesIds.splice(savedNotesIds.indexOf(note._id), 1);
       }
       savedNotesIds.forEach(obsoleteNoteId => {
-        this.notesChildrenSubs[obsoleteNoteId].unsubscribe();
-        delete this.notesChildrenSubs[obsoleteNoteId];
+        if (this.notesChildrenSubs[obsoleteNoteId]) {
+          this.notesChildrenSubs[obsoleteNoteId].unsubscribe();
+          delete this.notesChildrenSubs[obsoleteNoteId];
+        }
       })
     });
   }
