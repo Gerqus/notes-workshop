@@ -1,5 +1,8 @@
 <app-entries-list
-  *ngIf="notes"
-  [appDropZone]="topNotesParentKey"
-  [notes]="notes">
+*ngIf="notes"
+[notes]="notes">
 </app-entries-list>
+<div
+[appDropZone]="topNotesParentKey"
+class="top-drop action-button minor"
+>Move to top</div>

@@ -10,29 +10,28 @@
 .entry {
   display: grid;
   grid-template-columns: 13rem @space-for-expand-icons;
-  grid-template-rows: 2rem;
   grid-template-areas: "title icon";
   column-gap: @list-elements-spacing;
   user-select: none;
   align-items: center;
 
-  & > .subentries {
-    margin-left: @level-indentation;
-  }
-
   .note-title {
-    padding: 0.1rem 0.2rem 0.1rem 0.6rem;
+    padding: @list-elements-padding 6*@list-elements-padding;
     font-size: 1rem;
     line-height: 1rem;
     grid-area: title;
     justify-content: left;
+    margin-bottom: 0.5rem;
   }
 
   & > ::ng-deep .icon {
+    padding: @list-elements-padding;
     grid-area: icon;
+    margin-bottom: 0.5rem;
   }
 
   & > .subentries {
+    margin-left: @level-indentation;
     display: none;
   }
 

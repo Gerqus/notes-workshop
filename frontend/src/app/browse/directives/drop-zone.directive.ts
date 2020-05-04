@@ -20,5 +20,6 @@ export class DropZoneDirective implements OnInit {
 
   ngOnInit(): void {
     this.el.nativeElement.classList.add('drop-zone');
+    this.el.nativeElement.setAttribute('noteId', this.noteId);
   }
 }

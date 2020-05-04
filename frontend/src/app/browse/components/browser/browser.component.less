@@ -1,0 +1,24 @@
+app-entries-list {
+  padding-top: 0.5rem;
+  display: block;
+}
+
+::ng-deep body {
+  .top-drop {
+    user-select: none;
+    font-style: italic;
+    display: none;
+    border-style: dashed !important;
+    opacity: 0.4;
+  }
+
+  &.drag-ongoing {
+    .top-drop {
+      display: flex;
+
+      .indicate-drop-zone {
+        opacity: 1;
+      }
+    }
+  }
+}
