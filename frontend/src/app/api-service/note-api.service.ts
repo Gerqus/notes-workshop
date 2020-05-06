@@ -78,7 +78,9 @@ export class NoteApiService extends GenericApiService<Note> {
   public refreshChildrenFor(parentNoteId: Note['Record']['_id']): void {
     this._fetchItemsQuery({parentNoteId})
       .subscribe((childNotes) => {
-        this.notesChildrenSubs[parentNoteId].next(childNotes);
+        if (this.notesChildrenSubs[parentNoteId]) { // filtrowanie dla notatek zapisanych po odświeżeniu strony, których rodzic nie został jeszcze załadowany w browserze (pokazany w menu) (w rpzyszłości może też dla notetek, których rodzic został już wyczyszczony z browsera???)
+          this.notesChildrenSubs[parentNoteId].next(childNotes);
+        }
       });
   }
 
