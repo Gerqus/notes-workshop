@@ -22,6 +22,8 @@ export class ExpandableDirective implements OnChanges, OnInit, OnDestroy {
     this.iconElement.classList.add('icon');
     this.iconElement.classList.add('action-button');
     this.iconElement.classList.add('minor');
+    this.iconElement.classList.add('expansion-arrow');
+    this.iconElement.addEventListener('getItemId', (e: CustomEvent) => {e.detail.cb(this.itemId)});
     this.iconElement.addEventListener('click', () => this.onIconClick());
   }
 
@@ -40,6 +42,7 @@ export class ExpandableDirective implements OnChanges, OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.expansionStateSubject = this.expandableDirectiveStateKeeperService.getStateSubject(this.itemId);
+
     if (this.el.nativeElement.classList.contains('expanded')) {
       this.setExpansionState(true);
     }

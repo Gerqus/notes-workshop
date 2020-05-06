@@ -1,8 +1,9 @@
 import { Component, Input, OnInit, ElementRef, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, concat } from 'rxjs';
+import { Observable } from 'rxjs';
 import { Note } from 'types';
 import { ApiService } from '@/api-service';
+import { ExpandableDirectiveStateKeeperService } from '@/common/services/expandable-directive-state-keeper.service';
 
 @Component({
   selector: 'app-draggable-note-entry',
@@ -13,14 +14,23 @@ export class DraggableNoteEntryComponent implements OnInit {
   @Input() note: Note['Record'];
 
   private shouldEnableRouter = true;
+  private readonly fadedOpacity = '0.4';
+  private originalOpacity = '1';
+  private readyToDrag = false;
+  private dragStarted = false;
+  private noteClone: HTMLElement;
+  private clickCoordinates = {x: 0, y: 0};
+  private hoverExpansion: {
+    ref?: number, readonly timeout: number, itemId?: Note['Record']['_id']
+  } = {
+    timeout: 500,
+  };
 
-  constructor(
-    private router: Router,
-    private el: ElementRef<HTMLSpanElement>,
-    private apiService: ApiService,
-  ) { }
-
-  ngOnInit(): void {}
+  private mouseUpHandlerBinded = this.mouseUpHandler.bind(this);
+  private firstMouseMoveHandlerBinded = this.firstMouseMoveHandler.bind(this);
+  private positionNoteShadowBinded = this.positionNoteShadow.bind(this);
+  private mouseOverHandlerBinded = this.mouseOverHandler.bind(this);
+  private mouseOutHandlerBinded = this.mouseOutHandler.bind(this);
 
   @HostListener('click')
   public openNote(): void {
@@ -30,18 +40,6 @@ export class DraggableNoteEntryComponent implements OnInit {
       this.shouldEnableRouter = true;
     }
   }
-  private readonly fadedOpacity = '0.4';
-  private originalOpacity = '1';
-  private readyToDrag = false;
-  private dragStarted = false;
-  private noteClone: HTMLElement;
-  private clickCoordinates = {x: 0, y: 0};
-
-  private mouseUpHandlerBinded = this.mouseUpHandler.bind(this);
-  private firstMouseMoveHandlerBinded = this.firstMouseMoveHandler.bind(this);
-  private positionNoteShadowBinded = this.positionNoteShadow.bind(this);
-  private mouseOverHandlerBinded = this.mouseOverHandler.bind(this);
-  private mouseOutHandlerBinded = this.mouseOutHandler.bind(this);
 
   @HostListener('mousedown', ['$event'])
   public mousedownListener(event: MouseEvent) {
@@ -54,6 +52,15 @@ export class DraggableNoteEntryComponent implements OnInit {
 
   @HostListener('dragstart')
   public dragstartListener() { return false };
+
+  constructor(
+    private router: Router,
+    private el: ElementRef<HTMLSpanElement>,
+    private apiService: ApiService,
+    private expandableDirectiveStateKeeperService: ExpandableDirectiveStateKeeperService,
+  ) { }
+
+  ngOnInit(): void {}
 
   public handleNoteDrop(e: CustomEvent<Note['Record']>) {
     this.apiService.note.moveNote(e.detail, this.note._id);
@@ -114,6 +121,21 @@ export class DraggableNoteEntryComponent implements OnInit {
   }
 
   private mouseOverHandler(event: MouseEvent): void {
+    if ((event.target as HTMLElement).matches('.expansion-arrow') && (event.target as HTMLElement).style.opacity === "1") {
+      const getExpandableItemIdEvent = new CustomEvent('getItemId', {
+        bubbles: false,
+        detail: {
+          cb: (itemId: Note['Record']['_id']) => {
+            this.hoverExpansion.ref = setTimeout(() => {
+              this.hoverExpansion.itemId = itemId;
+              this.expandableDirectiveStateKeeperService.setState(itemId, true);
+              delete this.hoverExpansion.ref;
+            }, this.hoverExpansion.timeout) as any;
+          }
+        }
+      });
+      event.target.dispatchEvent(getExpandableItemIdEvent);
+    }
     this.canDropHere(event.target as HTMLElement)
       .subscribe((canBeDropped) => {
         if (canBeDropped) {
@@ -133,6 +155,11 @@ export class DraggableNoteEntryComponent implements OnInit {
   }
 
   private mouseOutHandler(event: MouseEvent) {
+    if (this.hoverExpansion.ref) {
+      clearTimeout(this.hoverExpansion.ref);
+      delete this.hoverExpansion.ref;
+    }
+    delete this.hoverExpansion.itemId;
     (event.target as HTMLElement).classList.remove('indicate-drop-zone');
   }
   
