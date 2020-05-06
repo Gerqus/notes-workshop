@@ -63,10 +63,7 @@ export class NoteApiService extends GenericApiService<Note> {
       ))
   }
 
-  public saveNote(noteToSave: PartialWith<Note['Record'], '_id'>): Observable<Note['Record']> {
-    if (!noteToSave.title) {
-      throw new Error('Note must have a title. Aborting note saving.');
-    }
+  public updateNote(noteToSave: PartialWith<Note['Record'], '_id'>): Observable<Note['Record']> {
     return this._updateItem(noteToSave)
       .pipe(tap((savedNote) => {this.refreshChildrenFor(savedNote.parentNoteId)}));;
   }
@@ -83,6 +80,11 @@ export class NoteApiService extends GenericApiService<Note> {
       .subscribe((childNotes) => {
         this.notesChildrenSubs[parentNoteId].next(childNotes);
       });
+  }
+
+  public toggleCategory(noteToBeToggled: Note['Record']): Observable<Note['Record']> {
+    noteToBeToggled.isCategory = !noteToBeToggled.isCategory;
+    return this.updateNote(noteToBeToggled);
   }
 
   public moveNote(noteToBeMoved: Note['Record'], newParentId: Note['Record']['_id']) {

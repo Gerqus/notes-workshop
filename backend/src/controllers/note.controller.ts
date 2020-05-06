@@ -69,20 +69,26 @@ function noteDelete(req: express.Request, res: express.Response) {
 }
 
 function notePatch(req: express.Request, res: express.Response) {
-  console.log('Updating note of id', req.params.noteId);
 
-  const sanitizedNote: Partial<Note['Model']> = {
-    title: sanitizeHtml((req.body as Note['Record']).title, { allowedTags: [] }),
-    content: sanitizeHtml((req.body as Note['Record']).content),
-  };
+  const sanitizedNote: Partial<Note['Model']> = {};
 
-  if ((req.body as Partial<Note['Record']>).parentNoteId) {
+  if ((req.body as Partial<Note['Record']>).title !== undefined) {
+    sanitizedNote.title = sanitizeHtml((req.body as Note['Record']).title, { allowedTags: [] });
+  }
+
+  if ((req.body as Partial<Note['Record']>).content !== undefined) {
+    sanitizedNote.content = sanitizeHtml((req.body as Note['Record']).content);
+  }
+
+  if ((req.body as Partial<Note['Record']>).parentNoteId !== undefined) {
     sanitizedNote.parentNoteId = req.body.parentNoteId;
   }
 
-  if ((req.body as Partial<Note['Record']>).isCategory) {
+  if ((req.body as Partial<Note['Record']>).isCategory !== undefined) {
     sanitizedNote.isCategory = req.body.isCategory;
   }
+
+  console.log('Updating note of id', req.params.noteId, 'to be', sanitizedNote);
 
   noteModel.findByIdAndUpdate(
     (req.body as Note['Record'])._id,
@@ -90,11 +96,11 @@ function notePatch(req: express.Request, res: express.Response) {
     { new: true }
   )
     .then((noteDocument) => {
-      console.log(`Note of id "${req.params.noteId}" has been updated`);
       const toSend: Note['Response'] = {
         message: `Note of id "${req.params.noteId}" has been updated`,
         object: noteDocument as Note['Record'],
       };
+      console.log(toSend);
       res.send(toSend);
     })
     .catch(({error}) => {

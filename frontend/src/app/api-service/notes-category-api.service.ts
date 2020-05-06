@@ -96,7 +96,7 @@
 //     .pipe(tap(() => this.updateNotesList()));
 //   }
 
-//   public saveNote(noteToSave: Note['Record']): Observable<Note['Record']> {
+//   public updateNote(noteToSave: Note['Record']): Observable<Note['Record']> {
 //     console.log('PATCH', this.getEndpointFor('note', noteToSave._id));
 //     // if (!noteToSave.title) {
 //     //   throw new Error('Note must have a title. Aborting note saving.');

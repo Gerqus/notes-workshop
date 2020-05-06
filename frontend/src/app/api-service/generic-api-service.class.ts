@@ -56,10 +56,14 @@ export class GenericApiService<T extends DataModel> {
   }
 
   private getEndpoint(pathSegments: string[] = [], getParams: {[K: string]: string} = {}) {
-    return joinURLSegments(
-        this.endpoint,
-        ...pathSegments.map(encodeURI)
-      ) + '?' + Object.entries(getParams).map(entry => entry.join('=')).join('&');
+    let output = joinURLSegments(
+      this.endpoint,
+      ...pathSegments.map(encodeURI)
+    );
+    if (getParams) {
+      output += '?' + Object.entries(getParams).map(entry => entry.join('=')).join('&');
+    }
+    return output;
   }
 
   protected _addItem(dataToAdd: T['Model']): Observable<T['Record']> {

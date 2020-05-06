@@ -9,7 +9,10 @@
     [canExpand]="notesChildren[note._id].length > 0"
     >
       <app-draggable-note-entry
-      class="action-button minor note-title"
+      [ngClass]="{
+        'action-button note-title minor': true,
+        'category': note.isCategory
+      }"
       [appDropZone]="note._id"
       [note]="note"
       ></app-draggable-note-entry>

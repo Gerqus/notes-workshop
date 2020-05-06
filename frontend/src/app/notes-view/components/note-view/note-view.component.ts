@@ -40,8 +40,8 @@ export class NoteViewComponent implements OnInit, OnDestroy {
     this.routeNoteIdSubscription.unsubscribe();
   }
 
-  public saveNote() {
-    this.apiService.note.saveNote({
+  public updateNote() {
+    this.apiService.note.updateNote({
       _id: this.note._id,
       title: this.noteTitleElement.nativeElement.innerHTML.replace(/<br>$/, ''),
       content: this.noteContentElement.nativeElement.innerHTML.replace(/<br>$/, ''),
@@ -51,7 +51,11 @@ export class NoteViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  public deleteNote(note: Note['Record']) {
-    this.apiService.note.deleteNote(note).subscribe();
+  public deleteNote() {
+    this.apiService.note.deleteNote(this.note).subscribe();
+  }
+
+  public toggleCategory() {
+    this.apiService.note.toggleCategory(this.note).subscribe();
   }
 }
