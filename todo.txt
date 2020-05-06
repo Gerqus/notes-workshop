@@ -10,7 +10,35 @@ bazowa ścieżka dla zmiennych. Np. wpisujemy w notatce ${base.INT} i będzie to
 
 Możliwość eksportowania z notatki nie tlyko zmiennych, ale i funkcji (np. z czaru możemy wyeksportować funkcję liczącą rzut kością dla tego czaru)
 
-namespaces - przestrzenie notatek. Chciałbym np. mieć osobną przestrzeń dla TODO i osobną na RPGi, a właściwie to osobną dla każdej sesji. Namespace wybierałoby się z dropdownu. Namespace powodowałby wyświetlanie w browserze tylko notatki z danego namespace. Może przyda się też no-namespace mode czyli wyświetlanie wszystkich notatek w ogóle, tylko z namespaceami jako kategoriami? Albo w ogóle zrobić filtrowanie po kategoriach z możliwością ich zagnieżdżania? Lub zrezygnować z kategorii i uprościć wszystko do notatek z możlwiością przestawiania ich kolejności i pozycji w drzewie, oraz filtrowania notatek w browserze tylko do tych podrzędnych danej notatce? Brzmi ok
+namespaces - przestrzenie notatek. Chciałbym np. mieć osobną przestrzeń dla TODO i osobną na RPGi, a właściwie to osobną dla każdej sesji. Namespace wybierałoby się z dropdownu. Namespace powodowałby wyświetlanie w browserze tylko notatek z danego namespace. Może przyda się też no-namespace mode czyli wyświetlanie wszystkich notatek w ogóle, tylko z namespaceami jako kategoriami? Albo w ogóle zrobić filtrowanie po kategoriach z możliwością ich zagnieżdżania? Lub zrezygnować z kategorii i uprościć wszystko do notatek z możlwiością przestawiania ich kolejności i pozycji w drzewie, oraz filtrowania notatek w browserze tylko do tych podrzędnych danej notatce? Brzmi ok
 Edit: Uproszczenie wszystkiego do notatek powodowałoby nieczytelność UI i nieintuicyjność struktury danych. Jasny podział an kategorie budujące strukturę i notatki budujące treść będzie czytelniejszy i bardziej intuicyjny dla użytkowników.
+Edit: Pod spodem wszystko będzie notatką. Tylko że część notatek będzie miało flagę isCategory=true. W UI będą kategorie i notatki. Kategoria bedzie w zasadzie notatką, której tytuł będzie zaakcentowany w browserze, żeby się wyróżniał. Poza tym będzie opcja zawężania widoku do jednej kategorii. Razem z zawężaniem widoku do kategorii przyda się możliwość otwierania kolejnych browserów, zeby mozna bło mieć np. browser z sesją RPG i w nim przełączać sie między sesjami i browser wpisów generycznych, np. NPCów. Inny usecase to browser z dokumentacją projektu informatycznego, któremu będzie towarzyszyć browser z notatkami ze spotkań. Trzeba jednak bardzo przejrzyście zaplanować UI, żeby łatwo było sie przełączać między browserami, w nich między kategoriami i żeby zawsze było wiadomo który browser jest od czego i jaka jest w nim kategoria. Przyda się też widok kategorii rodzeństwa, rodzica i dzieci, tak jak dla edytowanych notatek (tylko może dużo mniej rzucający się w oczy, bo i kategorie bedą pewnie dużo rzadziej przełączane niż notatki.
+Może fajny byłby workspace - browser bez kategorii, do którego możnaby przypinać tymczasowo notatki, łatwo je stamtąd usuwać, sortować. Właściwie odpowiednik tabów w edytorze czy przeglądarce. Trzebaby przesunąć browsery na górę, w pasie przewijanym poziomo, ponad notatki, dla których dzieki temu mielibyśmy więcej miejsca.
+
+Templates. Możliwość robienia własnych szablonów i dzielenia się nimi z innymi. Szablon będzie drzewem kategorii i notatek. Właściwie będzie udostępnionym publisznie namespacem, który będzie kopiowany do baz innych. Np. szablon do gier RPG będzie miał kategorie takie jak miasta, NPC, house rules itd, a template od organizowania projektu będzie miał kategorie todo, doing, done.
+
+Możliwość nadawania styli zależnie od zmiennych.
+
+Szybka zamiana tekstu na zmienną. Np. mam notatkę o treści "[...]Usposobienie tego NPCa jest wrogie[...]" i chciałbym zaznaczyć sobie słowo "wrogie" i wyeksportować do zmiennej tej notatki, którą to zmienna będę mógł nazwać w momencie eksportu. Wybrałbym na nazwę np. "usposobienie". Wtedy w miejsce słowa "wrogie" pojawi się interpolacja tej zmiennej, czyli "[...]Usposobienie tego NPCa jest ${usposobienie}[...]"
+
+JSON backup
+
+Możliwość akcji? w sensie przenoszenia notatek do innych kategorii jeżeli zajdzie jakiś warunek? Dunno... To by było może dobre przy zarządzaniu projektem, czy sesjami... Może w formie tasków automatyzacyjnych, które pozwoliłyby utrzymać porządek? Dunno...
+
+Klonowanie notatek z ich drzewami.
+
+Podpowiedzi linków. Jeżeli wpisywane jest właśnie słowo, które zaczyna się tak samo jak tytuł istniejącej notatki, to powinna się pojawić nieinwazyjna opcja dodania linka do tamtej notatki. Również po stworzeniu notatki powinna być opcja "poszukaj linków", która przeszukiwałaby istniejące notatki pod kątem słów/zdań zaczynających się tak, jak tytuł stworzonej właśnie  notatkidla której wywołano opcję ""poszukaj linków". Wynikiem byłaby lista słów/zdań zaczynających się tak samo, a nie będących jeszcze linkami, które możnaby łatwo w takie linki zamienić.
+Przyda się też spis alfabetyczny wszystkich linków z danej notatki widoczny gdzieś z boku po jej otwarciu.
+
+template'y notatek - np. chciałbym mieć template z kartą postaci do swojego systemu, albo template do NPCów, czy template do nowego taska w projekcie
 
 ikony. Niech każda notatka może (ale nie musi) mieć swoją ikonę, która wyświetli się na liście - w ten sposób łatwiej będzie je znaleźć i zorganizować
+
+zewnętrzne api?
+
+Do przemyślenia:	potrzebuję możliwości jakiejś sprytnej organizacji danych nie tylko po sztywnej strukturze (kategoria notatki, dzieci, rodzice, rodzeństwo, 			kolejność), ale też po danych które niosą... Np. jak moja aplikacja mogłaby się przydać studentowi, który będzie tu robił notatki w trakcie nauki?
+
+Definition of done:
+ciągle widoczna notatka z płynącym czasem z gry
+ciągle widoczna notatka z parametryzowanymi rzutami kośćmi
+różne sesje nie mieszkają się
