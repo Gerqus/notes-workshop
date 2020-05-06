@@ -40,7 +40,7 @@ export class NoteViewComponent implements OnInit, OnDestroy {
     this.routeNoteIdSubscription.unsubscribe();
   }
 
-  public updateNote() {
+  public saveNote() {
     this.apiService.note.updateNote({
       _id: this.note._id,
       title: this.noteTitleElement.nativeElement.innerHTML.replace(/<br>$/, ''),
@@ -57,5 +57,24 @@ export class NoteViewComponent implements OnInit, OnDestroy {
 
   public toggleCategory() {
     this.apiService.note.toggleCategory(this.note).subscribe();
+  }
+
+  public supportTabInput(e: KeyboardEvent) {
+    let shouldPreventDefault = true;
+    console.log(e.key, e);
+
+    if (e.key === 'Tab') {
+      document.execCommand('insertText', false, `\t`);
+    } else 
+    if (e.key === 's' && e.ctrlKey) {
+      this.saveNote();
+    } else {
+      shouldPreventDefault = false;
+    }
+
+    if (shouldPreventDefault) {
+      e.preventDefault();
+      return false;
+    }
   }
 }

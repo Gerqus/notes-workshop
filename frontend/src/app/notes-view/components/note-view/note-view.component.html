@@ -10,11 +10,11 @@
     </div>
 
     <div class="note-content section-secondary">
-      <div #noteContent class="input" contenteditable [innerHTML]="note.content"></div>
+      <pre #noteContent class="input" contenteditable [innerHTML]="note.content" (keydown)="supportTabInput($event)"></pre>
     </div>
 
     <div class="note-actions section-secondary">
-      <div class="action-button major" (click)="updateNote()">Save note</div>
+      <div class="action-button major" (click)="saveNote()">Save note</div>
       <div class="action-button major" (click)="deleteNote()">Remove note</div>
       <div class="action-button major" (click)="toggleCategory()">Toggle Category</div>
     </div>
