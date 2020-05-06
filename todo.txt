@@ -1,14 +1,16 @@
 potwierdzenie usunięcia notatki
 
-potwierdzenie usunięcia kateorii z przesunięciem notatek do kategorii ogólnej
+potwierdzenie usunięcia kateorii z przesunięciem notatek do top, albo do rodzica usuwanej kategorii
 
 drag and drop dla strukturyzacji drzewa notatek (jak drzewa plików i folderów w VSCode)
 
 auto save z historią edycji po każdym save (historia zapisana lokalnie, nie w bazie danych)
 
+tworzenie nowej notatki jako dziecko 'top', dziecko aktualnie przeglądanej notatki albo rodzeństwo aktualnie przeglądanej notatki
+
 bazowa ścieżka dla zmiennych. Np. wpisujemy w notatce ${base.INT} i będzie to INT bazowej notatki, tutaj - karty postaci. Do użycia np. w notatkach oc zarach, gdzie możemy zastąpić np. 2k4 + INT przez 2K4 + ${base.INT | 'INT'} (default do string 'INT') gdzie base.INT to będzie INT karty postaci, którą wybierzemy jako base. W ten sposób dostaniemy wzór czaru dla konkretniej postaci czy NPCa. Może się przydać też jeżeli zrobimy guzik do rzutu kością - wtedy posiadanie INT byłoby niezbędne do wyznaczenie ostatecznego wyniku (a nie tylko np. [2k4=5]+INT i licz se dalej sam)
 
-Możliwość eksportowania z notatki nie tlyko zmiennych, ale i funkcji (np. z czaru możemy wyeksportować funkcję liczącą rzut kością dla tego czaru)
+Możliwość eksportowania z notatki nie tylko zmiennych, ale i funkcji (np. z czaru możemy wyeksportować funkcję liczącą rzut kością dla tego czaru)
 
 namespaces - przestrzenie notatek. Chciałbym np. mieć osobną przestrzeń dla TODO i osobną na RPGi, a właściwie to osobną dla każdej sesji. Namespace wybierałoby się z dropdownu. Namespace powodowałby wyświetlanie w browserze tylko notatek z danego namespace. Może przyda się też no-namespace mode czyli wyświetlanie wszystkich notatek w ogóle, tylko z namespaceami jako kategoriami? Albo w ogóle zrobić filtrowanie po kategoriach z możliwością ich zagnieżdżania? Lub zrezygnować z kategorii i uprościć wszystko do notatek z możlwiością przestawiania ich kolejności i pozycji w drzewie, oraz filtrowania notatek w browserze tylko do tych podrzędnych danej notatce? Brzmi ok
 Edit: Uproszczenie wszystkiego do notatek powodowałoby nieczytelność UI i nieintuicyjność struktury danych. Jasny podział an kategorie budujące strukturę i notatki budujące treść będzie czytelniejszy i bardziej intuicyjny dla użytkowników.
