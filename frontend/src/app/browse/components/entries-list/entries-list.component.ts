@@ -47,5 +47,6 @@ export class EntriesListComponent implements OnChanges, OnDestroy {
     });
   }
 
-  public notesTrackingFn = (note: Note['Record']) => [note._id, ...((this.notesChildren[note._id] || []).map(note => note._id).sort())].join('.');
+  // public notesTrackingFn = (index: number, note: Note['Record']) => [note._id, ...((this.notesChildren[note._id] || []).map(note => note._id).sort())].join('.');
+  public notesTrackingFn = (index: number, note: Note['Record']) => note._id;
 }
