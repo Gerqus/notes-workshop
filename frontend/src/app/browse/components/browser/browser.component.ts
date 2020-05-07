@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ApiService } from '@/api-service/';
+import { Component, OnInit, OnDestroy, ElementRef } from '@angular/core';
+import { ApiService } from '@/services/api-service/';
 
 import { Subscription } from 'rxjs';
 
@@ -20,6 +20,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
 
   constructor(
     private apiService: ApiService,
+    public browser: ElementRef<HTMLElement>
   ) {}
 
   ngOnInit(): void {

@@ -1,24 +1,59 @@
+@import '../../../../styles/colors.less';
+
 app-entries-list {
   padding-top: 0.5rem;
   display: block;
 }
 
-::ng-deep body {
+.top-drop {
+  user-select: none;
+  font-style: italic;
+  display: none;
+  opacity: 0.4;
+}
+
+:host.drag-ongoing {
   .top-drop {
-    user-select: none;
-    font-style: italic;
-    display: none;
-    border-style: dashed !important;
-    opacity: 0.4;
+    display: flex;
   }
 
-  &.drag-ongoing {
-    .top-drop {
-      display: flex;
+  &:not(.drag-mode-reorder) {
+    .top-drop.indicate-drop-zone {
+      opacity: 1;
+    }
 
-      &.indicate-drop-zone {
-        opacity: 1;
+    & ::ng-deep .note-title.category {
+      &.drop-zone {
+        &.indicate-drop-zone {
+          border-color: @action-secondary-border-color;
+        }
+      }
+    }
+
+    & ::ng-deep .note-title:not(.category) {
+      &.drop-zone {
+        &.indicate-drop-zone {
+          margin-left: 0.125rem;
+          margin-right: -0.125rem;
+        }
       }
     }
   }
+}
+
+:host.drag-mode-copy ::ng-deep * {
+  cursor: copy;
+}
+
+:host.drag-mode-move ::ng-deep *,
+:host.drag-mode-reorder ::ng-deep * {
+  cursor: move;
+}
+
+:host.drag-mode-link ::ng-deep * {
+  cursor: alias;
+}
+
+:host.drag-mode-cant-drop ::ng-deep * {
+  cursor: no-drop;
 }

@@ -10,6 +10,7 @@ import { EntriesListComponent } from './components/entries-list/entries-list.com
 
 import { DraggableNoteEntryComponent } from './components/draggable-note-entry/draggable-note-entry.component';
 import { DropZoneDirective } from './directives/drop-zone.directive';
+import { BrowsersSectionComponent } from './components/browsers-section/browsers-section.component';
 
 @NgModule({
   declarations: [
@@ -17,6 +18,7 @@ import { DropZoneDirective } from './directives/drop-zone.directive';
     EntriesListComponent,
     DraggableNoteEntryComponent,
     DropZoneDirective,
+    BrowsersSectionComponent,
   ],
   imports: [
     CommonModule,

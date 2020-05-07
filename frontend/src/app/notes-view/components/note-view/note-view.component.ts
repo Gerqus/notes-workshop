@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs';
 
 import { Note } from 'types';
 
-import { ApiService } from '@/api-service';
+import { ApiService } from '@/services/api-service';
 
 @Component({
   selector: 'app-note-view',
@@ -59,16 +59,39 @@ export class NoteViewComponent implements OnInit, OnDestroy {
     this.apiService.note.toggleCategory(this.note).subscribe();
   }
 
-  public supportTabInput(e: KeyboardEvent) {
+  public supportTitleHotkeys(e: KeyboardEvent) {
     let shouldPreventDefault = true;
-    console.log(e.key, e);
+
+    if (e.key === 'Enter') {
+      this.noteContentElement.nativeElement.focus();
+      this.saveNote();
+    } else
+    if (e.key === 's' && e.ctrlKey) {
+      this.saveNote();
+    } else
+    {
+      shouldPreventDefault = false;
+    }
+
+    if (shouldPreventDefault) {
+      e.preventDefault();
+      return false;
+    }
+  }
+
+  public supportContentHotkeys(e: KeyboardEvent) {
+    let shouldPreventDefault = true;
 
     if (e.key === 'Tab') {
       document.execCommand('insertText', false, `\t`);
-    } else 
+    } else
     if (e.key === 's' && e.ctrlKey) {
       this.saveNote();
-    } else {
+    } else
+    if (e.key === 'b' && e.ctrlKey) {
+      document.execCommand('bold', false);
+    } else
+    {
       shouldPreventDefault = false;
     }
 

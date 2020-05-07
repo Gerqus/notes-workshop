@@ -2,7 +2,7 @@
   <div class="note-view" *ngIf="note">
 
     <div class="note-title section-secondary">
-      <div #noteTitle class="input" contenteditable [innerHTML]="note.title"></div>
+      <div #noteTitle class="input" contenteditable [innerHTML]="note.title" (keydown)="supportTitleHotkeys($event)"></div>
     </div>
 
     <div class="note-variables section-secondary">
@@ -10,7 +10,7 @@
     </div>
 
     <div class="note-content section-secondary">
-      <pre #noteContent class="input" contenteditable [innerHTML]="note.content" (keydown)="supportTabInput($event)"></pre>
+      <pre #noteContent class="input" contenteditable [innerHTML]="note.content" (keydown)="supportContentHotkeys($event)"></pre>
     </div>
 
     <div class="note-actions section-secondary">

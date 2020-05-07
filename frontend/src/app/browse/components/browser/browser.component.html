@@ -1,7 +1,9 @@
 <app-entries-list
+style="overflow: auto"
 *ngIf="notes"
-[notes]="notes">
-</app-entries-list>
+[notes]="notes"
+[browserReference]="browser.nativeElement"
+></app-entries-list>
 <div
 [appDropZone]="topNotesParentKey"
 class="top-drop action-button minor"

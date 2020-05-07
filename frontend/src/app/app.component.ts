@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import * as imgsToPreloadSrcs from  './imgsToPreloadSrcs.json';
+import { InterfaceEventsService } from './services/interface-events';
 
 @Component({
   selector: 'app-root',

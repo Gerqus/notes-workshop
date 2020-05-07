@@ -1,17 +1,28 @@
-import { Component, Input, OnInit, ElementRef, HostListener } from '@angular/core';
+import { Component, Input, ElementRef, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject, Subscription } from 'rxjs';
 import { Note } from 'types';
-import { ApiService } from '@/api-service';
+import { ApiService } from '@/services/api-service';
 import { ExpandableDirectiveStateKeeperService } from '@/common/services/expandable-directive-state-keeper.service';
+import { InterfaceEventsService, Keys, Events } from '@/services/interface-events';
+
+enum DragModeEnum {
+  'copy',
+  'link',
+  'reorder',
+  'move',
+  'cantDrop',
+  'previous',
+}
 
 @Component({
   selector: 'app-draggable-note-entry',
   templateUrl: './draggable-note-entry.component.html',
   styleUrls: ['./draggable-note-entry.component.less'],
 })
-export class DraggableNoteEntryComponent implements OnInit {
+export class DraggableNoteEntryComponent {
   @Input() note: Note['Record'];
+  @Input() browserReference: HTMLElement;
 
   private shouldEnableRouter = true;
   private readonly fadedOpacity = '0.4';
@@ -25,12 +36,58 @@ export class DraggableNoteEntryComponent implements OnInit {
   } = {
     timeout: 500,
   };
+  private dragMode = new BehaviorSubject(DragModeEnum.move);
+  private dragModeClasses = {
+    [DragModeEnum.copy]: 'drag-mode-copy',
+    [DragModeEnum.link]: 'drag-mode-link',
+    [DragModeEnum.reorder]: 'drag-mode-reorder',
+    [DragModeEnum.move]: 'drag-mode-move',
+    [DragModeEnum.cantDrop]: 'drag-mode-cant-drop',
+  }
+  private dragModifiersModes = {
+    [Keys.f1]: DragModeEnum.copy,
+    [Keys.f2]: DragModeEnum.link,
+    [Keys.f3]: DragModeEnum.reorder,
+  }
+  private registeredModifiersKeys: Keys[]; // will be populated with keys of #dragModifiersModes in constructor
+  private dragModeSubscription: Subscription;
+  private previousDragMode: DragModeEnum;
 
   private mouseUpHandlerBinded = this.mouseUpHandler.bind(this);
   private firstMouseMoveHandlerBinded = this.firstMouseMoveHandler.bind(this);
   private positionNoteShadowBinded = this.positionNoteShadow.bind(this);
   private mouseOverHandlerBinded = this.mouseOverHandler.bind(this);
   private mouseOutHandlerBinded = this.mouseOutHandler.bind(this);
+
+  constructor(
+    private router: Router,
+    private el: ElementRef<HTMLSpanElement>,
+    private apiService: ApiService,
+    private expandableDirectiveStateKeeperService: ExpandableDirectiveStateKeeperService,
+    private interfaceEventsService: InterfaceEventsService,
+  ) {
+    this.registeredModifiersKeys = Object.keys(this.dragModifiersModes) as Keys[];
+    this.registeredModifiersKeys.forEach(key => {
+      this.interfaceEventsService.getStateSubject(key)
+        .subscribe(this.handleDragMode.bind(this));
+    });
+  }
+
+  private handleDragMode() {
+    let keysCount = 0;
+    let matchedKey = '';
+    this.registeredModifiersKeys.forEach(key => {
+      if (this.interfaceEventsService.getStateSubject(key).getValue()) {
+        ++keysCount;
+        matchedKey = key;
+      }
+    });
+    if (keysCount === 1) {
+      this.dragMode.next(this.dragModifiersModes[matchedKey]);
+    } else {
+      this.dragMode.next(DragModeEnum.move);
+    }
+  }
 
   @HostListener('click')
   public openNote(): void {
@@ -53,15 +110,6 @@ export class DraggableNoteEntryComponent implements OnInit {
   @HostListener('dragstart')
   public dragstartListener() { return false };
 
-  constructor(
-    private router: Router,
-    private el: ElementRef<HTMLSpanElement>,
-    private apiService: ApiService,
-    private expandableDirectiveStateKeeperService: ExpandableDirectiveStateKeeperService,
-  ) { }
-
-  ngOnInit(): void {}
-
   public handleNoteDrop(e: CustomEvent<Note['Record']>) {
     this.apiService.note.moveNote(e.detail, this.note._id);
   }
@@ -71,8 +119,70 @@ export class DraggableNoteEntryComponent implements OnInit {
 
     return new Observable(subscriber => {
       if (
-      !elementToCheck.classList.contains('drop-zone') ||
       !targetNoteId ||
+      !elementToCheck.classList.contains('drop-zone')
+      ) {
+        subscriber.next(false);
+        subscriber.complete();
+      } else
+      if (this.dragMode.getValue() === DragModeEnum.move) {
+        this.canMoveHere(targetNoteId)
+          .subscribe(canMove => {
+            subscriber.next(canMove);
+            subscriber.complete();
+          });
+      } else
+      if (this.dragMode.getValue() === DragModeEnum.link) {
+        this.canLinkHere(targetNoteId)
+          .subscribe(canLink => {
+            subscriber.next(canLink);
+            subscriber.complete();
+          });
+      } else
+      if (this.dragMode.getValue() === DragModeEnum.copy) {
+        this.canCopyHere(targetNoteId)
+          .subscribe(canCopy => {
+            subscriber.next(canCopy);
+            subscriber.complete();
+          });
+      } else
+      if (this.dragMode.getValue() === DragModeEnum.reorder) {
+        this.canReorderHere(targetNoteId)
+          .subscribe(canReorder => {
+            subscriber.next(canReorder);
+            subscriber.complete();
+          });
+      } else {
+        subscriber.next(false);
+        subscriber.complete();
+      }
+    });
+  }
+
+  private canReorderHere(targetNoteId: Note['Record']['_id']): Observable<boolean> {
+    return new Observable(subscriber => {
+      subscriber.next(true);
+      subscriber.complete();
+    });
+  }
+
+  private canLinkHere(targetNoteId: Note['Record']['_id']): Observable<boolean> {
+    return new Observable(subscriber => {
+      subscriber.next(true);
+      subscriber.complete();
+    });
+  }
+
+  private canCopyHere(targetNoteId: Note['Record']['_id']): Observable<boolean> {
+    return new Observable(subscriber => {
+      subscriber.next(true);
+      subscriber.complete();
+    });
+  }
+
+  private canMoveHere(targetNoteId: Note['Record']['_id']): Observable<boolean> {
+    return new Observable(subscriber => {
+      if (
       targetNoteId === this.note._id ||
       targetNoteId === this.note.parentNoteId
       ) {
@@ -101,8 +211,8 @@ export class DraggableNoteEntryComponent implements OnInit {
       if (noteToCheck.parentNoteId === potentialParentId) {
         subscriber.next(true);
         subscriber.complete();
-      }
-      else if (noteToCheck.parentNoteId === this.apiService.note.topNotesParentKey || !potentialParentId) {
+      } else
+      if (noteToCheck.parentNoteId === this.apiService.note.topNotesParentKey || !potentialParentId) {
         subscriber.next(false);
         subscriber.complete();
       } else {
@@ -121,7 +231,7 @@ export class DraggableNoteEntryComponent implements OnInit {
   }
 
   private mouseOverHandler(event: MouseEvent): void {
-    if ((event.target as HTMLElement).matches('.expansion-arrow') && (event.target as HTMLElement).style.opacity === "1") {
+    if ((event.target as HTMLElement).classList.contains('expansion-arrow') && (event.target as HTMLElement).style.opacity === "1") {
       const getExpandableItemIdEvent = new CustomEvent('getItemId', {
         bubbles: false,
         detail: {
@@ -136,25 +246,36 @@ export class DraggableNoteEntryComponent implements OnInit {
       });
       event.target.dispatchEvent(getExpandableItemIdEvent);
     }
-    this.canDropHere(event.target as HTMLElement)
-      .subscribe((canBeDropped) => {
-        if (canBeDropped) {
-          (event.target as HTMLElement).classList.add('indicate-drop-zone');
-    
-          // TODO: add copying drag mode (for example with ctrl pressed) and indicate it with cursor
-          // switch (this.getMovingMode()) {
-          //   case 'copy': "(or link)"
-          //     "set cursor to copy (or link) cursor";
-          //     break;
-          //   case 'move':
-          //     "set cursor to copy cursor";
-          //     break;
-          // }
-        }
-      });
+    if ((event.target as HTMLElement).classList.contains('drop-zone') && (event.target as HTMLElement).getAttribute('noteId') !== this.note._id) {
+      this.canDropHere(event.target as HTMLElement)
+        .subscribe((canBeDropped) => {
+          if (canBeDropped) {
+            (event.target as HTMLElement).classList.add('indicate-drop-zone');
+          } else {
+            this.setDragModeClassFor(DragModeEnum.cantDrop);
+          }
+        });
+    }
+  }
+  
+  private clearBorwserElementClasses(): void {
+    Object.values(this.dragModeClasses).forEach(modeclass => {
+      this.browserReference.classList.remove(modeclass);
+    });
+  }
+
+  private setDragModeClassFor(dragModeToSetClassFor: DragModeEnum) {
+    if (dragModeToSetClassFor === DragModeEnum.previous) {
+      dragModeToSetClassFor = this.previousDragMode; 
+    } else {
+      this.previousDragMode = this.dragMode.getValue();
+    }
+    this.clearBorwserElementClasses();
+    this.browserReference.classList.add(this.dragModeClasses[dragModeToSetClassFor]);
   }
 
   private mouseOutHandler(event: MouseEvent) {
+    this.setDragModeClassFor(DragModeEnum.previous);
     if (this.hoverExpansion.ref) {
       clearTimeout(this.hoverExpansion.ref);
       delete this.hoverExpansion.ref;
@@ -168,7 +289,6 @@ export class DraggableNoteEntryComponent implements OnInit {
       (this.el as any).nativeElement.style.opacity = this.originalOpacity;
       this.noteClone.remove();
       this.dragStarted = false;
-      document.body.classList.remove('drag-ongoing');
       this.mouseOutHandler(event);
 
       this.canDropHere(event.target as HTMLElement)
@@ -190,6 +310,16 @@ export class DraggableNoteEntryComponent implements OnInit {
     document.removeEventListener('mouseover', this.mouseOverHandlerBinded);
     document.removeEventListener('mouseout', this.mouseOutHandlerBinded);
     document.removeEventListener('mouseup', this.mouseUpHandlerBinded);
+
+    document.body.classList.remove('drag-ongoing');
+    this.browserReference.classList.remove('drag-ongoing');
+
+    this.dragModeSubscription?.unsubscribe();
+    this.clearBorwserElementClasses();
+
+    this.interfaceEventsService.subscribeForEvent(this.registeredModifiersKeys, Events.keyup, () => {
+      () => this.interfaceEventsService.preventDefaultFor(this.registeredModifiersKeys, false);
+    }, { afterStateCallback: true });
   }
 
   private firstMouseMoveHandler(event: MouseEvent) {
@@ -207,6 +337,17 @@ export class DraggableNoteEntryComponent implements OnInit {
       this.dragStarted = true;
       this.shouldEnableRouter = false;
 
+      this.browserReference.classList.add('drag-ongoing');
+      document.body.classList.add('drag-ongoing');
+
+      this.interfaceEventsService.preventDefaultFor(this.registeredModifiersKeys);
+      
+      this.dragModeSubscription = this.dragMode
+        .subscribe((currentDragMode) => {
+            this.clearBorwserElementClasses();
+            this.setDragModeClassFor(currentDragMode);
+        });
+
       this.originalOpacity = this.el.nativeElement.style.opacity ? (this.el as any).nativeElement.style.opacity : this.originalOpacity;
       this.el.nativeElement.style.opacity = this.fadedOpacity;
       const noteLabelSize = this.el.nativeElement.getBoundingClientRect();
@@ -220,8 +361,6 @@ export class DraggableNoteEntryComponent implements OnInit {
       this.noteClone.style.width = noteLabelSize.width + 'px';
       this.noteClone.style.height = noteLabelSize.height + 'px';
       this.positionNoteShadow(event);
-
-      document.body.classList.add('drag-ongoing');
 
       document.body.append(this.noteClone);
       this.noteClone.style.marginLeft = -1 * noteLabelSize.width / 2 + 'px';

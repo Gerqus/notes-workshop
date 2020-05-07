@@ -1,7 +1,7 @@
 import { Component, OnChanges, OnDestroy, Input } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Note } from 'types';
-import { ApiService } from '@/api-service';
+import { ApiService } from '@/services/api-service';
 
 @Component({
   selector: 'app-entries-list',
@@ -10,6 +10,7 @@ import { ApiService } from '@/api-service';
 })
 export class EntriesListComponent implements OnChanges, OnDestroy {
   @Input() notes: Note['Record'][];
+  @Input() browserReference: HTMLElement;
   public notesChildrenSubs: {
     [K: string]: Subscription
   } = {};

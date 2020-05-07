@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, Subject, forkJoin } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 
-import { ConfigService } from '../config.service';
+import { ConfigService } from '../config-service';
 
 import { joinURLSegments } from '@/utils';
 

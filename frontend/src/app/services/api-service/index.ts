@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { ConfigService } from '../config.service';
+import { ConfigService } from '../config-service';
 
 import { NoteApiService } from './note-api.service';
 // import { NotesCategoryApiService } from './notes-category-api.service';

@@ -8,6 +8,7 @@
     appExpandable
     [canExpand]="notesChildren[note._id].length > 0"
     >
+
       <app-draggable-note-entry
       [ngClass]="{
         'action-button note-title minor': true,
@@ -15,13 +16,18 @@
       }"
       [appDropZone]="note._id"
       [note]="note"
+      [browserReference]="browserReference"
       ></app-draggable-note-entry>
+
       <!-- icon for expandable note placeholder -->
+
       <app-entries-list
       *ngIf="notesChildren[note._id].length > 0 && entryElement.classList.contains('expanded')"
       class="subentries"
       [notes]="notesChildren[note._id]"
+      [browserReference]="browserReference"
       ></app-entries-list>
+
     </li>
   </ng-container>
 </ul>

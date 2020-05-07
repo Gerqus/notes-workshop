@@ -5,7 +5,7 @@ import { Note, PartialWith } from 'types';
 
 import { GenericApiService } from './generic-api-service.class';
 
-import { ConfigService } from '../config.service';
+import { ConfigService } from '../config-service';
 
 export class NoteApiService extends GenericApiService<Note> {
   public indexedChildNotes: {[K: string] : Note['Record'][]} = {};

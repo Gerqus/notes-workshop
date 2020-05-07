@@ -5,11 +5,19 @@
 
 html {
   font-size: 16px;
+  font-family: Georgia, Times, serif;
   color: @text-primary-color;
   background-color: @background-primary-color;
+  padding: 0;
+  margin: 0;
+  border: 0;
 }
 
 body {
+  padding: 8px;
+  margin: 0;
+  border: 0;
+
   &.drag-ongoing * {
     cursor: none;
   }
@@ -43,7 +51,7 @@ p {
   border: 1px ridge @input-border-color;
   color: @text-primary-color;
   background-color: @input-background-color;
-  font-family: Roboto-Light;
+  font-family: Georgia;
 
   &.with-icon-left {
     padding-left: 2rem;

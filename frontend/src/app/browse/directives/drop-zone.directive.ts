@@ -1,6 +1,6 @@
 import { Directive, ElementRef, OnInit, HostListener, Input } from '@angular/core';
 import { Note } from 'types';
-import { ApiService } from '@/api-service';
+import { ApiService } from '@/services/api-service';
 import { ExpandableDirectiveStateKeeperService } from '@/common/services/expandable-directive-state-keeper.service';
 
 @Directive({
