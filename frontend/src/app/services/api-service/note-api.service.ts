@@ -91,7 +91,11 @@ export class NoteApiService extends GenericApiService<Note> {
 
   public moveNote(noteToBeMoved: Note['Record'], newParentId: Note['Record']['_id']) {
     if (newParentId === noteToBeMoved._id) {
-      throw new Error('Note can\'t be child of itself. Aborting note moving.');
+      console.error('Note can\'t be child of itself. Aborting note moving.');
+      return;
+    } else if (newParentId === noteToBeMoved.parentNoteId) {
+      console.warn('Note already is parent of target note. Aborting note moving.');
+      return;
     }
     const oldParentId = noteToBeMoved.parentNoteId;
     noteToBeMoved.parentNoteId = newParentId;
@@ -103,5 +107,18 @@ export class NoteApiService extends GenericApiService<Note> {
           this.refreshChildrenFor(newParentId);
         }
       )).subscribe();
+  }
+
+  public copyNoteShallow(noteToBeCopied: Note['Record'], copyParentId: Note['Record']['_id']) {
+    this._copyItem(noteToBeCopied)
+      .subscribe((newNote) => {
+        newNote.parentNoteId = copyParentId;
+        this._updateItem(newNote)
+          .pipe(tap(
+            () => {
+              this.refreshChildrenFor(copyParentId);
+            }
+          )).subscribe();
+      });
   }
 }

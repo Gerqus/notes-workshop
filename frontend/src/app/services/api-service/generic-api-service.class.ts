@@ -146,6 +146,12 @@ export class GenericApiService<T extends DataModel> {
     .pipe(tap(() => this._updateEndpointItemsIndex()))
   }
 
+  protected _copyItem(itemToBeCopied: PartialWith<T['Record'], '_id'>): Observable<T['Record']> {
+    const newItem = Object.assign({}, itemToBeCopied)
+    delete newItem._id;
+    return this._addItem(newItem);
+  }
+
   protected _getIndexedItemsSubject(): Subject<T['Record'][]> {
     return this.indexedItemsSubject;
   }
