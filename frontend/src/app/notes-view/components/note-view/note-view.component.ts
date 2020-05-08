@@ -31,7 +31,9 @@ export class NoteViewComponent implements OnInit, OnDestroy {
         this.noteId = params['noteId'];
         this.apiService.note.getNoteById(this.noteId)
           .subscribe((fetchedNote) => {
-            this.note = fetchedNote;
+            if (fetchedNote) {
+              this.note = fetchedNote;
+            }
           });
       });
   }
@@ -63,15 +65,7 @@ export class NoteViewComponent implements OnInit, OnDestroy {
   }
 
   public toggleCategory() {
-    let noteToModifyId: string;
-    if (this.note.isLink) {
-      noteToModifyId = this.note.originalNoteId;
-    } else {
-      noteToModifyId = this.note._id;
-    }
-    this.apiService.note.toggleCategory({
-      _id: noteToModifyId
-    }).subscribe();
+    this.apiService.note.toggleCategory(this.note).subscribe();
   }
 
   public supportTitleHotkeys(e: KeyboardEvent) {

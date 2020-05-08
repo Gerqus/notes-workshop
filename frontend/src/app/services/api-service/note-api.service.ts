@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import * as rxjs from 'rxjs';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, merge } from 'rxjs';
 import { map, tap, mergeMap } from 'rxjs/operators';
 import { Note, PartialWith } from 'types';
 
@@ -31,13 +31,17 @@ export class NoteApiService extends GenericApiService<Note> {
   public getNoteById(searchedNoteId: Note['Record']['_id']): Observable<Note['Record']> {
     return this._fetchItemById(searchedNoteId)
       .pipe(mergeMap((fetchedNote) => {
+        if (!fetchedNote) {
+          return rxjs.of(null);
+        }
         return new Observable<Note['Record']>((subscriber) => {
-          if(fetchedNote.isLink) {
-            this.fetchOriginalNote(fetchedNote)
-              .subscribe((originalNote) => {
-                subscriber.next(originalNote);
-                subscriber.complete();
-              })
+          if (fetchedNote.isLink) {
+            this.getOriginalNote(fetchedNote)
+            .pipe(map(originalNote => this.formatOriginalNoteFromLink(originalNote, fetchedNote)))
+            .subscribe((formatedNote) => {
+              subscriber.next(formatedNote);
+              subscriber.complete();
+            })
           } else {
             subscriber.next(fetchedNote);
             subscriber.complete();
@@ -46,18 +50,20 @@ export class NoteApiService extends GenericApiService<Note> {
       }));
   }
 
-  private fetchOriginalNote(linkNote: Note['Record']): Observable<Note['Record']> {
+  private getOriginalNote(linkNote: Note['Record']): Observable<Note['Record']> {
     return this.getNoteById(linkNote.originalNoteId)
-      .pipe(map(originalNote => ({
-        _id: linkNote._id,
-        parentNoteId: linkNote.parentNoteId,
-        originalNoteId: linkNote.originalNoteId,
-        isLink: linkNote.isLink,
-        title: originalNote.title,
-        content: originalNote.content,
-        isCategory: originalNote.isCategory
-      })
-    ));
+  }
+
+  private formatOriginalNoteFromLink(originalNote: Note['Record'], linkNote: Note['Record']): Note['Record'] {
+    return {
+      _id: linkNote._id,
+      parentNoteId: linkNote.parentNoteId,
+      originalNoteId: linkNote.originalNoteId,
+      isLink: linkNote.isLink,
+      title: originalNote.title,
+      content: originalNote.content,
+      isCategory: originalNote.isCategory
+    }
   }
 
   public getNotesChildren(parentNote: PartialWith<Note['Record'], '_id'>): Observable<Note['Record'][]> {
@@ -81,13 +87,15 @@ export class NoteApiService extends GenericApiService<Note> {
 
   public deleteNote(note: Note['Record']): Observable<null> {
     return new Observable<null>(subscriber => {
-      this._fetchItemsQuery({
-        originalNoteId: note._id
-      }).subscribe(noteLinks => {
-        if(noteLinks.length) {
+      merge(
+        this.getNotesLinks(note),
+        this.getNotesChildren(note)
+      ).subscribe((notesToDelete) => {
+        if(notesToDelete.length) {
+          console.log(notesToDelete)
           rxjs.forkJoin(
-            ...noteLinks.map((link) => {
-              return this._deleteItem(link._id)
+            ...notesToDelete.map((link) => {
+              return this.deleteNote(link)
                 .pipe(tap(() => this.handleNoteDeletion(link)))
             })
           )
@@ -102,10 +110,17 @@ export class NoteApiService extends GenericApiService<Note> {
       });
     })
     .pipe(tap(() => {
-      this._deleteItem(note._id)
+      this._deleteItem(note)
         .pipe(tap(() => this.handleNoteDeletion(note)))
         .subscribe()
     }));
+  }
+
+  private getNotesLinks(originalNote: Note['Record']): Observable<Note['Record'][]> {
+    return this._fetchItemsQuery({
+      originalNoteId: originalNote._id,
+      isLink: true,
+    });
   }
 
   private handleNoteDeletion(note) {
@@ -118,7 +133,7 @@ export class NoteApiService extends GenericApiService<Note> {
 
   public updateNote(noteToSave: PartialWith<Note['Record'], '_id'>): Observable<Note['Record']> {
     return this._updateItem(noteToSave)
-      .pipe(tap((savedNote) => {this.refreshChildrenFor(savedNote.parentNoteId)}));;
+      .pipe(tap((savedNote) => {this.refreshDependantsFor(savedNote)}));
   }
 
   public getChildNotesListSub(parentNoteId: Note['Record']['_id']): Observable<Note['Record'][]> {
@@ -126,6 +141,21 @@ export class NoteApiService extends GenericApiService<Note> {
       this.notesChildrenSubs[parentNoteId] = new Subject<Note['Record'][]>() ;
     }
     return this.notesChildrenSubs[parentNoteId];
+  }
+
+  public refreshDependantsFor(note: Note['Record']) {
+    this.refreshChildrenFor(note.parentNoteId);
+    this.refreshLinksParentsFor(note);
+  }
+
+  public refreshLinksParentsFor(note: Note['Record']) {
+    this.getNotesLinks(note)
+      .pipe(map((linkNotes) => [...new Set(linkNotes.map(note => note.parentNoteId))]))
+      .subscribe(linkParentNoteIds => {
+        linkParentNoteIds.forEach(linkParentNoteId => {
+          this.refreshChildrenFor(linkParentNoteId)
+        });
+      });
   }
 
   public refreshChildrenFor(parentNoteId: Note['Record']['_id']): void {
@@ -139,9 +169,10 @@ export class NoteApiService extends GenericApiService<Note> {
               ...childNotes.map(note => {
                 if (note.isLink) {
                   return new Observable<Note['Record']>(subscriber => {
-                    this.fetchOriginalNote(note)
-                      .subscribe((originalNote) => {
-                        subscriber.next(originalNote);
+                    this.getOriginalNote(note)
+                      .pipe(map(originalNote => this.formatOriginalNoteFromLink(originalNote, note)))
+                      .subscribe((formatedNote) => {
+                        subscriber.next(formatedNote);
                         subscriber.complete();
                       });
                   })
@@ -158,33 +189,26 @@ export class NoteApiService extends GenericApiService<Note> {
       });
   }
 
-  // public getNoteFromLink(linkNote: Note['Record']): Observable<Note['Record']> {
-  //   return this.getNoteById(linkNote.originalNoteId)
-  //     .pipe(map((originalNote) => ({
-  //       _id: linkNote._id,
-  //       parentNoteId: linkNote.parentNoteId,
-  //       isLink: linkNote.isLink,
-  //       originalNoteId: linkNote.originalNoteId,
-  //       title: originalNote.title,
-  //       content: originalNote.content,
-  //       isCategory: originalNote.isCategory
-  //     })));
-  // }
-
-  public toggleCategory(noteToBeToggled: PartialWith<Note['Record'], '_id'>): Observable<Note['Record']> {
+  public toggleCategory(noteToBeToggled: Note['Record']): Observable<Note['Record']> {
+    noteToBeToggled.isCategory = !noteToBeToggled.isCategory;
     return new Observable<Note['Record']>(subscriber => {
-      this.getNoteById(noteToBeToggled._id)
-        .subscribe(fetchedNote => {
-          fetchedNote.isCategory = !fetchedNote.isCategory;
-          this.updateNote(fetchedNote)
-            .subscribe(changedNote => {
-              this.refreshChildrenFor(noteToBeToggled.parentNoteId);
-              this.refreshChildrenFor(changedNote.parentNoteId);
-              subscriber.next(changedNote);
-              subscriber.complete();
-            });
-        });
-    })
+      if (noteToBeToggled.isLink) {
+        this.getOriginalNote(noteToBeToggled)
+          .subscribe(originalNote => {
+            console.log('original note', originalNote)
+            originalNote.isCategory = !originalNote.isCategory;
+            subscriber.next(originalNote);
+          })
+      }
+      else {
+        subscriber.next(noteToBeToggled);
+      }
+    }).pipe(mergeMap(fetchedNote => {
+      return this.updateNote(fetchedNote)
+    }))
+    .pipe(tap((changedNote) => {
+      this.refreshDependantsFor(changedNote);
+    }));
   }
 
   public moveNote(noteToBeMoved: Note['Record'], newParentId: Note['Record']['_id']) {
@@ -208,6 +232,7 @@ export class NoteApiService extends GenericApiService<Note> {
   }
 
   public copyNoteShallow(noteToBeCopied: Note['Record'], copyParentId: Note['Record']['_id']) {
+    console.log('copying note', noteToBeCopied._id, 'under', copyParentId);
     this._copyItem(noteToBeCopied)
       .subscribe((newNote) => {
         newNote.parentNoteId = copyParentId;

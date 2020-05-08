@@ -114,8 +114,8 @@ export class GenericApiService<T extends DataModel> {
       .pipe(map(noteResp => noteResp.object as T['Record'][]));
   }
 
-  protected _deleteItem(itemId: T['Record']['_id']): Observable<T['Record']> {
-    const fullEndpoint = this.getEndpoint([itemId]);
+  protected _deleteItem(item: T['Record']): Observable<T['Record']> {
+    const fullEndpoint = this.getEndpoint([item._id]);
     console.log('DELETE', fullEndpoint);
     return this.httpClient.delete<T['Response']>(fullEndpoint)
       .pipe(tap(GenericApiService.logResponse))

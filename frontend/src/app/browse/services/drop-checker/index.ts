@@ -16,6 +16,9 @@ export class DropCheckerService {
   
   public canDropHere(elementToCheck: HTMLElement, currentNote: Note['Record']): Observable<boolean> {
     const targetNoteId = elementToCheck.getAttribute('noteId');
+    console.log('checking for drag mode', this.dragAndDropModeService.getCurrentDragMode());
+    console.log('targetNoteId', targetNoteId);
+    console.log("elementToCheck", elementToCheck);
 
     return new Observable(subscriber => {
       if (

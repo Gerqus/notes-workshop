@@ -138,8 +138,11 @@ export class DraggableNoteEntryComponent {
       this.dragStarted = false;
       this.mouseOutHandler(event);
 
+      console.log('from mouseup');
+
       this.dropCheckerService.canDropHere(event.target as HTMLElement, this.note)
         .subscribe((canBeDropped) => {
+          console.log('canBeDropped?', canBeDropped);
           if (canBeDropped) {
             this.shouldEnableRouter = false;
             const noteDropEvent = new CustomEvent<Note['Record']>('notedrop', {

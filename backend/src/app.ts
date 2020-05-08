@@ -15,7 +15,7 @@ dbService.connect('mongodb://localhost:27017')
     
     app.use(cookieParser());
 
-    app.use((req, res, next) => {
+    app.use('/api', (req, res, next) => {
       console.log(req.method, req.url);
       next();
     });
