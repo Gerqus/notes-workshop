@@ -1,6 +1,6 @@
 import { Component, Input, ElementRef, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription, Observable } from 'rxjs';
 import { Note } from 'types';
 import { DropCheckerService } from '@/browse/services/drop-checker';
 import { ExpandableDirectiveStateKeeperService } from '@/common/services/expandable-directive-state-keeper.service';
@@ -15,6 +15,8 @@ import { InterfaceEventsService, Events } from '@/services/interface-events';
 export class DraggableNoteEntryComponent {
   @Input() note: Note['Record'];
   @Input() browserReference: HTMLElement;
+
+  public noteTitle: Note['Record']['title'];
 
   private shouldEnableRouter = true;
   private readonly fadedOpacity = '0.4';
@@ -51,8 +53,7 @@ export class DraggableNoteEntryComponent {
     private expandableDirectiveStateKeeperService: ExpandableDirectiveStateKeeperService,
     private interfaceEventsService: InterfaceEventsService,
     private dragAndDropModeService: DragAndDropModeService
-  ) {
-  }
+  ) { }
 
   @HostListener('click')
   public openNote(): void {

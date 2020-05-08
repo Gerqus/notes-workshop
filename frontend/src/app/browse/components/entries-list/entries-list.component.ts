@@ -1,5 +1,6 @@
 import { Component, OnChanges, OnDestroy, Input } from '@angular/core';
-import { Subscription } from 'rxjs';
+import * as rxjs from 'rxjs';
+import { Subscription, Observable } from 'rxjs';
 import { Note } from 'types';
 import { ApiService } from '@/services/api-service';
 
@@ -50,4 +51,18 @@ export class EntriesListComponent implements OnChanges, OnDestroy {
 
   // public notesTrackingFn = (index: number, note: Note['Record']) => [note._id, ...((this.notesChildren[note._id] || []).map(note => note._id).sort())].join('.');
   public notesTrackingFn = (index: number, note: Note['Record']) => note._id;
+
+  // public getOriginalNoteObservable(note: Note['Record']): Observable<Note['Record']> {
+  //   if (note.isLink) {
+  //     return new Observable((subscriber) => {
+  //       this.apiService.note.getNoteFromLink(note)
+  //         .subscribe(originalNote => {
+  //           subscriber.next(originalNote);
+  //           subscriber.complete();
+  //         });
+  //     })
+  //   } else {
+  //     return rxjs.of(note);
+  //   }
+  // }
 }

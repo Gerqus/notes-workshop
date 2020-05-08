@@ -66,7 +66,8 @@ export class GenericApiService<T extends DataModel> {
     return output;
   }
 
-  protected _addItem(dataToAdd: T['Model']): Observable<T['Record']> {
+  // below usage of Partial<> is not proper... I should have separate definition than Record and Model, that will tell what is mandatory, and what has defaultvalues (or is optional)
+  protected _addItem(dataToAdd: Partial<T['Model']>): Observable<T['Record']> {
     const fullEndpoint = this.getEndpoint();
     console.log('POST', fullEndpoint);
     return this.httpClient.post<T['Response']>(fullEndpoint, dataToAdd)
@@ -86,17 +87,13 @@ export class GenericApiService<T extends DataModel> {
   protected _fetchItemById(searchedItemId: T['Record']['_id']): Observable<T['Record']> {
     return new Observable<T['Record']>((subscriber) => {
       if (this.indexedItems[searchedItemId]) {
-        setTimeout(() => {
-          subscriber.next(this.indexedItems[searchedItemId]);
-          subscriber.complete();
-        });
+        subscriber.next(this.indexedItems[searchedItemId]);
+        subscriber.complete();
       } else {
         this.indexedItemsSubject
           .subscribe(() => {
-            setTimeout(() => {
-              subscriber.next(this.indexedItems[searchedItemId]);
-              subscriber.complete();
-            });
+            subscriber.next(this.indexedItems[searchedItemId]);
+            subscriber.complete();
           });
           this._updateEndpointItemsIndex();
       }

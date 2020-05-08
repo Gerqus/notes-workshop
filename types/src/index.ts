@@ -38,6 +38,8 @@ export interface Note extends DataModel {
     title: string;
     content: string;
     isCategory: boolean; // jeżeli notatka traktowana jest jako kategoria, to używamy jej tytułu, ale ignorujemy treść i wyświetlamy tytuł pogrubiony,w iększy itd...
+    isLink: boolean; // jeżeli notatka traktowana jest jako link, to ignorujemy wszystkie jej parametry poza parentNoteId, a resztę uzupełniamy z oryginału
+    originalNoteId?: Note['Record']['_id'];
     parentNoteId: Note['Record']['_id'];
   }
 

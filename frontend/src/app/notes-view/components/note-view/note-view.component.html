@@ -2,6 +2,7 @@
   <div class="note-view" *ngIf="note">
 
     <div class="note-title section-secondary">
+      <i class="icon link link-indicator-icon" *ngIf="note.isLink"></i>
       <div #noteTitle class="input" contenteditable [innerHTML]="note.title" (keydown)="supportTitleHotkeys($event)"></div>
     </div>
 
@@ -15,8 +16,8 @@
 
     <div class="note-actions section-secondary">
       <div class="action-button major" (click)="saveNote()">Save note</div>
-      <div class="action-button major" (click)="deleteNote()">Remove note</div>
-      <div class="action-button major" (click)="toggleCategory()">Toggle Category</div>
+      <div class="action-button major" (click)="deleteNote()">Remove {{note.isLink ? 'link' : 'note'}}</div>
+      <div class="action-button major" (click)="toggleCategory()">Mark as {{note.isCategory ? 'regular' : 'category'}}</div>
     </div>
 
   </div>

@@ -41,13 +41,20 @@ export class NoteViewComponent implements OnInit, OnDestroy {
   }
 
   public saveNote() {
+    let noteToModifyId: string;
+    if (this.note.isLink) {
+      noteToModifyId = this.note.originalNoteId;
+    } else {
+      noteToModifyId = this.note._id;
+    }
     this.apiService.note.updateNote({
-      _id: this.note._id,
+      _id: noteToModifyId,
       title: this.noteTitleElement.nativeElement.innerHTML.replace(/<br>$/, ''),
       content: this.noteContentElement.nativeElement.innerHTML.replace(/<br>$/, ''),
     })
     .subscribe((newNote) => {
-      this.note = newNote;
+      this.noteTitleElement.nativeElement.innerHTML = newNote.title;
+      this.noteContentElement.nativeElement.innerHTML = newNote.content;
     });
   }
 
@@ -56,7 +63,15 @@ export class NoteViewComponent implements OnInit, OnDestroy {
   }
 
   public toggleCategory() {
-    this.apiService.note.toggleCategory(this.note).subscribe();
+    let noteToModifyId: string;
+    if (this.note.isLink) {
+      noteToModifyId = this.note.originalNoteId;
+    } else {
+      noteToModifyId = this.note._id;
+    }
+    this.apiService.note.toggleCategory({
+      _id: noteToModifyId
+    }).subscribe();
   }
 
   public supportTitleHotkeys(e: KeyboardEvent) {
