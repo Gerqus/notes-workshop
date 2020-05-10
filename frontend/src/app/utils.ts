@@ -1,3 +1,5 @@
+import { Subscriber } from 'rxjs';
+
 export function freezeDeep(obj: Object) {
   Object.getOwnPropertyNames(obj).forEach(propName => {
     if (typeof(obj[propName]) === 'object') {

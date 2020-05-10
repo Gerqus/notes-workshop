@@ -1,9 +1,9 @@
 import { Component, OnInit, OnDestroy, ElementRef } from '@angular/core';
-import { ApiService } from '@/services/api-service/';
+import { NotesControllerService } from '@/services/notes-controller';
 
 import { Subscription } from 'rxjs';
 
-import { Note } from 'types';
+import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.class';
 
 @Component({
   selector: 'app-browser',
@@ -12,27 +12,29 @@ import { Note } from 'types';
 })
 export class BrowserComponent implements OnInit, OnDestroy {
   public notesGroupsOrderByNames: string[] = [];
-  private notesGroupsOrderSub: Subscription;
   private topNotesListSub: Subscription;
 
-  public notes: Note['Record'][];
-  public topNotesParentKey = this.apiService.note.topNotesParentKey;
+  public notes: NoteIndexRecord[];
+  public topNotesParentKey = this.notesControllerService.topNotesParentKey;
 
   constructor(
-    private apiService: ApiService,
+    private notesControllerService: NotesControllerService,
     public browser: ElementRef<HTMLElement>
   ) {}
 
   ngOnInit(): void {
-    this.topNotesListSub = this.apiService.note.getChildNotesListSub(this.apiService.note.topNotesParentKey)
-      .subscribe((topNotes) => {
-        this.notes = topNotes;
-      });
-    this.apiService.note.refreshChildrenFor(this.apiService.note.topNotesParentKey);
+    this.notesControllerService.isReady
+      .subscribe((controllerReady) => {
+        if (controllerReady) {
+          this.topNotesListSub = this.notesControllerService.getObservableOfChildrenOf(this.topNotesParentKey)
+            .subscribe((topNotes) => {
+              this.notes = topNotes;
+            });
+        }
+      })
   }
 
   ngOnDestroy(): void {
-    this.notesGroupsOrderSub.unsubscribe();
     this.topNotesListSub.unsubscribe();
   }
 }

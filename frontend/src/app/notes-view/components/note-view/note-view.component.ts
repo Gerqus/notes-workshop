@@ -1,71 +1,36 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router'
-
-import { Subscription } from 'rxjs';
+import { Component, ViewChild, Input } from '@angular/core';
 
 import { Note } from 'types';
 
-import { ApiService } from '@/services/api-service';
+import { NotesControllerService } from '@/services/notes-controller';
+import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.class';
 
 @Component({
   selector: 'app-note-view',
   templateUrl: './note-view.component.html',
   styleUrls: ['./note-view.component.less']
 })
-export class NoteViewComponent implements OnInit, OnDestroy {
+export class NoteViewComponent {
   @ViewChild('noteTitle') noteTitleElement: {nativeElement: HTMLDivElement};
   @ViewChild('noteContent') noteContentElement: {nativeElement: HTMLDivElement};
-
-  private routeNoteIdSubscription: Subscription;
-  private noteId: Note['Record']['_id'];
-  public note: Note['Record'];
+  @Input('note') note: NoteIndexRecord;
 
   constructor(
-    private activatedRoute: ActivatedRoute,
-    private apiService: ApiService,
+    private notesControllerService: NotesControllerService,
   ) { }
 
-  ngOnInit(): void {
-    this.routeNoteIdSubscription = this.activatedRoute.params
-      .subscribe(async params => {
-        this.noteId = params['noteId'];
-        this.apiService.note.getNoteById(this.noteId)
-          .subscribe((fetchedNote) => {
-            if (fetchedNote) {
-              this.note = fetchedNote;
-            }
-          });
-      });
-  }
-
-  ngOnDestroy(): void  {
-    this.routeNoteIdSubscription.unsubscribe();
-  }
-
   public saveNote() {
-    let noteToModifyId: string;
-    if (this.note.isLink) {
-      noteToModifyId = this.note.originalNoteId;
-    } else {
-      noteToModifyId = this.note._id;
-    }
-    this.apiService.note.updateNote({
-      _id: noteToModifyId,
-      title: this.noteTitleElement.nativeElement.innerHTML.replace(/<br>$/, ''),
-      content: this.noteContentElement.nativeElement.innerHTML.replace(/<br>$/, ''),
-    })
-    .subscribe((newNote) => {
-      this.noteTitleElement.nativeElement.innerHTML = newNote.title;
-      this.noteContentElement.nativeElement.innerHTML = newNote.content;
-    });
+    const titleToSave = this.noteTitleElement.nativeElement.innerHTML.replace(/<br\/?>$/, '');
+    const contentToSave = this.noteContentElement.nativeElement.innerHTML.replace(/<br\/?>$/, '');
+    this.notesControllerService.saveNote(this.note._id, titleToSave, contentToSave);
   }
 
   public deleteNote() {
-    this.apiService.note.deleteNote(this.note).subscribe();
+    this.notesControllerService.deleteNote(this.note);
   }
 
   public toggleCategory() {
-    this.apiService.note.toggleCategory(this.note).subscribe();
+    this.notesControllerService.toggleCategory(this.note);
   }
 
   public supportTitleHotkeys(e: KeyboardEvent) {

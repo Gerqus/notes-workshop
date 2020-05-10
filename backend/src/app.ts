@@ -10,6 +10,7 @@ const app = express();
 
 dbService.connect('mongodb://localhost:27017')
   .then(() => {
+    app.use(bodyParser.json({limit: '50mb'}));
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
     

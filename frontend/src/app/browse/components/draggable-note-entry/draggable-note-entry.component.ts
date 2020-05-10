@@ -1,11 +1,12 @@
 import { Component, Input, ElementRef, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subscription, Observable } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { Note } from 'types';
 import { DropCheckerService } from '@/browse/services/drop-checker';
 import { ExpandableDirectiveStateKeeperService } from '@/common/services/expandable-directive-state-keeper.service';
 import { DragAndDropModeService, DragModesEnum } from '@/browse/services/drag-and-drop-mode';
 import { InterfaceEventsService, Events } from '@/services/interface-events';
+import { NotesControllerService } from '@/services/notes-controller';
 
 @Component({
   selector: 'app-draggable-note-entry',
@@ -47,21 +48,16 @@ export class DraggableNoteEntryComponent {
   private mouseOutHandlerBinded = this.mouseOutHandler.bind(this);
 
   constructor(
-    private router: Router,
+    private notesControllerService: NotesControllerService,
     private el: ElementRef<HTMLSpanElement>,
     private dropCheckerService: DropCheckerService,
     private expandableDirectiveStateKeeperService: ExpandableDirectiveStateKeeperService,
     private interfaceEventsService: InterfaceEventsService,
-    private dragAndDropModeService: DragAndDropModeService
+    private dragAndDropModeService: DragAndDropModeService,
   ) { }
 
-  @HostListener('click')
   public openNote(): void {
-    if (this.shouldEnableRouter) {
-      this.router.navigate(['note', this.note._id]);
-    } else {
-      this.shouldEnableRouter = true;
-    }
+    this.notesControllerService.openNote(this.note);
   }
 
   @HostListener('mousedown', ['$event'])
@@ -132,13 +128,13 @@ export class DraggableNoteEntryComponent {
   }
   
   private mouseUpHandler(event: MouseEvent) {
+    this.readyToDrag = false;
+  
     if (this.dragStarted) {
       (this.el as any).nativeElement.style.opacity = this.originalOpacity;
       this.noteClone.remove();
       this.dragStarted = false;
       this.mouseOutHandler(event);
-
-      console.log('from mouseup');
 
       this.dropCheckerService.canDropHere(event.target as HTMLElement, this.note)
         .subscribe((canBeDropped) => {
@@ -152,8 +148,19 @@ export class DraggableNoteEntryComponent {
             event.target.dispatchEvent(noteDropEvent);
           }
         });
+
+        document.body.classList.remove('drag-ongoing');
+        this.browserReference.classList.remove('drag-ongoing');
+    
+        this.dragModeSubscription?.unsubscribe();
+        this.clearBorwserElementClasses();
+
+        this.interfaceEventsService.subscribeForEvent(this.dragAndDropModeService.getRegisteredModifiersKeys(), Events.keyup, () => {
+          () => this.interfaceEventsService.preventDefaultFor(this.dragAndDropModeService.getRegisteredModifiersKeys(), false);
+        }, { afterStateCallback: true });
+    } else {
+      this.openNote()
     }
-    this.readyToDrag = false;
 
     document.removeEventListener('mousemove', this.positionNoteShadowBinded);
     document.removeEventListener('mousemove', this.firstMouseMoveHandlerBinded);
@@ -161,15 +168,8 @@ export class DraggableNoteEntryComponent {
     document.removeEventListener('mouseout', this.mouseOutHandlerBinded);
     document.removeEventListener('mouseup', this.mouseUpHandlerBinded);
 
-    document.body.classList.remove('drag-ongoing');
-    this.browserReference.classList.remove('drag-ongoing');
-
-    this.dragModeSubscription?.unsubscribe();
-    this.clearBorwserElementClasses();
-
-    this.interfaceEventsService.subscribeForEvent(this.dragAndDropModeService.getRegisteredModifiersKeys(), Events.keyup, () => {
-      () => this.interfaceEventsService.preventDefaultFor(this.dragAndDropModeService.getRegisteredModifiersKeys(), false);
-    }, { afterStateCallback: true });
+    event.preventDefault();
+    return false;
   }
 
   private firstMouseMoveHandler(event: MouseEvent) {

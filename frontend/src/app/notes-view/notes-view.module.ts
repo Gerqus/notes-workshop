@@ -6,6 +6,7 @@ import { WidgetModule } from '@/widget/widget.module';
 
 import { LayoutComponent } from './components/layout/layout.component';
 import { NoteViewComponent } from './components/note-view/note-view.component';
+import { ProjectCommonModule } from '@/common/common.module';
 
 @NgModule({
   declarations: [
@@ -15,10 +16,11 @@ import { NoteViewComponent } from './components/note-view/note-view.component';
   imports: [
     CommonModule,
     WidgetModule,
-    AppRoutingModule
+    AppRoutingModule,
+    ProjectCommonModule,
   ],
   exports: [
-    LayoutComponent
+    LayoutComponent,
   ]
 })
 export class NotesViewModule { }

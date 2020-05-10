@@ -52,12 +52,12 @@ export class EntriesListComponent implements OnChanges, OnDestroy {
   // public notesTrackingFn = (index: number, note: Note['Record']) => [note._id, ...((this.notesChildren[note._id] || []).map(note => note._id).sort())].join('.');
   public notesTrackingFn = (index: number, note: Note['Record']) => note._id;
 
-  // public getOriginalNoteObservable(note: Note['Record']): Observable<Note['Record']> {
+  // public getSourceNoteObservable(note: Note['Record']): Observable<Note['Record']> {
   //   if (note.isLink) {
   //     return new Observable((subscriber) => {
   //       this.apiService.note.getNoteFromLink(note)
-  //         .subscribe(originalNote => {
-  //           subscriber.next(originalNote);
+  //         .subscribe(sourceNote => {
+  //           subscriber.next(sourceNote);
   //           subscriber.complete();
   //         });
   //     })

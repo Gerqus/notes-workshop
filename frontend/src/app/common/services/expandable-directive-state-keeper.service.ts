@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { ApiService } from '@/services/api-service';
+import { NotesControllerService } from '@/services/notes-controller';
 
 @Injectable({
   providedIn: 'root'
@@ -11,13 +11,13 @@ export class ExpandableDirectiveStateKeeperService {
   } = {};
 
   constructor(
-    private apiService: ApiService
+    private NotesControllerService: NotesControllerService
   ) {
     (window as any).statesSubscriptions = this.statesSubscriptions;
   }
 
   public setState(elementId: string, isExpanded: boolean): void {
-    if (elementId === this.apiService.note.topNotesParentKey) {
+    if (elementId === this.NotesControllerService.topNotesParentKey) {
       return;
     }
     if (!this.statesSubscriptions[elementId]) {

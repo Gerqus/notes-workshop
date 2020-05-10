@@ -44,9 +44,18 @@
 
   .note-content {
     .input {
+      overflow-y: scroll;
       white-space: pre-wrap;
       min-height: 10rem;
       display: block;
+      line-height: 1.3em;
+
+      ::ng-deep img {
+        width:auto;
+        height:400px;
+        margin:0.5rem 1rem 0.5rem 0.25rem;
+        float:left
+      }
     }
   }
 }

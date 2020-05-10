@@ -9,7 +9,7 @@ const noteSchema: IModelDefinition<Note['Model']> = {
   content: {type: String, default: ''},
   isCategory: {type: Boolean, default: false},
   isLink: {type: Boolean, default: false},
-  originalNoteId: {type: String},
+  sourceNoteId: {type: String},
   parentNoteId: {type: String, default: 'top'},
 };
 

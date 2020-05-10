@@ -32,7 +32,7 @@ export interface Note extends DataModel {
         content: string;
         isCategory: boolean;
         isLink: boolean;
-        originalNoteId?: Note['Record']['_id'];
+        sourceNoteId?: Note['Record']['_id'];
         parentNoteId: Note['Record']['_id'];
     };
     Record: Note['Model'] & MongoDBRecord;

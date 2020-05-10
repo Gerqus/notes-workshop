@@ -1,6 +1,10 @@
 <div class="notes-layout">
   <div class="tabs"></div>
-  <div class="content">
-    <router-outlet></router-outlet>
+  <div class="content" *ngIf="controllerReady">
+    <ng-container *ngFor="let note of openedNotes">
+      <app-note-view
+      [note]="note"
+      ></app-note-view>
+    </ng-container>
   </div>
 </div>

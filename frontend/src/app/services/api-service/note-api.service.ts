@@ -10,7 +10,7 @@ import { ConfigService } from '../config-service';
 
 export class NoteApiService extends GenericApiService<Note> {
   public indexedChildNotes: {[K: string] : Note['Record'][]} = {};
-  public topNotesParentKey = 'top'; //any arbitrary string really that won't collide with acrtual notes ids
+  public readonly topNotesParentKey = null; // to remove!
   public notesChildrenSubs: {
     [K: string] : Subject<Note['Record'][]>
   } = {};
@@ -30,54 +30,33 @@ export class NoteApiService extends GenericApiService<Note> {
 
   public getNoteById(searchedNoteId: Note['Record']['_id']): Observable<Note['Record']> {
     return this._fetchItemById(searchedNoteId)
-      .pipe(mergeMap((fetchedNote) => {
+      .pipe(map((fetchedNote) => {
         if (!fetchedNote) {
-          return rxjs.of(null);
+          return null;
+        } else {
+          return fetchedNote;
         }
-        return new Observable<Note['Record']>((subscriber) => {
-          if (fetchedNote.isLink) {
-            this.getOriginalNote(fetchedNote)
-            .pipe(map(originalNote => this.formatOriginalNoteFromLink(originalNote, fetchedNote)))
-            .subscribe((formatedNote) => {
-              subscriber.next(formatedNote);
-              subscriber.complete();
-            })
-          } else {
-            subscriber.next(fetchedNote);
-            subscriber.complete();
-          }
-        })
       }));
   }
 
-  private getOriginalNote(linkNote: Note['Record']): Observable<Note['Record']> {
-    return this.getNoteById(linkNote.originalNoteId)
+  public getSourceNoteFor(linkNote: PartialWith<Note['Record'], 'sourceNoteId'>): Observable<Note['Record']> {
+    return this.getNoteById(linkNote.sourceNoteId)
   }
 
-  private formatOriginalNoteFromLink(originalNote: Note['Record'], linkNote: Note['Record']): Note['Record'] {
+  private formatSourceNoteFromLink(sourceNote: Note['Record'], linkNote: Note['Record']): Note['Record'] {
     return {
       _id: linkNote._id,
       parentNoteId: linkNote.parentNoteId,
-      originalNoteId: linkNote.originalNoteId,
+      sourceNoteId: linkNote.sourceNoteId,
       isLink: linkNote.isLink,
-      title: originalNote.title,
-      content: originalNote.content,
-      isCategory: originalNote.isCategory
+      title: sourceNote.title,
+      content: sourceNote.content,
+      isCategory: sourceNote.isCategory
     }
   }
 
-  public getNotesChildren(parentNote: PartialWith<Note['Record'], '_id'>): Observable<Note['Record'][]> {
-    return new Observable<Note['Record'][]>((observer) => {
-      if (this.indexedChildNotes[parentNote._id]) {
-        observer.next(this.indexedChildNotes[parentNote._id])
-      } else {
-        this._fetchItemsQuery({parentNoteId: parentNote._id})
-          .subscribe((childNotes) => {
-            this.indexedChildNotes[parentNote._id] = childNotes;
-            observer.next(this.indexedChildNotes[parentNote._id])
-          });
-      }
-    });
+  public getNotesChildren(parentNote?: PartialWith<Note['Record'], '_id'>): Observable<Note['Record'][]> {
+    return this._fetchItemsQuery({parentNoteId: parentNote._id});
   }
 
   public noteHasChildren(parentNote: Note['Record']): Observable<boolean> {
@@ -116,9 +95,9 @@ export class NoteApiService extends GenericApiService<Note> {
     }));
   }
 
-  private getNotesLinks(originalNote: Note['Record']): Observable<Note['Record'][]> {
+  private getNotesLinks(sourceNote: Note['Record']): Observable<Note['Record'][]> {
     return this._fetchItemsQuery({
-      originalNoteId: originalNote._id,
+      sourceNoteId: sourceNote._id,
       isLink: true,
     });
   }
@@ -169,8 +148,8 @@ export class NoteApiService extends GenericApiService<Note> {
               ...childNotes.map(note => {
                 if (note.isLink) {
                   return new Observable<Note['Record']>(subscriber => {
-                    this.getOriginalNote(note)
-                      .pipe(map(originalNote => this.formatOriginalNoteFromLink(originalNote, note)))
+                    this.getSourceNoteFor(note)
+                      .pipe(map(sourceNote => this.formatSourceNoteFromLink(sourceNote, note)))
                       .subscribe((formatedNote) => {
                         subscriber.next(formatedNote);
                         subscriber.complete();
@@ -193,11 +172,11 @@ export class NoteApiService extends GenericApiService<Note> {
     noteToBeToggled.isCategory = !noteToBeToggled.isCategory;
     return new Observable<Note['Record']>(subscriber => {
       if (noteToBeToggled.isLink) {
-        this.getOriginalNote(noteToBeToggled)
-          .subscribe(originalNote => {
-            console.log('original note', originalNote)
-            originalNote.isCategory = !originalNote.isCategory;
-            subscriber.next(originalNote);
+        this.getSourceNoteFor(noteToBeToggled)
+          .subscribe(sourceNote => {
+            console.log('original note', sourceNote)
+            sourceNote.isCategory = !sourceNote.isCategory;
+            subscriber.next(sourceNote);
           })
       }
       else {
@@ -248,7 +227,7 @@ export class NoteApiService extends GenericApiService<Note> {
     }
     const noteLinkToCreate: PartialWith<Note['Model'], 'parentNoteId'> = {
       parentNoteId: linkParentId,
-      originalNoteId: noteToBeLinked._id,
+      sourceNoteId: noteToBeLinked._id,
       isLink: true,
     };
     this._addItem(noteLinkToCreate)

@@ -36,8 +36,8 @@ export class GenericApiService<T extends DataModel> {
   }
 
   static logResponse(resp: DataModel['Response']): void {
-    console.log('Response from server:', resp.message);
-    console.log(resp.object);
+    // console.log('Response from server:', resp.message);
+    // console.log(resp.object);
   }
 
   protected _updateEndpointItemsIndex(): void {
@@ -60,7 +60,7 @@ export class GenericApiService<T extends DataModel> {
       this.endpoint,
       ...pathSegments.map(encodeURI)
     );
-    if (getParams) {
+    if (Object.keys(getParams).length) {
       output += '?' + Object.entries(getParams).map(entry => entry.join('=')).join('&');
     }
     return output;
@@ -103,7 +103,11 @@ export class GenericApiService<T extends DataModel> {
   protected _fetchItemsQuery(searchedItemQuery: Partial<T['Record']>): Observable<T['Record'][]> {
     const normalizedParams = Object.keys(searchedItemQuery).reduce((accumulator, key) => {
       if (typeof searchedItemQuery[key] !== 'undefined') {
-        accumulator[key] = searchedItemQuery[key].toString();
+        if (searchedItemQuery[key] === null) {
+          accumulator[key] = searchedItemQuery[key];
+        } else {
+          accumulator[key] = searchedItemQuery[key].toString();
+        }
       }
       return accumulator;
     }, {});

@@ -78,7 +78,12 @@ function notePatch(req: express.Request, res: express.Response) {
   }
 
   if ((req.body as Partial<Note['Record']>).content !== undefined) {
-    sanitizedNote.content = sanitizeHtml((req.body as Note['Record']).content, { allowedTags: ['br', 'b'] });
+    sanitizedNote.content = sanitizeHtml((req.body as Note['Record']).content, {
+      allowedTags: ['br', 'b', 'img'],
+      allowedAttributes: {
+        'img': ['src', 'style'],
+      },
+    });
   }
 
   if ((req.body as Partial<Note['Record']>).parentNoteId !== undefined) {
