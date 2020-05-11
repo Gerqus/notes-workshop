@@ -5,7 +5,7 @@ type NoteModel = Note['Model']; // hack... maybe they'll solve it in typescript 
 export interface INoteDocument extends NoteModel, mongoose.Document {}
 
 const noteSchema: IModelDefinition<Note['Model']> = {
-  title: {type: String, default: 'New note', max: 255},
+  title: {type: String, default: function() { return this.isLink ? '' : 'New note'; }, max: 255},
   content: {type: String, default: ''},
   isCategory: {type: Boolean, default: false},
   isLink: {type: Boolean, default: false},

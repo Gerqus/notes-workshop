@@ -27,7 +27,7 @@ export class ExpandableDirective implements OnChanges, OnInit, OnDestroy {
     this.iconElement.addEventListener('click', () => this.onIconClick());
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
+  ngOnChanges(): void {
     // z jakiegoś powodu notatka po doddaniu do niej wnuka otrzymuje stan expanded = false w serwisie. Taka notatka nie może się też w ogóle rozwinąć - może ma to związek?
     if (this.initialized) {
       if (this.canExpand) {

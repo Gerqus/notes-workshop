@@ -4,18 +4,18 @@ import { Note } from 'types';
 type NoteRecord = Note['Record']; // hack needed due to typescript syntax restirctions
 
 export class NoteIndexRecord implements Required<NoteRecord> {
-  public childNotes = new BehaviorSubject<NoteIndexRecord[]>([]);
-  public linkNotes?: NoteIndexRecord[] = [];
+  public readonly childNotes = new BehaviorSubject<NoteIndexRecord[]>([]);
+  public readonly linkNotes?: NoteIndexRecord[];
 
   constructor(
-    private actualNote: Note['Record'],
-    public sourceNote: NoteIndexRecord | null,
-    public parentNote: NoteIndexRecord,
-    linkNotes?: NoteIndexRecord[],
+    public readonly actualNote: Note['Record'],
+    public readonly sourceNote: NoteIndexRecord | null,
+    public readonly parentNote: NoteIndexRecord,
+    linkNotes: NoteIndexRecord[] = [],
     childNotes?: NoteIndexRecord[],
   ) {
-    if(childNotes) { this.childNotes.next(childNotes) }
-    if(linkNotes) { this.linkNotes = linkNotes }
+    if (childNotes) { this.childNotes.next(childNotes) }
+    this.linkNotes = linkNotes || [];
   }
 
   get isLink() {

@@ -29,8 +29,12 @@ export class NotesControllerService {
   ) {
     this.indexNote({_id: this.topNotesParentKey} as Note['Record'])
       .subscribe(() => {
-        console.log(this.notesIndex)
-        this.isReady.next(true);
+        concat(
+          ...this.getFromIndex('top').childNotes.getValue().map((childNote) => this.insertChildrenFromServer(childNote))
+        ).subscribe(() => {
+          console.log(this.notesIndex)
+          this.isReady.next(true);
+        })
       });
   }
 
@@ -57,12 +61,16 @@ export class NotesControllerService {
     return this.currentNoteRepresentationObservable.subscribe(cb);
   }
 
-  private updateChildFor(parentNote: NoteIndexRecord, modifiedChild: NoteIndexRecord): void {
+  private updateChildFor(parentNote: NoteIndexRecord, modifiedChild: NoteIndexRecord | null): void {
     const currentCildren = this.notesIndex[parentNote._id].childNotes.getValue();
     const childPosition = currentCildren.findIndex((childNote) => {
-      return childNote._id === modifiedChild._id
+      return childNote._id === modifiedChild?._id
     });
-    currentCildren.splice(childPosition, 1, modifiedChild);
+    if (childPosition !== -1) {
+      currentCildren.splice(childPosition, 1, modifiedChild);
+    } else {
+      currentCildren.splice(childPosition, 1);
+    }
     parentNote.childNotes.next(currentCildren);
   }
 
@@ -107,11 +115,11 @@ export class NotesControllerService {
 
   public deleteNote(noteToDelete: NoteIndexRecord, cb?: noteActionCallback): void {
     this.apiService.note.deleteNote(noteToDelete)
-      .subscribe((modifiedNote) => {
+      .subscribe((modifiedNote) => { // modifiedNote === null ; Removed Note doesn't have it's representation
         noteToDelete.childNotes.complete();
-        this.updateChildFor(noteToDelete.parentNote, noteToDelete);
-        noteToDelete.linkNotes.forEach((linkToDelete) => this.deleteNote(linkToDelete));
+        noteToDelete.linkNotes.forEach((linkNote) => this.deleteNote(linkNote));
         delete this.notesIndex[noteToDelete._id];
+        this.updateChildFor(noteToDelete.parentNote, null);
         cb && cb(modifiedNote);
       });
   }
@@ -137,13 +145,15 @@ export class NotesControllerService {
     return new Observable<NoteIndexRecord>(subscriber => {
       this.getSourceNoteIndexFor(noteToIndex)
         .subscribe(sourceNoteIndex => {
-          this.notesIndex[noteToIndex._id] = new NoteIndexRecord(
-            noteToIndex,
-            sourceNoteIndex,
-            this.getParentOf(noteToIndex),
-          );
+          if (!this.notesIndex[noteToIndex._id]) {
+            this.notesIndex[noteToIndex._id] = new NoteIndexRecord(
+              noteToIndex,
+              sourceNoteIndex,
+              this.getParentOf(noteToIndex),
+            );
+          }
           if (sourceNoteIndex) {
-            this.addLinkNoteToIndex(sourceNoteIndex, this.notesIndex[noteToIndex._id]);
+            this.addLinkNoteToIndexRecord(sourceNoteIndex, this.notesIndex[noteToIndex._id]);
           }
           if (shouldIndexChildren) {
             this.insertChildrenFromServer(this.notesIndex[noteToIndex._id])
@@ -159,8 +169,10 @@ export class NotesControllerService {
     })
   }
 
-  private addLinkNoteToIndex(sourceNote: NoteIndexRecord, linkNote: NoteIndexRecord): void {
-    sourceNote.linkNotes.push(linkNote);
+  private addLinkNoteToIndexRecord(sourceNote: NoteIndexRecord, linkNote: NoteIndexRecord): void {
+    if (!sourceNote.linkNotes.includes(linkNote)) {
+      sourceNote.linkNotes.push(linkNote);
+    }
   }
 
   public getFromIndex(noteToRetriveId: Note['Record']['_id']): NoteIndexRecord {
@@ -200,8 +212,11 @@ export class NotesControllerService {
   }
 
   private insertChildrenFromServer(parentNote: NoteIndexRecord): Observable<void> {
+    console.log('fetching children for', parentNote._id, '...')
     return this.apiService.note.getNotesChildren(parentNote)
         .pipe(map(childNotes => {
+          console.log(parentNote);
+          console.log(childNotes)
           concat(
             ...childNotes.map(childNote => this.indexNote(childNote , false))
           )

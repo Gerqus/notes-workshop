@@ -1,8 +1,8 @@
 import { Component, OnChanges, OnDestroy, Input } from '@angular/core';
-import * as rxjs from 'rxjs';
-import { Subscription, Observable } from 'rxjs';
+// import { Subscription } from 'rxjs';
 import { Note } from 'types';
-import { ApiService } from '@/services/api-service';
+// import { NotesControllerService } from '@/services/notes-controller';
+import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.class';
 
 @Component({
   selector: 'app-entries-list',
@@ -10,43 +10,43 @@ import { ApiService } from '@/services/api-service';
   styleUrls: ['./entries-list.component.less']
 })
 export class EntriesListComponent implements OnChanges, OnDestroy {
-  @Input() notes: Note['Record'][];
+  @Input() notes: NoteIndexRecord[];
   @Input() browserReference: HTMLElement;
-  public notesChildrenSubs: {
-    [K: string]: Subscription
-  } = {};
-  public notesChildren: {
-    [K: string]: Note['Record'][]
-  } = {};
+  // public notesChildrenSubs: {
+  //   [K: string]: Subscription
+  // } = {};
+  // public notesChildren: {
+  //   [K: string]: NoteIndexRecord[]
+  // } = {};
 
   constructor(
-    private apiService: ApiService
-  ) {}
+    // private notesControllerService: NotesControllerService
+  ) { }
 
   ngOnChanges(): void {
-    const savedNotesIds = Object.keys(this.notesChildrenSubs);
-    this.notes.forEach(note => {
-      if (!savedNotesIds.includes(note._id)) {
-        this.notesChildrenSubs[note._id] = this.apiService.note.getChildNotesListSub(note._id)
-          .subscribe((childNotes) => {
-            this.notesChildren[note._id] = childNotes;
-          });
-        this.apiService.note.refreshChildrenFor(note._id);
-      } else {
-        savedNotesIds.splice(savedNotesIds.indexOf(note._id), 1);
-      }
-      savedNotesIds.forEach(obsoleteNoteId => {
-        if (this.notesChildrenSubs[obsoleteNoteId]) {
-          delete this.notesChildrenSubs[obsoleteNoteId];
-        }
-      })
-    });
+  //   const savedNotesIds = Object.keys(this.notesChildrenSubs);
+  //   this.notes.forEach(note => {
+  //     if (!savedNotesIds.includes(note._id)) {
+  //       this.notesChildrenSubs[note._id] = this.notesControllerService.getFromIndex(note)
+  //         .subscribe((childNotes) => {
+  //           this.notesChildren[note._id] = childNotes;
+  //         });
+  //       this.notesControllerService.refreshChildrenFor(note._id);
+  //     } else {
+  //       savedNotesIds.splice(savedNotesIds.indexOf(note._id), 1);
+  //     }
+  //     savedNotesIds.forEach(obsoleteNoteId => {
+  //       if (this.notesChildrenSubs[obsoleteNoteId]) {
+  //         delete this.notesChildrenSubs[obsoleteNoteId];
+  //       }
+  //     })
+  //   });
   }
 
   ngOnDestroy(): void {
-    Object.keys(this.notesChildrenSubs).forEach(noteId => {
-      this.notesChildrenSubs[noteId].unsubscribe();
-    });
+  //   Object.keys(this.notesChildrenSubs).forEach(noteId => {
+  //     this.notesChildrenSubs[noteId].unsubscribe();
+  //   });
   }
 
   // public notesTrackingFn = (index: number, note: Note['Record']) => [note._id, ...((this.notesChildren[note._id] || []).map(note => note._id).sort())].join('.');

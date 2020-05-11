@@ -7,6 +7,7 @@ import { ExpandableDirectiveStateKeeperService } from '@/common/services/expanda
 import { DragAndDropModeService, DragModesEnum } from '@/browse/services/drag-and-drop-mode';
 import { InterfaceEventsService, Events } from '@/services/interface-events';
 import { NotesControllerService } from '@/services/notes-controller';
+import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.class';
 
 @Component({
   selector: 'app-draggable-note-entry',
@@ -14,12 +15,11 @@ import { NotesControllerService } from '@/services/notes-controller';
   styleUrls: ['./draggable-note-entry.component.less'],
 })
 export class DraggableNoteEntryComponent {
-  @Input() note: Note['Record'];
+  @Input() note: NoteIndexRecord;
   @Input() browserReference: HTMLElement;
 
   public noteTitle: Note['Record']['title'];
 
-  private shouldEnableRouter = true;
   private readonly fadedOpacity = '0.4';
   private originalOpacity = '1';
   private readyToDrag = false;
@@ -89,14 +89,12 @@ export class DraggableNoteEntryComponent {
       event.target.dispatchEvent(getExpandableItemIdEvent);
     }
     if ((event.target as HTMLElement).classList.contains('drop-zone') && (event.target as HTMLElement).getAttribute('noteId') !== this.note._id) {
-      this.dropCheckerService.canDropHere(event.target as HTMLElement, this.note)
-        .subscribe((canBeDropped) => {
-          if (canBeDropped) {
-            (event.target as HTMLElement).classList.add('indicate-drop-zone');
-          } else {
-            this.setCantDropDragClass();
-          }
-        });
+      const canBeDropped = this.dropCheckerService.canDropHere(event.target as HTMLElement, this.note)
+      if (canBeDropped) {
+        (event.target as HTMLElement).classList.add('indicate-drop-zone');
+      } else {
+        this.setCantDropDragClass();
+      }
     }
   }
   
@@ -136,18 +134,14 @@ export class DraggableNoteEntryComponent {
       this.dragStarted = false;
       this.mouseOutHandler(event);
 
-      this.dropCheckerService.canDropHere(event.target as HTMLElement, this.note)
-        .subscribe((canBeDropped) => {
-          console.log('canBeDropped?', canBeDropped);
-          if (canBeDropped) {
-            this.shouldEnableRouter = false;
-            const noteDropEvent = new CustomEvent<Note['Record']>('notedrop', {
-              bubbles: false,
-              detail: this.note,
-            });
-            event.target.dispatchEvent(noteDropEvent);
-          }
+      const canBeDropped = this.dropCheckerService.canDropHere(event.target as HTMLElement, this.note)
+      if (canBeDropped) {
+        const noteDropEvent = new CustomEvent<NoteIndexRecord>('notedrop', {
+          bubbles: false,
+          detail: this.note,
         });
+        event.target.dispatchEvent(noteDropEvent);
+      }
 
         document.body.classList.remove('drag-ongoing');
         this.browserReference.classList.remove('drag-ongoing');
@@ -185,7 +179,6 @@ export class DraggableNoteEntryComponent {
       document.addEventListener('mousemove', this.positionNoteShadowBinded);
 
       this.dragStarted = true;
-      this.shouldEnableRouter = false;
 
       this.browserReference.classList.add('drag-ongoing');
       document.body.classList.add('drag-ongoing');

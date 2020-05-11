@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import * as rxjs from 'rxjs';
-import { Observable, Subject, merge } from 'rxjs';
+import { Observable } from 'rxjs';
 import { map, tap, mergeMap } from 'rxjs/operators';
 import { Note, PartialWith } from 'types';
 
@@ -9,50 +9,26 @@ import { GenericApiService } from './generic-api-service.class';
 import { ConfigService } from '../config-service';
 
 export class NoteApiService extends GenericApiService<Note> {
-  public indexedChildNotes: {[K: string] : Note['Record'][]} = {};
-  public readonly topNotesParentKey = null; // to remove!
-  public notesChildrenSubs: {
-    [K: string] : Subject<Note['Record'][]>
-  } = {};
-
   constructor(
     configService: ConfigService,
     httpClient: HttpClient,
   ) {
     super(configService, httpClient, configService.api.root, 'note');
-    this._updateEndpointItemsIndex();
   }
 
   public addNote(noteData?: Note['Model']): Observable<Note['Record']> {
     return this._addItem(noteData ? noteData : {} as Note['Model'])
-      .pipe(tap((newNote) => this.refreshChildrenFor(newNote.parentNoteId)));
   }
 
   public getNoteById(searchedNoteId: Note['Record']['_id']): Observable<Note['Record']> {
     return this._fetchItemById(searchedNoteId)
       .pipe(map((fetchedNote) => {
-        if (!fetchedNote) {
-          return null;
-        } else {
-          return fetchedNote;
-        }
+        return fetchedNote || null;
       }));
   }
 
   public getSourceNoteFor(linkNote: PartialWith<Note['Record'], 'sourceNoteId'>): Observable<Note['Record']> {
     return this.getNoteById(linkNote.sourceNoteId)
-  }
-
-  private formatSourceNoteFromLink(sourceNote: Note['Record'], linkNote: Note['Record']): Note['Record'] {
-    return {
-      _id: linkNote._id,
-      parentNoteId: linkNote.parentNoteId,
-      sourceNoteId: linkNote.sourceNoteId,
-      isLink: linkNote.isLink,
-      title: sourceNote.title,
-      content: sourceNote.content,
-      isCategory: sourceNote.isCategory
-    }
   }
 
   public getNotesChildren(parentNote?: PartialWith<Note['Record'], '_id'>): Observable<Note['Record'][]> {
@@ -65,129 +41,15 @@ export class NoteApiService extends GenericApiService<Note> {
   }
 
   public deleteNote(note: Note['Record']): Observable<null> {
-    return new Observable<null>(subscriber => {
-      merge(
-        this.getNotesLinks(note),
-        this.getNotesChildren(note)
-      ).subscribe((notesToDelete) => {
-        if(notesToDelete.length) {
-          console.log(notesToDelete)
-          rxjs.forkJoin(
-            ...notesToDelete.map((link) => {
-              return this.deleteNote(link)
-                .pipe(tap(() => this.handleNoteDeletion(link)))
-            })
-          )
-          .subscribe(() => {
-            subscriber.next();
-            subscriber.complete();
-          })
-        } else {
-          subscriber.next();
-          subscriber.complete();
-        }
-      });
-    })
-    .pipe(tap(() => {
-      this._deleteItem(note)
-        .pipe(tap(() => this.handleNoteDeletion(note)))
-        .subscribe()
-    }));
-  }
-
-  private getNotesLinks(sourceNote: Note['Record']): Observable<Note['Record'][]> {
-    return this._fetchItemsQuery({
-      sourceNoteId: sourceNote._id,
-      isLink: true,
-    });
-  }
-
-  private handleNoteDeletion(note) {
-    if (this.notesChildrenSubs[note._id]) {
-      this.notesChildrenSubs[note._id].complete();
-      delete this.notesChildrenSubs[note._id];
-    }
-    this.refreshChildrenFor(note.parentNoteId);
+      return this._deleteItem(note);
   }
 
   public updateNote(noteToSave: PartialWith<Note['Record'], '_id'>): Observable<Note['Record']> {
-    return this._updateItem(noteToSave)
-      .pipe(tap((savedNote) => {this.refreshDependantsFor(savedNote)}));
-  }
-
-  public getChildNotesListSub(parentNoteId: Note['Record']['_id']): Observable<Note['Record'][]> {
-    if (!this.notesChildrenSubs[parentNoteId]) {
-      this.notesChildrenSubs[parentNoteId] = new Subject<Note['Record'][]>() ;
-    }
-    return this.notesChildrenSubs[parentNoteId];
-  }
-
-  public refreshDependantsFor(note: Note['Record']) {
-    this.refreshChildrenFor(note.parentNoteId);
-    this.refreshLinksParentsFor(note);
-  }
-
-  public refreshLinksParentsFor(note: Note['Record']) {
-    this.getNotesLinks(note)
-      .pipe(map((linkNotes) => [...new Set(linkNotes.map(note => note.parentNoteId))]))
-      .subscribe(linkParentNoteIds => {
-        linkParentNoteIds.forEach(linkParentNoteId => {
-          this.refreshChildrenFor(linkParentNoteId)
-        });
-      });
-  }
-
-  public refreshChildrenFor(parentNoteId: Note['Record']['_id']): void {
-    this._fetchItemsQuery({parentNoteId})
-      .subscribe((childNotes) => {
-        if (this.notesChildrenSubs[parentNoteId]) { // filtrowanie dla notatek zapisanych po odświeżeniu strony, których rodzic nie został jeszcze załadowany w browserze (pokazany w menu) (w rpzyszłości może też dla notetek, których rodzic został już wyczyszczony z browsera???)
-          if (!childNotes.length) {
-            this.notesChildrenSubs[parentNoteId].next(childNotes);
-          } else {
-            rxjs.forkJoin<Note['Record']>(
-              ...childNotes.map(note => {
-                if (note.isLink) {
-                  return new Observable<Note['Record']>(subscriber => {
-                    this.getSourceNoteFor(note)
-                      .pipe(map(sourceNote => this.formatSourceNoteFromLink(sourceNote, note)))
-                      .subscribe((formatedNote) => {
-                        subscriber.next(formatedNote);
-                        subscriber.complete();
-                      });
-                  })
-                } else {
-                  return rxjs.of(note);
-                }
-              })
-            )
-            .subscribe(originalChildNotes => {
-              this.notesChildrenSubs[parentNoteId].next(originalChildNotes);
-            })
-          }
-        }
-      });
+    return this._updateItem(noteToSave);
   }
 
   public toggleCategory(noteToBeToggled: Note['Record']): Observable<Note['Record']> {
-    noteToBeToggled.isCategory = !noteToBeToggled.isCategory;
-    return new Observable<Note['Record']>(subscriber => {
-      if (noteToBeToggled.isLink) {
-        this.getSourceNoteFor(noteToBeToggled)
-          .subscribe(sourceNote => {
-            console.log('original note', sourceNote)
-            sourceNote.isCategory = !sourceNote.isCategory;
-            subscriber.next(sourceNote);
-          })
-      }
-      else {
-        subscriber.next(noteToBeToggled);
-      }
-    }).pipe(mergeMap(fetchedNote => {
-      return this.updateNote(fetchedNote)
-    }))
-    .pipe(tap((changedNote) => {
-      this.refreshDependantsFor(changedNote);
-    }));
+    return this.updateNote(noteToBeToggled)
   }
 
   public moveNote(noteToBeMoved: Note['Record'], newParentId: Note['Record']['_id']) {
@@ -198,31 +60,22 @@ export class NoteApiService extends GenericApiService<Note> {
       console.warn('Note already is parent of target note. Aborting note moving.');
       return;
     }
-    const oldParentId = noteToBeMoved.parentNoteId;
     noteToBeMoved.parentNoteId = newParentId;
-
-    this._updateItem(noteToBeMoved)
-      .pipe(tap(
-        () => {
-          this.refreshChildrenFor(oldParentId);
-          this.refreshChildrenFor(newParentId);
-        }
-      )).subscribe();
+    this._updateItem(noteToBeMoved).subscribe();
   }
 
   public copyNoteShallow(noteToBeCopied: Note['Record'], copyParentId: Note['Record']['_id']) {
-    console.log('copying note', noteToBeCopied._id, 'under', copyParentId);
     this._copyItem(noteToBeCopied)
       .subscribe((newNote) => {
         newNote.parentNoteId = copyParentId;
         this._updateItem(newNote)
-          .subscribe(() => {this.refreshChildrenFor(copyParentId)});
+          .subscribe();
       });
   }
 
   public linkNote(noteToBeLinked: Note['Record'], linkParentId: Note['Record']['_id']): void {
     if (noteToBeLinked.isLink) {
-      console.error('Cant create nested link to antoher link. Aborting...');
+      console.error('Can\'t create link to antoher link. Aborting...');
       return;
     }
     const noteLinkToCreate: PartialWith<Note['Model'], 'parentNoteId'> = {
@@ -230,7 +83,6 @@ export class NoteApiService extends GenericApiService<Note> {
       sourceNoteId: noteToBeLinked._id,
       isLink: true,
     };
-    this._addItem(noteLinkToCreate)
-      .subscribe(() => this.refreshChildrenFor(linkParentId));
+    this._addItem(noteLinkToCreate).subscribe();
   }
 }

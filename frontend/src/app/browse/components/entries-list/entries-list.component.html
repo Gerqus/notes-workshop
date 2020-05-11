@@ -2,11 +2,11 @@
   <ng-container *ngFor="let note of notes; trackBy: notesTrackingFn">
     <li
     #entryElement
-    *ngIf="notesChildren[note._id]"
+    *ngIf="note.childNotes | async"
     class="entry"
     [itemId]="note._id"
     appExpandable
-    [canExpand]="notesChildren[note._id].length > 0"
+    [canExpand]="(note.childNotes | async)?.length > 0"
     >
 
       <app-draggable-note-entry
@@ -22,9 +22,9 @@
       <!-- icon for expandable note placeholder -->
 
       <app-entries-list
-      *ngIf="notesChildren[note._id].length > 0 && entryElement.classList.contains('expanded')"
+      *ngIf="(note.childNotes | async)?.length > 0 && entryElement.classList.contains('expanded')"
       class="subentries"
-      [notes]="notesChildren[note._id]"
+      [notes]="(note.childNotes | async)"
       [browserReference]="browserReference"
       ></app-entries-list>
 

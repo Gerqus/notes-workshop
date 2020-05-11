@@ -6,7 +6,7 @@ interface MongoDBRecord {
 
 interface IModelDefinitionEntry<T> {
   type: () => T;
-  default?: T;
+  default?: (() => T) | T;
   max?: number;
 }
 
@@ -18,7 +18,7 @@ export type IModelDefinition<T> = {
   [key in keyof T]:
     T extends Required<Pick<T, key>>
     ?
-      ({ required: boolean } | { default: T[key] }) &
+      ({ required: boolean } | { default: (() => T[key]) | T[key] }) &
       IModelDefinitionEntry<T[key]>
     :
       IModelDefinitionEntry<T[key]>
@@ -29,7 +29,7 @@ export interface DataModel {
   Record: DataModel['Model'] & MongoDBRecord;
   Response: {
     message: string;
-    object: Array<DataModel['Record']> | DataModel['Record'];
+    object: Array<DataModel['Record']> | DataModel['Record'] | null;
   };
 }
 

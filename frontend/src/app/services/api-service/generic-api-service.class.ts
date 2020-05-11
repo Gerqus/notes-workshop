@@ -9,12 +9,7 @@ import { joinURLSegments } from '@/utils';
 import { DataModel, PartialWith } from 'types';
 
 export class GenericApiService<T extends DataModel> {
-  private indexedItemsSubject = new Subject<DataModel['Record'][]>();
-  private indexedItems: {
-    [id in DataModel['Record']['_id']]: DataModel['Record'];
-  } = {};
   private endpoint = '';
-  private updatingList: boolean;
 
   constructor(
     protected configService: ConfigService,
@@ -35,26 +30,6 @@ export class GenericApiService<T extends DataModel> {
       );
   }
 
-  static logResponse(resp: DataModel['Response']): void {
-    // console.log('Response from server:', resp.message);
-    // console.log(resp.object);
-  }
-
-  protected _updateEndpointItemsIndex(): void {
-    if(this.updatingList) {
-      return;
-    }
-    this.updatingList = true;
-    this._fetchAll()
-      .subscribe(res => {
-        res.forEach(note => {
-          this.indexedItems[note._id] = note;
-        });
-        this.indexedItemsSubject.next(res);
-        this.updatingList = false;
-      });
-  }
-
   private getEndpoint(pathSegments: string[] = [], getParams: {[K: string]: string} = {}) {
     let output = joinURLSegments(
       this.endpoint,
@@ -69,91 +44,54 @@ export class GenericApiService<T extends DataModel> {
   // below usage of Partial<> is not proper... I should have separate definition than Record and Model, that will tell what is mandatory, and what has defaultvalues (or is optional)
   protected _addItem(dataToAdd: Partial<T['Model']>): Observable<T['Record']> {
     const fullEndpoint = this.getEndpoint();
-    console.log('POST', fullEndpoint);
     return this.httpClient.post<T['Response']>(fullEndpoint, dataToAdd)
-      .pipe(tap(GenericApiService.logResponse))
-      .pipe(tap(() => this._updateEndpointItemsIndex()))
       .pipe(map(noteResp => noteResp.object as T['Record']));
   }
 
-  protected _fetchAll(): Observable<T['Record'][]> {
-    const fullEndpoint = this.getEndpoint();
-    console.log('GET', fullEndpoint);
-    return this.httpClient.get<T['Response']>(fullEndpoint)
-      .pipe(tap(GenericApiService.logResponse))
-      .pipe(map(noteResp => noteResp.object as T['Record'][]));
-  }
-
   protected _fetchItemById(searchedItemId: T['Record']['_id']): Observable<T['Record']> {
-    return new Observable<T['Record']>((subscriber) => {
-      if (this.indexedItems[searchedItemId]) {
-        subscriber.next(this.indexedItems[searchedItemId]);
-        subscriber.complete();
-      } else {
-        this.indexedItemsSubject
-          .subscribe(() => {
-            subscriber.next(this.indexedItems[searchedItemId]);
-            subscriber.complete();
-          });
-          this._updateEndpointItemsIndex();
-      }
-    });
+    return this._fetchItemsQuery({_id: searchedItemId})
+      .pipe(map((foundItems) => {
+        return foundItems[0];
+      }));
   }
 
   protected _fetchItemsQuery(searchedItemQuery: Partial<T['Record']>): Observable<T['Record'][]> {
-    const normalizedParams = Object.keys(searchedItemQuery).reduce((accumulator, key) => {
-      if (typeof searchedItemQuery[key] !== 'undefined') {
-        if (searchedItemQuery[key] === null) {
-          accumulator[key] = searchedItemQuery[key];
+    const normalizedParams = this.formatParameters(searchedItemQuery);
+    const fullEndpoint = this.getEndpoint([], normalizedParams);
+    return this.httpClient.get<T['Response']>(fullEndpoint)
+      .pipe(map(noteResp => noteResp.object as T['Record'][]));
+  }
+
+  private formatParameters(searchQuery: Partial<T['Record']>) {
+    return Object.keys(searchQuery).reduce((accumulator, key) => {
+      if (typeof searchQuery[key] !== 'undefined') {
+        if (searchQuery[key] === null) {
+          accumulator[key] = searchQuery[key];
         } else {
-          accumulator[key] = searchedItemQuery[key].toString();
+          accumulator[key] = searchQuery[key].toString();
         }
       }
       return accumulator;
     }, {});
-    const fullEndpoint = this.getEndpoint([], normalizedParams);
-    console.log('GET', fullEndpoint);
-    return this.httpClient.get<T['Response']>(fullEndpoint)
-      .pipe(tap(GenericApiService.logResponse))
-      .pipe(map(noteResp => noteResp.object as T['Record'][]));
   }
 
-  protected _deleteItem(item: T['Record']): Observable<T['Record']> {
+  protected _deleteItem(item: T['Record']): Observable<null> {
     const fullEndpoint = this.getEndpoint([item._id]);
-    console.log('DELETE', fullEndpoint);
     return this.httpClient.delete<T['Response']>(fullEndpoint)
-      .pipe(tap(GenericApiService.logResponse))
-      .pipe(tap(() => this._updateEndpointItemsIndex()))
-      .pipe(map(noteResp => noteResp.object as T['Record']));
+      .pipe(map(noteResp => noteResp.object as null));
   }
 
   protected _updateItem(modifiedItem: PartialWith<T['Record'], '_id'>): Observable<T['Record']> {
     const fullEndpoint = this.getEndpoint([modifiedItem._id]);
-    console.log('PATCH', fullEndpoint);
     return this.httpClient.patch<T['Response']>(fullEndpoint, modifiedItem)
-      .pipe(tap(GenericApiService.logResponse))
-      .pipe(tap(() => this._updateEndpointItemsIndex()))
       .pipe(map(noteResp => noteResp.object as T['Record']));
   }
 
-  protected _updateItems(modifiedItems: PartialWith<T['Record'], '_id'>[]): Observable<T['Record'][]> {
-    return forkJoin(modifiedItems.map(modifiedItem => {
-      const fullEndpoint = this.getEndpoint([modifiedItem._id]);
-      console.log('PATCH', fullEndpoint);
-      return this.httpClient.patch<T['Response']>(fullEndpoint, modifiedItem)
-        .pipe(tap(GenericApiService.logResponse))
-        .pipe(map(noteResp => noteResp.object as T['Record']));
-    }))
-    .pipe(tap(() => this._updateEndpointItemsIndex()))
-  }
-
   protected _copyItem(itemToBeCopied: PartialWith<T['Record'], '_id'>): Observable<T['Record']> {
-    const newItem = Object.assign({}, itemToBeCopied)
+    const newItem = {
+      ...itemToBeCopied
+    };
     delete newItem._id;
     return this._addItem(newItem);
-  }
-
-  protected _getIndexedItemsSubject(): Subject<T['Record'][]> {
-    return this.indexedItemsSubject;
   }
 }

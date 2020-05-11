@@ -3,6 +3,7 @@ import { Note } from 'types';
 import { ApiService } from '@/services/api-service';
 import { ExpandableDirectiveStateKeeperService } from '@/common/services/expandable-directive-state-keeper.service';
 import { DragAndDropModeService, DragModesEnum } from '../services/drag-and-drop-mode';
+import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.class';
 
 @Directive({
   selector: '[appDropZone]'
@@ -23,21 +24,21 @@ export class DropZoneDirective implements OnInit {
   }
 
   @HostListener('notedrop', ['$event'])
-  public handleNoteDrop(e: CustomEvent<Note['Record']>) {
+  public handleNoteDrop(e: CustomEvent<NoteIndexRecord>) {
     const currentDragMode = this.dragAndDropModeService.getCurrentDragMode();
     switch (currentDragMode) {
       case DragModesEnum.move: 
-        this.apiService.note.moveNote(e.detail, this.parentNoteId);
+        this.apiService.note.moveNote(e.detail.actualNote, this.parentNoteId);
         break;
       case DragModesEnum.copy: 
       // case DragModesEnum.copyShallow: 
-        this.apiService.note.copyNoteShallow(e.detail, this.parentNoteId);
+        this.apiService.note.copyNoteShallow(e.detail.actualNote, this.parentNoteId);
         break;
       // case DragModesEnum.copyDeep: 
       //   this.apiService.note.copyNoteDeep(e.detail, this.parentNoteId);
       //   break;
       case DragModesEnum.link: 
-        this.apiService.note.linkNote(e.detail, this.parentNoteId);
+        this.apiService.note.linkNote(e.detail.actualNote, this.parentNoteId);
         break;
       case DragModesEnum.reorder: 
         // this.apiService.note.reorderNote(e.detail, this.parentNoteId);
