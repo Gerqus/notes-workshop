@@ -22,15 +22,20 @@ export class NoteViewComponent {
   public saveNote() {
     const titleToSave = this.noteTitleElement.nativeElement.innerHTML.replace(/<br\/?>$/, '');
     const contentToSave = this.noteContentElement.nativeElement.innerHTML.replace(/<br\/?>$/, '');
-    this.notesControllerService.saveNote(this.note._id, titleToSave, contentToSave);
+    this.notesControllerService.saveNote(this.note._id, titleToSave, contentToSave)
+      .subscribe();
   }
 
   public deleteNote() {
-    this.notesControllerService.deleteNote(this.note);
+    this.notesControllerService.deleteNote(this.note)
+      .subscribe(() => {
+        this.notesControllerService.closeNote(this.note);
+      });
   }
 
   public toggleCategory() {
-    this.notesControllerService.toggleCategory(this.note);
+    this.notesControllerService.toggleCategory(this.note)
+      .subscribe();
   }
 
   public supportTitleHotkeys(e: KeyboardEvent) {

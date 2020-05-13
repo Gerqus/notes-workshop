@@ -1,4 +1,4 @@
-<ul>
+<ul *ngIf="notes.length > 0">
   <ng-container *ngFor="let note of notes; trackBy: notesTrackingFn">
     <li
     #entryElement
@@ -6,6 +6,7 @@
     class="entry"
     [itemId]="note._id"
     appExpandable
+    (onFirstExpand)="handleNoteExpansion(note)"
     [canExpand]="(note.childNotes | async)?.length > 0"
     >
 

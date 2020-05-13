@@ -15,32 +15,33 @@ export class DropCheckerService {
   ) { }
   
   public canDropHere(elementToCheck: HTMLElement, draggedNote: NoteIndexRecord): boolean {
-    const targetNoteId = elementToCheck.getAttribute('noteId');
+    const targetNote = this.notesControllerService.getFromIndex(elementToCheck.getAttribute('noteId'))
 
     if (
-    !targetNoteId ||
+    !targetNote ||
+    !targetNote._id ||
     !elementToCheck.classList.contains('drop-zone')
     ) {
       return false;
     } else
     if (this.dragAndDropModeService.getCurrentDragMode() === DragModesEnum.move) {
-      return this.canMoveHere(targetNoteId, draggedNote);
+      return this.canMoveHere(targetNote, draggedNote);
     } else
     if (this.dragAndDropModeService.getCurrentDragMode() === DragModesEnum.link) {
       return this.canLinkHere(draggedNote);
     } else
     if (this.dragAndDropModeService.getCurrentDragMode() === DragModesEnum.copy) {
-      return this.canCopyHere();
+      return this.canCopyHere(targetNote);
     } else
     if (this.dragAndDropModeService.getCurrentDragMode() === DragModesEnum.reorder) {
-      return this.canReorderHere(targetNoteId);
+      return this.canReorderHere(targetNote);
     } else {
       return false;
     }
   }
 
-  private canReorderHere(targetNoteId: Note['Record']['_id']): boolean {
-    if (targetNoteId === this.notesControllerService.topNotesParentKey) {
+  private canReorderHere(targetNote: NoteIndexRecord): boolean {
+    if (targetNote._id === this.notesControllerService.topNotesParentKey) {
       return false;
     } else {
       return true;
@@ -51,22 +52,22 @@ export class DropCheckerService {
     return !draggedNote.isLink;
   }
 
-  private canCopyHere(): boolean {
-    return true;
+  private canCopyHere(targetNote: NoteIndexRecord): boolean {
+    return !targetNote.isLink;
   }
 
-  private canMoveHere(targetNoteId: Note['Record']['_id'], draggedNote: NoteIndexRecord): boolean {
+  private canMoveHere(targetNote: NoteIndexRecord, draggedNote: NoteIndexRecord): boolean {
     if (
-    targetNoteId === draggedNote._id ||
-    targetNoteId === draggedNote.parentNoteId
+    targetNote._id === draggedNote._id ||
+    targetNote._id === draggedNote.parentNoteId ||
+    targetNote.isLink
     ) {
       return false;
     } else if (
-    targetNoteId === this.notesControllerService.topNotesParentKey
+    targetNote._id === this.notesControllerService.topNotesParentKey
     ) {
       return true;
     } else {
-      const targetNote = this.notesControllerService.getFromIndex(targetNoteId);
       return !this.isNoteInTreeOf(targetNote, draggedNote);
     }
   }

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ElementRef } from '@angular/core';
 import { NotesControllerService } from '@/services/notes-controller';
 
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 
 import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.class';
 
@@ -13,6 +13,7 @@ import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.c
 export class BrowserComponent implements OnInit, OnDestroy {
   public notesGroupsOrderByNames: string[] = [];
   private topNotesListSub: Subscription;
+  private topNotesContainer: NoteIndexRecord;
 
   public notes: NoteIndexRecord[];
   public topNotesParentKey = this.notesControllerService.topNotesParentKey;
@@ -26,9 +27,18 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this.notesControllerService.isReady
       .subscribe((controllerReady) => {
         if (controllerReady) {
-          this.topNotesListSub = this.notesControllerService.getObservableOfChildrenOf(this.topNotesParentKey)
-            .subscribe((topNotes) => {
-              this.notes = topNotes;
+          this.topNotesContainer = this.notesControllerService.getFromIndex(this.topNotesParentKey);
+          this.notesControllerService.indexChildrenFor(this.topNotesContainer)
+            .subscribe((initialTopNotes) => {
+              console.log('top notes indexed')
+              forkJoin(
+                ...initialTopNotes.map(topNote => this.notesControllerService.indexChildrenFor(topNote))
+              ).subscribe();
+              this.topNotesListSub = this.topNotesContainer.childNotes
+                .subscribe((topNotes) => {
+                  console.log('top notes fetched; from browser')
+                  this.notes = topNotes;
+                });
             });
         }
       })

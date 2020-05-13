@@ -1,4 +1,4 @@
-import { Directive, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { Directive, ElementRef, Input, OnChanges, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
 import { ExpandableDirectiveStateKeeperService } from '@/common/services/expandable-directive-state-keeper.service';
 import { Subscription, BehaviorSubject } from 'rxjs';
 
@@ -8,10 +8,14 @@ import { Subscription, BehaviorSubject } from 'rxjs';
 export class ExpandableDirective implements OnChanges, OnInit, OnDestroy {
   @Input('canExpand') canExpand: boolean = true;
   @Input('itemId') itemId: string;
+  @Output('onExpand') onExpand = new EventEmitter<HTMLElement>();
+  @Output('onFirstExpand') onFirstExpand = new EventEmitter<HTMLElement>();
+  @Output('onCollapse') onCollapse = new EventEmitter<HTMLElement>();
+  private firstExpansionHandled = false
+
   private iconElement: HTMLElement;
   private expansionStateSubscription: Subscription;
   private expansionStateSubject: BehaviorSubject<boolean>;
-  private expansionState: boolean;
   private initialized = false;
 
   constructor(
@@ -28,12 +32,11 @@ export class ExpandableDirective implements OnChanges, OnInit, OnDestroy {
   }
 
   ngOnChanges(): void {
-    // z jakiegoś powodu notatka po doddaniu do niej wnuka otrzymuje stan expanded = false w serwisie. Taka notatka nie może się też w ogóle rozwinąć - może ma to związek?
     if (this.initialized) {
       if (this.canExpand) {
-        this.iconElement.style.opacity = '1';
+        this.showExpandIcon();
       } else {
-        this.iconElement.style.opacity = '0';
+        this.hideExpandIcon();
         this.setExpansionState(false);
       }
       this.applyExpansionStyling(this.expansionStateSubject.getValue());
@@ -43,14 +46,30 @@ export class ExpandableDirective implements OnChanges, OnInit, OnDestroy {
   ngOnInit(): void {
     this.expansionStateSubject = this.expandableDirectiveStateKeeperService.getStateSubject(this.itemId);
 
+    
+    this.expansionStateSubject.
+      subscribe((isExpanded) => {
+        if (isExpanded) {
+          this.onExpand.emit(this.el.nativeElement);
+          if (!this.firstExpansionHandled) {
+            this.onFirstExpand.emit(this.el.nativeElement);
+            this.onFirstExpand.complete();
+            delete this.onFirstExpand;
+            this.firstExpansionHandled = true;
+          }
+        } else {
+          this.onCollapse.emit(this.el.nativeElement);
+        }
+      })
+
     if (this.el.nativeElement.classList.contains('expanded')) {
       this.setExpansionState(true);
     }
 
     if (this.canExpand) {
-      this.iconElement.style.opacity = '1';
+      this.showExpandIcon();
     } else {
-      this.iconElement.style.opacity = '0';
+      this.hideExpandIcon();
       this.setExpansionState(false);
     }
     this.el.nativeElement.appendChild(this.iconElement);
@@ -89,5 +108,12 @@ export class ExpandableDirective implements OnChanges, OnInit, OnDestroy {
 
   private toggleExpansionState(): void {
     this.expandableDirectiveStateKeeperService.toggleState(this.itemId);
+  }
+
+  private showExpandIcon() {
+    this.iconElement.style.removeProperty('display');
+  }
+  private hideExpandIcon() {
+    this.iconElement.style.display = 'none';
   }
 }
