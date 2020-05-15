@@ -71,6 +71,10 @@ export class NotesControllerService {
     }
   }
 
+  public getOpenedNotesIdsObservable(): Observable<Note['Record']['_id'][]> {
+    return this.openedNotesIdsObservable;
+  }
+
   public saveNote(
     noteToSaveIndexRecord: NoteIndexRecord,
     notesNewTitle: Note['Record']['title'],
@@ -101,7 +105,7 @@ export class NotesControllerService {
     }))
   }
 
-  public moveNote(noteToBeMoved: Note['Record'], newParentId: Note['Record']['_id']): Observable<Note['Record']> {
+  public moveNote(noteToBeMoved: Note['Record'], newParentId: Note['Record']['_id']): Observable<NoteIndexRecord> {
     if (newParentId === noteToBeMoved._id) {
       console.error('Note can\'t be child of itself. Aborting note moving.');
       return;
@@ -126,7 +130,7 @@ export class NotesControllerService {
   private updateNote(
     noteToSaveId: Note['Record']['_id'],
     updateModel: Partial<Note['Model']>,
-  ): Observable<Note['Record']> {
+  ): Observable<NoteIndexRecord> {
     const initialNoteIndex = this.notesIndex[noteToSaveId];
 
     let needsSending = false;
@@ -146,10 +150,11 @@ export class NotesControllerService {
       _id: noteToSaveId,
       ...updateModel
     })
-    .pipe(tap((updatedNote) => {
+    .pipe(map((updatedNote) => {
       propertiesToUpdate.forEach(propertyName => {
         initialNoteIndex[propertyName] = updatedNote[propertyName]; // to show in browser actual content saved in database after for example sanitization on backend
       });
+      return this.getFromIndex(updatedNote._id);
     }));
   }
 
@@ -247,12 +252,17 @@ export class NotesControllerService {
     return this.notesIndex[noteToRetriveId] || null;
   }
 
-  public getOpenedNotesIdsObservable(): Observable<Note['Record']['_id'][]> {
-    return this.openedNotesIdsObservable;
+  public copyNoteShallow(noteToBeCopied: Note['Record'], copyParentId: Note['Record']['_id']): Observable<NoteIndexRecord> {
+    const newNoteModel = {
+      ...noteToBeCopied
+    };
+    delete newNoteModel._id;
+    return this.apiService.note.addNote(newNoteModel)
+      .pipe(flatMap(newNote => this.indexNote(newNote)))
+      .pipe(flatMap(newNote => this.moveNote(newNote, copyParentId)));
   }
 
   public indexChildrenFor(parentNote: NoteIndexRecord): Observable<NoteIndexRecord[]> {
-    console.group('indexing children for', parentNote._id);
     return this.insertChildrenFromServerFor(parentNote);
   }
 

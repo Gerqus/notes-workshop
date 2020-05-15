@@ -35,7 +35,7 @@ export class DropZoneDirective implements OnInit {
         break;
       case DragModesEnum.copy:
       // case DragModesEnum.copyShallow: 
-        this.apiService.note.copyNoteShallow(e.detail.actualNote, this.parentNoteId);
+        this.notesControllerService.copyNoteShallow(e.detail.actualNote, this.parentNoteId).subscribe();
         break;
       // case DragModesEnum.copyDeep: 
       //   this.apiService.note.copyNoteDeep(e.detail, this.parentNoteId);
