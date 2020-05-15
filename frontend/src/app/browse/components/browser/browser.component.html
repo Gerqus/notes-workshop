@@ -1,7 +1,6 @@
 <app-entries-list
-style="overflow: auto"
-*ngIf="notes"
-[notes]="notes"
+*ngIf="notesIds"
+[notesIds]="notesIds"
 [browserReference]="browser.nativeElement"
 ></app-entries-list>
 <div

@@ -1,5 +1,5 @@
 <div class="widget-wrapper section-primary">
-  <div [itemId]="widgetTitle" class="widget-title expanded" appExpandable>
+  <div [itemId]="(expandableId || widgetTitle) + '_widget'" class="widget-title expanded" appExpandable>
     <span>{{widgetTitle}}</span>
   </div>
   <div class="widget-content">

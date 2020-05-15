@@ -1,20 +1,17 @@
 import { Injectable } from '@angular/core';
-import { Subscription, BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
-import { map, flatMap, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
+import { flatMap, tap, map } from 'rxjs/operators';
 import { Note } from 'types';
 import { compact, some } from 'lodash';
 
 import { ApiService } from '@/services/api-service';
 import { NoteIndexRecord } from './note-index-record.class';
 
-type noteActionCallback = (modifiedNote: Note['Record']) => void;
-
 @Injectable({
   providedIn: 'root'
 })
 export class NotesControllerService {
-
-  private openedNotesObservable: BehaviorSubject<Note['Record'][]> = new BehaviorSubject([]);
+  private openedNotesIdsObservable: BehaviorSubject<Note['Record']['_id'][]> = new BehaviorSubject([]);
 
   public topNotesParentKey = 'top';
   public isReady = new BehaviorSubject(false);
@@ -23,18 +20,11 @@ export class NotesControllerService {
     [K: string]: NoteIndexRecord
   } = {};
 
-  static getPositionByNoteId(notesArray: Note['Record'][], noteToFind: Note['Record']): number {
-    return notesArray.findIndex((childNote) => {
-      return childNote._id === noteToFind._id
-    });
-  }
-
   constructor(
     private apiService: ApiService,
   ) {
     this.indexNote({_id: this.topNotesParentKey} as Note['Record'])
       .subscribe(() => {
-          console.log(this.notesIndex)
           this.isReady.next(true);
       });
   }
@@ -59,44 +49,78 @@ export class NotesControllerService {
   }
 
   private isNoteOpened(noteToCheck: Note['Record']): boolean{
-    return NotesControllerService.getPositionByNoteId(this.openedNotesObservable.getValue(), noteToCheck) !== -1;
+    return this.openedNotesIdsObservable.getValue().map(noteId => noteId).includes(noteToCheck._id);
   }
 
   private addNoteToOpened(noteToOpen: NoteIndexRecord): void {
-    const currentList = this.openedNotesObservable.getValue();
-    currentList.push(noteToOpen);
+    const currentList = this.openedNotesIdsObservable.getValue();
+    currentList.push(noteToOpen._id);
     const updatedList = currentList; // just for code semantics
-    this.openedNotesObservable.next(updatedList);
+    this.openedNotesIdsObservable.next(updatedList);
   }
 
   private removeNoteFromOpened(noteToCloseIndex: NoteIndexRecord): void {
-    const currentList = this.openedNotesObservable.getValue();
-    const noteToClosePosition = NotesControllerService.getPositionByNoteId(currentList, noteToCloseIndex);
+    const currentList = this.openedNotesIdsObservable.getValue();
+    const noteToClosePosition = currentList.map(noteId => noteId).indexOf(noteToCloseIndex._id);
     if (noteToClosePosition !== -1) {
       currentList.splice(noteToClosePosition, 1);
       const updatedList = currentList; // just for code semantics
-      this.openedNotesObservable.next(updatedList);
+      this.openedNotesIdsObservable.next(updatedList);
     } else {
       console.error('Note', noteToCloseIndex, 'was never opened, so can\'t close it');
     }
   }
 
   public saveNote(
-    noteToSaveId: Note['Record']['_id'],
+    noteToSaveIndexRecord: NoteIndexRecord,
     notesNewTitle: Note['Record']['title'],
     notesNewContent: Note['Record']['content'],
   ): Observable<Note['Record']> {
     return this.updateNote(
-      noteToSaveId,
+      noteToSaveIndexRecord.isLink ? noteToSaveIndexRecord.sourceNoteId : noteToSaveIndexRecord._id,
       { title: notesNewTitle, content: notesNewContent },
-    )
+    ).pipe(tap(() => {
+      if (noteToSaveIndexRecord.isLink) {
+        this.updateSourceAndItsLinksInParentsFor(noteToSaveIndexRecord);
+      } else {
+        this.updateInParent(noteToSaveIndexRecord);
+      }
+    }))
   }
 
   public toggleCategory(noteToToggle: NoteIndexRecord): Observable<Note['Record']> {
     return this.updateNote(
-      noteToToggle._id,
+      noteToToggle.isLink ? noteToToggle.sourceNoteId : noteToToggle._id,
       { isCategory: !noteToToggle.isCategory },
-    )
+    ).pipe(tap(() => {
+      if (noteToToggle.isLink) {
+        this.updateSourceAndItsLinksInParentsFor(noteToToggle);
+      } else {
+        this.updateInParent(noteToToggle);
+      }
+    }))
+  }
+
+  public moveNote(noteToBeMoved: Note['Record'], newParentId: Note['Record']['_id']): Observable<Note['Record']> {
+    if (newParentId === noteToBeMoved._id) {
+      console.error('Note can\'t be child of itself. Aborting note moving.');
+      return;
+    } else if (newParentId === noteToBeMoved.parentNoteId) {
+      console.warn('Note already is parent of target note. Aborting note moving.');
+      return;
+    }
+    const newParentIndexRecord = this.getFromIndex(newParentId);
+    if (newParentIndexRecord.isLink) {
+      console.warn('Can\'t move a note under a link. Aborting note moving.');
+      return;
+    }
+    const oldParentIndexRecord = this.getFromIndex(noteToBeMoved.parentNoteId);
+    return this.updateNote(noteToBeMoved._id, {parentNoteId: newParentId})
+      .pipe(tap(() => {
+        const movedNoteIndexRecord = this.getFromIndex(noteToBeMoved._id);
+        this.insertChildIn(newParentIndexRecord, movedNoteIndexRecord);
+        this.deleteChildIn(oldParentIndexRecord, movedNoteIndexRecord);
+      }));
   }
 
   private updateNote(
@@ -115,30 +139,38 @@ export class NotesControllerService {
     });
 
     if (!needsSending) {
-      return of();
+      return of(initialNoteIndex);
     }
 
     return this.apiService.note.updateNote({
-      _id: initialNoteIndex.contentSourceId,
+      _id: noteToSaveId,
       ...updateModel
     })
     .pipe(tap((updatedNote) => {
       propertiesToUpdate.forEach(propertyName => {
         initialNoteIndex[propertyName] = updatedNote[propertyName]; // to show in browser actual content saved in database after for example sanitization on backend
       });
-      if (initialNoteIndex.isLink) {
-        this.updateSourceAndItsLinksInParentsFor(initialNoteIndex);
-      } else {
-        this.updateInParent(initialNoteIndex);
-      }
     }));
   }
 
   public deleteNote(noteToDelete: NoteIndexRecord): Observable<null> {
+    return this.deleteNotesLinks(noteToDelete)
+      .pipe(flatMap(() => {
+        return this.deleteNoteWithDescendants(noteToDelete)
+      }))
+  }
+
+  private deleteNoteWithDescendants(noteToDelete: NoteIndexRecord): Observable<null> {
     return new Observable<null>(subscriber => {
-      if (noteToDelete.linkNotes.length > 0) {
+      if (noteToDelete.childNotesIds.getValue().length > 0) {
         forkJoin(
-          ...noteToDelete.linkNotes.map((linkNote) => this.deleteNote(linkNote))
+          ...noteToDelete.childNotesIds.getValue().map((childNoteId) => {
+            const childNoteIndexRecord = this.getFromIndex(childNoteId);
+            return this.deleteNotesLinks(childNoteIndexRecord)
+            .pipe(flatMap(() => {
+              return this.deleteNoteWithDescendants(childNoteIndexRecord)
+            }))
+          })
         ).subscribe(() => {
           subscriber.next(null)
           subscriber.complete();
@@ -147,11 +179,31 @@ export class NotesControllerService {
         subscriber.next(null);
         subscriber.complete();
       }
-    })
-    .pipe(flatMap(() => {
-      return this.deleteNoteWithDescendants(noteToDelete)
+    }).pipe(flatMap(() => {
+      this.deleteInParent(noteToDelete);
+      noteToDelete.childNotesIds.complete();
+      delete this.notesIndex[noteToDelete._id];
+      this.closeNote(noteToDelete);
+      return this.apiService.note.deleteNote(noteToDelete);
     }))
-    .pipe(tap(console.log));
+  }
+
+  private deleteNotesLinks(sourceNote: NoteIndexRecord): Observable<null> {
+    if (sourceNote.linkNotesIds.length > 0) {
+      return forkJoin(
+        sourceNote.linkNotesIds.map((linkNoteId) => {
+          const linkNoteIndexRecord = this.getFromIndex(linkNoteId);
+          this.deleteInParent(linkNoteIndexRecord)
+          this.closeNote(linkNoteIndexRecord);
+          delete this.notesIndex[linkNoteId];
+          return this.apiService.note.deleteNote(linkNoteIndexRecord);
+        })
+      ).pipe(map(() => {
+        return null
+      }))
+    } else {
+      return of(null);
+    }
   }
 
   /**
@@ -161,24 +213,19 @@ export class NotesControllerService {
    */
 
   private indexNote(noteToIndex: Note['Record'], updateParent = true): Observable<NoteIndexRecord> {
-    console.log('indexing', noteToIndex)
     return new Observable<NoteIndexRecord>(subscriber => {
       this.getSourceNoteIndexFor(noteToIndex)
         .subscribe(sourceNoteIndex => {
           const parentIndex = this.getParentOf(noteToIndex);
           if (!this.notesIndex[noteToIndex._id]) {
-            this.notesIndex[noteToIndex._id] = new NoteIndexRecord(
-              noteToIndex,
-              sourceNoteIndex,
-              parentIndex,
-            );
+            this.notesIndex[noteToIndex._id] = new NoteIndexRecord(noteToIndex);
           }
           const indexedNote = this.notesIndex[noteToIndex._id];
           if (sourceNoteIndex) {
             this.addLinkNoteToIndexRecord(sourceNoteIndex, indexedNote);
           }
           if (updateParent) {
-            if (parentIndex && some(parentIndex.childNotes.getValue(), (child) => child._id === indexedNote._id)) {
+            if (parentIndex && some(parentIndex.childNotesIds.getValue(), (childNoteId) => childNoteId === indexedNote._id)) {
               this.updateChildIn(parentIndex, indexedNote);
             } else if(parentIndex) {
               this.insertChildIn(parentIndex, indexedNote);
@@ -191,8 +238,8 @@ export class NotesControllerService {
   }
 
   private addLinkNoteToIndexRecord(sourceNote: NoteIndexRecord, linkNote: NoteIndexRecord): void {
-    if (!sourceNote.linkNotes.includes(linkNote)) {
-      sourceNote.linkNotes.push(linkNote);
+    if (!sourceNote.linkNotesIds.includes(linkNote._id)) {
+      sourceNote.linkNotesIds.push(linkNote._id);
     }
   }
 
@@ -200,8 +247,8 @@ export class NotesControllerService {
     return this.notesIndex[noteToRetriveId] || null;
   }
 
-  public getOpenedNotesObservable(): Observable<Note['Record'][]> {
-    return this.openedNotesObservable;
+  public getOpenedNotesIdsObservable(): Observable<Note['Record']['_id'][]> {
+    return this.openedNotesIdsObservable;
   }
 
   public indexChildrenFor(parentNote: NoteIndexRecord): Observable<NoteIndexRecord[]> {
@@ -241,8 +288,8 @@ export class NotesControllerService {
               ...childNotes.map(childNote => this.indexNote(childNote, false))
             )
               .pipe(tap(() => {
-                const indexedChildren = compact(childNotes.map((childNote) => this.getFromIndex(childNote._id)));
-                parentNote.childNotes.next(indexedChildren);
+                const childrenIds = compact(childNotes.map((childNote) => childNote._id));
+                parentNote.childNotesIds.next(childrenIds);
               }));
           } else {
             return of([]);
@@ -254,74 +301,55 @@ export class NotesControllerService {
     return this.getFromIndex(searchedChildNote.parentNoteId);
   }
 
-  private deleteNoteWithDescendants(noteToDelete: NoteIndexRecord): Observable<null> {
-    return new Observable<null>(subscriber => {
-      if (noteToDelete.childNotes.getValue().length > 0) {
-        forkJoin(
-          ...noteToDelete.childNotes.getValue().map((childNote) => this.deleteNoteWithDescendants(childNote))
-        ).subscribe(() => {
-          subscriber.next(null)
-          subscriber.complete();
-        })
-      } else {
-        subscriber.next(null);
-        subscriber.complete();
-      }
-    }).pipe(flatMap(() => {
-      return this.deleteInParent(noteToDelete)
-    }))
-  }
-
   private updateChildIn(parentNote: NoteIndexRecord, modifiedChild: NoteIndexRecord): void {
-    const currentChildren = parentNote.childNotes.getValue();
-    const childPosition = NotesControllerService.getPositionByNoteId(currentChildren, modifiedChild);
+    const currentChildrenIds = parentNote.childNotesIds.getValue();
+    const childPosition = currentChildrenIds.indexOf(modifiedChild._id);
     if (childPosition === -1) {
       console.error('Child', modifiedChild, 'was not found for parent', parentNote);
     } else {
-      currentChildren.splice(childPosition, 1, modifiedChild);
-      parentNote.childNotes.next(currentChildren);
+      currentChildrenIds.splice(childPosition, 1, modifiedChild._id);
+      parentNote.childNotesIds.next([...currentChildrenIds]);
     }
   }
 
-  private deleteChildIn(parentNote: NoteIndexRecord, childNoteToDelete: NoteIndexRecord): Observable<null> {
-    if (childNoteToDelete.childNotes.getValue().length > 0) {
+  private deleteChildIn(parentNote: NoteIndexRecord, childNoteToDelete: NoteIndexRecord): void {
+    if (childNoteToDelete.childNotesIds.getValue().length > 0) {
       throw new Error('Can\'t delete note that has children. Aborting...');
     }
-    const currentChildren = parentNote.childNotes.getValue();
-    const childPosition = NotesControllerService.getPositionByNoteId(currentChildren, childNoteToDelete);
+    const currentChildrenIds = parentNote.childNotesIds.getValue();
+    const childPosition = currentChildrenIds.indexOf(childNoteToDelete._id);
     if (childPosition === -1) {
       console.error('Child', childNoteToDelete, 'was not found for parent', parentNote);
     } else {
-      currentChildren.splice(childPosition, 1);
-      parentNote.childNotes.next(currentChildren);
-      childNoteToDelete.childNotes.complete();
-      delete this.notesIndex[childNoteToDelete._id];
-      this.closeNote(childNoteToDelete);
-      return this.apiService.note.deleteNote(childNoteToDelete);
+      currentChildrenIds.splice(childPosition, 1);
+      parentNote.childNotesIds.next([...currentChildrenIds]);
     }
   }
 
   private insertChildIn(parentNote: NoteIndexRecord, childNoteToInsert: NoteIndexRecord): void {
-    const currentChildren = parentNote.childNotes.getValue();
-    const childPosition = NotesControllerService.getPositionByNoteId(currentChildren, childNoteToInsert);
+    const currentChildrenIds = parentNote.childNotesIds.getValue();
+    const childPosition = currentChildrenIds.indexOf(childNoteToInsert._id);
     if (childPosition !== -1) {
       console.error('Child', childNoteToInsert, 'is already present in parent', parentNote);
     } else {
-      currentChildren.push(childNoteToInsert);
-      parentNote.childNotes.next(currentChildren);
+      currentChildrenIds.push(childNoteToInsert._id);
+      parentNote.childNotesIds.next([...currentChildrenIds]);
     }
   }
 
   private updateInParent(modifiedChild: NoteIndexRecord): void {
-    this.updateChildIn(modifiedChild.parentNote, modifiedChild);
+    this.updateChildIn(this.getFromIndex(modifiedChild.parentNoteId), modifiedChild);
   }
 
-  private deleteInParent(childToDelete: NoteIndexRecord): Observable<null> {
-    return this.deleteChildIn(childToDelete.parentNote, childToDelete);
+  private deleteInParent(childToDelete: NoteIndexRecord): void {
+    return this.deleteChildIn(this.getFromIndex(childToDelete.parentNoteId), childToDelete);
   }
 
   private updateSourceAndItsLinksInParentsFor(linkNoteToUpdate: NoteIndexRecord): void {
-    this.updateInParent(linkNoteToUpdate.sourceNote);
-    linkNoteToUpdate.sourceNote.linkNotes.forEach(siblingLinkNote => this.updateInParent(siblingLinkNote))
+    this.updateInParent(this.getFromIndex(linkNoteToUpdate.sourceNoteId));
+    this.getFromIndex(linkNoteToUpdate.sourceNoteId)
+      .linkNotesIds.forEach(siblingLinkNoteId =>
+        this.updateInParent(this.getFromIndex(siblingLinkNoteId))
+      );
   }
 }

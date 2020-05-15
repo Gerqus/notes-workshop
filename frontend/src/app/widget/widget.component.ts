@@ -7,6 +7,7 @@ import { Component, OnInit, Input } from '@angular/core';
 })
 export class WidgetComponent implements OnInit {
   @Input() widgetTitle: string;
+  @Input() expandableId?: string;
 
   constructor() { }
 

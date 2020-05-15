@@ -52,18 +52,6 @@ export class NoteApiService extends GenericApiService<Note> {
     return this.updateNote(noteToBeToggled)
   }
 
-  public moveNote(noteToBeMoved: Note['Record'], newParentId: Note['Record']['_id']) {
-    if (newParentId === noteToBeMoved._id) {
-      console.error('Note can\'t be child of itself. Aborting note moving.');
-      return;
-    } else if (newParentId === noteToBeMoved.parentNoteId) {
-      console.warn('Note already is parent of target note. Aborting note moving.');
-      return;
-    }
-    noteToBeMoved.parentNoteId = newParentId;
-    this._updateItem(noteToBeMoved).subscribe();
-  }
-
   public copyNoteShallow(noteToBeCopied: Note['Record'], copyParentId: Note['Record']['_id']) {
     this._copyItem(noteToBeCopied)
       .subscribe((newNote) => {

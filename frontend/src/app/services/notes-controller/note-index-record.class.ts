@@ -4,18 +4,16 @@ import { Note } from 'types';
 type NoteRecord = Note['Record']; // hack needed due to typescript syntax restirctions
 
 export class NoteIndexRecord implements Required<NoteRecord> {
-  public readonly childNotes = new BehaviorSubject<NoteIndexRecord[]>([]);
-  public readonly linkNotes?: NoteIndexRecord[];
+  public readonly childNotesIds = new BehaviorSubject<Note['Record']['_id'][]>([]);
+  public readonly linkNotesIds?: Note['Record']['_id'][];
 
   constructor(
     public readonly actualNote: Note['Record'],
-    public readonly sourceNote: NoteIndexRecord | null,
-    public readonly parentNote: NoteIndexRecord,
-    linkNotes: NoteIndexRecord[] = [],
-    childNotes?: NoteIndexRecord[],
+    linkNotesIds?: Note['Record']['_id'][],
+    childNotesIds?: Note['Record']['_id'][],
   ) {
-    if (childNotes) { this.childNotes.next(childNotes) }
-    this.linkNotes = linkNotes || [];
+    if (childNotesIds && childNotesIds.length) { this.childNotesIds.next(childNotesIds) }
+    this.linkNotesIds = linkNotesIds || [];
   }
 
   get isLink() {
@@ -39,13 +37,6 @@ export class NoteIndexRecord implements Required<NoteRecord> {
     this.actualNote._id = _id;
   }
 
-  get contentSourceId() {
-    return this._linkGetter('_id');
-  }
-  set contentSourceId(_id) {
-    this._linkSetter('_id', _id)
-  }
-
   get sourceNoteId() {
     return this.actualNote.sourceNoteId;
   }
@@ -54,39 +45,23 @@ export class NoteIndexRecord implements Required<NoteRecord> {
   }
 
   get title() {
-    return this._linkGetter('title');
+    return this.actualNote.title;
   }
   set title(newTitle) {
-    this._linkSetter('title', newTitle)
+    this.actualNote.title = newTitle;
   }
 
   get content() {
-    return this._linkGetter('content');
+    return this.actualNote.content;
   }
   set content(newContent) {
-    this._linkSetter('content', newContent)
+    this.actualNote.content = newContent;
   }
 
   get isCategory() {
-    return this._linkGetter('isCategory');
+    return this.actualNote.isCategory;
   }
   set isCategory(newFlagValue) {
-    this._linkSetter('isCategory', newFlagValue)
-  }
-
-  private _linkGetter<K extends keyof NoteRecord>(propertyName: K) {
-    if (this.actualNote.isLink) {
-      return (this.sourceNote as NoteRecord)[propertyName];
-    } else {
-      return this.actualNote[propertyName];
-    }
-  }
-
-  private _linkSetter<K extends keyof NoteRecord>(propertyName: K, newValue: NoteRecord[K]) {
-    if (this.actualNote.isLink) {
-      (this.sourceNote as NoteRecord)[propertyName] = newValue;
-    } else {
-      this.actualNote[propertyName] = newValue;
-    }
+    this.actualNote.isCategory = newFlagValue;
   }
 }

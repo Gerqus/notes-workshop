@@ -1,9 +1,9 @@
 <div class="notes-layout">
   <div class="tabs"></div>
   <div class="content" *ngIf="controllerReady">
-    <ng-container *ngFor="let note of openedNotes">
+    <ng-container *ngFor="let noteId of openedNotesIds">
       <app-note-view
-      [note]="note"
+      [noteId]="noteId"
       ></app-note-view>
     </ng-container>
   </div>

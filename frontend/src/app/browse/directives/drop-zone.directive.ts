@@ -4,6 +4,7 @@ import { ApiService } from '@/services/api-service';
 import { ExpandableDirectiveStateKeeperService } from '@/common/services/expandable-directive-state-keeper.service';
 import { DragAndDropModeService, DragModesEnum } from '../services/drag-and-drop-mode';
 import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.class';
+import { NotesControllerService } from '@/services/notes-controller';
 
 @Directive({
   selector: '[appDropZone]'
@@ -14,6 +15,7 @@ export class DropZoneDirective implements OnInit {
   constructor(
     private el: ElementRef<HTMLElement>,
     private apiService: ApiService,
+    private notesControllerService: NotesControllerService,
     private expandableDirectiveStateKeeperService: ExpandableDirectiveStateKeeperService,
     private dragAndDropModeService: DragAndDropModeService,
   ) { }
@@ -26,11 +28,12 @@ export class DropZoneDirective implements OnInit {
   @HostListener('notedrop', ['$event'])
   public handleNoteDrop(e: CustomEvent<NoteIndexRecord>) {
     const currentDragMode = this.dragAndDropModeService.getCurrentDragMode();
+    // TODO: use notesControllerService instead of apiService for ntoes manipulations
     switch (currentDragMode) {
       case DragModesEnum.move: 
-        this.apiService.note.moveNote(e.detail.actualNote, this.parentNoteId);
+        this.notesControllerService.moveNote(e.detail.actualNote, this.parentNoteId).subscribe();
         break;
-      case DragModesEnum.copy: 
+      case DragModesEnum.copy:
       // case DragModesEnum.copyShallow: 
         this.apiService.note.copyNoteShallow(e.detail.actualNote, this.parentNoteId);
         break;
@@ -47,6 +50,6 @@ export class DropZoneDirective implements OnInit {
         // void
         break;
     }
-    this.expandableDirectiveStateKeeperService.setState(this.parentNoteId, true); // will set value also for 'top' noteId, but it shouldn't be an issue (it's never read)
+    this.expandableDirectiveStateKeeperService.setState(this.parentNoteId + '_browser', true); // will set value also for 'top' noteId, but it shouldn't be an issue (it's never read)
   }
 }

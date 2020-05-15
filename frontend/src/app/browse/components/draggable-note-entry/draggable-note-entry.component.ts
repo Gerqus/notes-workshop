@@ -1,5 +1,4 @@
-import { Component, Input, ElementRef, HostListener } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, Input, ElementRef, HostListener, OnChanges, SimpleChanges } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Note } from 'types';
 import { DropCheckerService } from '@/browse/services/drop-checker';
@@ -14,9 +13,12 @@ import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.c
   templateUrl: './draggable-note-entry.component.html',
   styleUrls: ['./draggable-note-entry.component.less'],
 })
-export class DraggableNoteEntryComponent {
-  @Input() note: NoteIndexRecord;
+export class DraggableNoteEntryComponent implements OnChanges {
+  @Input() noteId: Note['Record']['_id'];
   @Input() browserReference: HTMLElement;
+
+  public note: NoteIndexRecord;
+  public sourceNote: NoteIndexRecord = null;
 
   public noteTitle: Note['Record']['title'];
 
@@ -56,6 +58,15 @@ export class DraggableNoteEntryComponent {
     private dragAndDropModeService: DragAndDropModeService,
   ) { }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if(changes.noteId.currentValue !== changes.noteId.previousValue) {
+      this.note = this.notesControllerService.getFromIndex(this.noteId);
+      if(this.note.isLink) {
+        this.sourceNote = this.notesControllerService.getFromIndex(this.note.sourceNoteId);
+      }
+    }
+  }
+
   public openNote(): void {
     this.notesControllerService.openNote(this.note);
   }
@@ -80,7 +91,7 @@ export class DraggableNoteEntryComponent {
           cb: (itemId: Note['Record']['_id']) => {
             this.hoverExpansion.ref = setTimeout(() => {
               this.hoverExpansion.itemId = itemId;
-              this.expandableDirectiveStateKeeperService.setState(itemId, true);
+              this.expandableDirectiveStateKeeperService.setState(itemId + '_browser', true);
               delete this.hoverExpansion.ref;
             }, this.hoverExpansion.timeout) as any;
           }

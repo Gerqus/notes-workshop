@@ -1,9 +1,9 @@
-<app-widget [widgetTitle]="note.title">
+<app-widget *ngIf="note" [widgetTitle]="(sourceNote || note).title" [expandableId]="note._id">
   <div class="note-view" *ngIf="note">
 
     <div class="note-title section-secondary">
       <i class="icon link link-indicator-icon" *ngIf="note.isLink"></i>
-      <div #noteTitle class="input" contenteditable [innerHTML]="note.title | markHTMLsafe" (keydown)="supportTitleHotkeys($event)"></div>
+      <div #noteTitle class="input" contenteditable [innerHTML]="(sourceNote || note).title | markHTMLsafe" (keydown)="supportTitleHotkeys($event)"></div>
     </div>
 
     <div class="note-variables section-secondary">
@@ -11,13 +11,13 @@
     </div>
 
     <div class="note-content section-secondary">
-      <pre #noteContent class="input" contenteditable [innerHTML]="note.content | markHTMLsafe" (keydown)="supportContentHotkeys($event)"></pre>
+      <pre #noteContent class="input" contenteditable [innerHTML]="(sourceNote || note).content | markHTMLsafe" (keydown)="supportContentHotkeys($event)"></pre>
     </div>
 
     <div class="note-actions section-secondary">
       <div class="action-button major" (click)="saveNote()">Save note</div>
       <div class="action-button major" (click)="deleteNote()">Remove {{note.isLink ? 'link' : 'note'}}</div>
-      <div class="action-button major" (click)="toggleCategory()">Mark as {{note.isCategory ? 'regular' : 'category'}}</div>
+      <div class="action-button major" (click)="toggleCategory()">Mark as {{(sourceNote || note).isCategory ? 'regular' : 'category'}}</div>
     </div>
 
   </div>

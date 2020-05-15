@@ -17,7 +17,7 @@ export class ExpandableDirectiveStateKeeperService {
   }
 
   public setState(elementId: string, isExpanded: boolean): void {
-    if (elementId === this.NotesControllerService.topNotesParentKey) {
+    if (elementId === this.NotesControllerService.topNotesParentKey + '_browser') {
       return;
     }
     if (!this.statesSubscriptions[elementId]) {

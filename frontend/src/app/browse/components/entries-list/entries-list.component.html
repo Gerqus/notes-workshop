@@ -2,30 +2,28 @@
   <ng-container *ngFor="let note of notes; trackBy: notesTrackingFn">
     <li
     #entryElement
-    *ngIf="note.childNotes | async"
     class="entry"
-    [itemId]="note._id"
+    [itemId]="note._id + '_browser'"
     appExpandable
     (onFirstExpand)="handleNoteExpansion(note)"
-    [canExpand]="(note.childNotes | async)?.length > 0"
+    [canExpand]="(note.childNotesIds | async)?.length > 0"
     >
-
       <app-draggable-note-entry
       [ngClass]="{
         'action-button note-title minor': true,
-        'category': note.isCategory
+        'category': getContentSourceNote(note)?.isCategory
       }"
       [appDropZone]="note._id"
-      [note]="note"
+      [noteId]="note._id"
       [browserReference]="browserReference"
       ></app-draggable-note-entry>
 
       <!-- icon for expandable note placeholder -->
 
       <app-entries-list
-      *ngIf="(note.childNotes | async)?.length > 0 && entryElement.classList.contains('expanded')"
+      *ngIf="(note.childNotesIds | async)?.length > 0"
       class="subentries"
-      [notes]="(note.childNotes | async)"
+      [notesIds]="((note.childNotesIds | async) || []).concat()"
       [browserReference]="browserReference"
       ></app-entries-list>
 

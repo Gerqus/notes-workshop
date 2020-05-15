@@ -1,9 +1,9 @@
-import { Component, ViewChild, Input } from '@angular/core';
-
-import { Note } from 'types';
+import { Component, ViewChild, Input, OnChanges, SimpleChanges } from '@angular/core';
 
 import { NotesControllerService } from '@/services/notes-controller';
 import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.class';
+import { Note } from 'types';
+import { xor } from 'lodash';
 
 @Component({
   selector: 'app-note-view',
@@ -13,28 +13,42 @@ import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.c
 export class NoteViewComponent {
   @ViewChild('noteTitle') noteTitleElement: {nativeElement: HTMLDivElement};
   @ViewChild('noteContent') noteContentElement: {nativeElement: HTMLDivElement};
-  @Input('note') note: NoteIndexRecord;
+  @Input('noteId') noteId: Note['Record']['_id'];
+
+  public note: NoteIndexRecord;
+  public sourceNote: NoteIndexRecord;
 
   constructor(
     private notesControllerService: NotesControllerService,
   ) { }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if(changes.noteId.currentValue !== changes.noteId.previousValue) {
+      this.note = this.notesControllerService.getFromIndex(changes.noteId.currentValue);
+      if(this.note.isLink) {
+        this.sourceNote = this.notesControllerService.getFromIndex(this.note.sourceNoteId);
+      }
+    }
+  }
+
   public saveNote() {
     const titleToSave = this.noteTitleElement.nativeElement.innerHTML.replace(/<br\/?>$/, '');
     const contentToSave = this.noteContentElement.nativeElement.innerHTML.replace(/<br\/?>$/, '');
-    this.notesControllerService.saveNote(this.note._id, titleToSave, contentToSave)
+    this.notesControllerService.saveNote(this.sourceNote ? this.sourceNote : this.note, titleToSave, contentToSave)
       .subscribe();
   }
 
   public deleteNote() {
+    console.log(0)
     this.notesControllerService.deleteNote(this.note)
       .subscribe(() => {
+        console.log(13)
         this.notesControllerService.closeNote(this.note);
       });
   }
 
   public toggleCategory() {
-    this.notesControllerService.toggleCategory(this.note)
+    this.notesControllerService.toggleCategory(this.sourceNote ? this.sourceNote : this.note)
       .subscribe();
   }
 

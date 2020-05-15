@@ -4,6 +4,7 @@ import { NotesControllerService } from '@/services/notes-controller';
 import { Subscription, forkJoin } from 'rxjs';
 
 import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.class';
+import { Note } from 'types';
 
 @Component({
   selector: 'app-browser',
@@ -11,11 +12,10 @@ import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.c
   styleUrls: ['./browser.component.less']
 })
 export class BrowserComponent implements OnInit, OnDestroy {
-  public notesGroupsOrderByNames: string[] = [];
   private topNotesListSub: Subscription;
   private topNotesContainer: NoteIndexRecord;
 
-  public notes: NoteIndexRecord[];
+  public notesIds: Note['Record']['_id'][];
   public topNotesParentKey = this.notesControllerService.topNotesParentKey;
 
   constructor(
@@ -34,10 +34,13 @@ export class BrowserComponent implements OnInit, OnDestroy {
               forkJoin(
                 ...initialTopNotes.map(topNote => this.notesControllerService.indexChildrenFor(topNote))
               ).subscribe();
-              this.topNotesListSub = this.topNotesContainer.childNotes
-                .subscribe((topNotes) => {
-                  console.log('top notes fetched; from browser')
-                  this.notes = topNotes;
+              if (this.topNotesListSub) {
+                this.topNotesListSub.unsubscribe();
+              }
+              this.topNotesListSub = this.topNotesContainer.childNotesIds
+                .subscribe((topNotesIds) => {
+                  console.log('top notes fetched; from browser', topNotesIds)
+                  this.notesIds = [...topNotesIds];
                 });
             });
         }

@@ -8,15 +8,16 @@ import { Note } from 'types';
   styleUrls: ['./layout.component.less']
 })
 export class LayoutComponent implements OnInit {
-  public openedNotes: Note['Record'][];
+  public openedNotesIds: Note['Record']['_id'][];
   public controllerReady = false;
 
   constructor(
     private notesControllerService: NotesControllerService
   ) {
-    this.notesControllerService.getOpenedNotesObservable()
-      .subscribe(openedNotes => {
-        this.openedNotes = openedNotes;
+    this.notesControllerService.getOpenedNotesIdsObservable()
+      .subscribe(openedNotesIds => {
+        console.log(openedNotesIds);
+        this.openedNotesIds = openedNotesIds;
       })
     
       this.notesControllerService.isReady.subscribe((isReady) => {
