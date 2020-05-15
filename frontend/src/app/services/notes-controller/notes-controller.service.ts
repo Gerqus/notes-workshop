@@ -160,9 +160,7 @@ export class NotesControllerService {
 
   public deleteNote(noteToDelete: NoteIndexRecord): Observable<null> {
     return this.deleteNotesLinks(noteToDelete)
-      .pipe(flatMap(() => {
-        return this.deleteNoteWithDescendants(noteToDelete)
-      }))
+      .pipe(flatMap(() => this.deleteNoteWithDescendants(noteToDelete)))
   }
 
   private deleteNoteWithDescendants(noteToDelete: NoteIndexRecord): Observable<null> {
@@ -254,16 +252,24 @@ export class NotesControllerService {
 
   public copyNoteShallow(noteToBeCopied: Note['Record'], copyParentId: Note['Record']['_id']): Observable<NoteIndexRecord> {
     const newNoteModel = {
-      ...noteToBeCopied
+      ...noteToBeCopied,
+      parentNoteId: copyParentId,
     };
     delete newNoteModel._id;
     return this.apiService.note.addNote(newNoteModel)
       .pipe(flatMap(newNote => this.indexNote(newNote)))
-      .pipe(flatMap(newNote => this.moveNote(newNote, copyParentId)));
   }
 
-  public indexChildrenFor(parentNote: NoteIndexRecord): Observable<NoteIndexRecord[]> {
-    return this.insertChildrenFromServerFor(parentNote);
+  public linkNote(sourceNote: Note['Record'], linkParentId: Note['Record']['_id']): Observable<NoteIndexRecord> {
+    if (sourceNote.isLink) {
+      console.error('Can\'t create link to antoher link. Aborting...');
+      return;
+    }
+    return this.apiService.note.addNote({
+      parentNoteId: linkParentId,
+      sourceNoteId: sourceNote._id,
+      isLink: true,
+    }).pipe(flatMap(newNote => this.indexNote(newNote)));
   }
 
   private getSourceNoteIndexFor(linkNote: Note['Record']): Observable<NoteIndexRecord | null> {
@@ -290,7 +296,7 @@ export class NotesControllerService {
     })
   }
 
-  private insertChildrenFromServerFor(parentNote: NoteIndexRecord): Observable<NoteIndexRecord[]> {
+  public insertChildrenFromServerFor(parentNote: NoteIndexRecord): Observable<NoteIndexRecord[]> {
     return this.apiService.note.getNotesChildren(parentNote)
         .pipe(flatMap(childNotes => {
           if (childNotes.length) {

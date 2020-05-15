@@ -16,8 +16,8 @@ export class NoteApiService extends GenericApiService<Note> {
     super(configService, httpClient, configService.api.root, 'note');
   }
 
-  public addNote(noteData?: Note['Model']): Observable<Note['Record']> {
-    return this._addItem(noteData ? noteData : {} as Note['Model'])
+  public addNote(noteData?: Partial<Note['Model']>): Observable<Note['Record']> {
+    return this._addItem(noteData ? noteData : {})
   }
 
   public getNoteById(searchedNoteId: Note['Record']['_id']): Observable<Note['Record']> {

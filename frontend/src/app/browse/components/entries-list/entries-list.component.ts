@@ -34,7 +34,7 @@ export class EntriesListComponent implements OnChanges{
     forkJoin(
       ...noteToLoadChildrenFor.childNotesIds.getValue()
       .map(childNoteId =>
-        this.notesControllerService.indexChildrenFor(
+        this.notesControllerService.insertChildrenFromServerFor(
           this.notesControllerService.getFromIndex(childNoteId)
         )
       )

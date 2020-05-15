@@ -28,11 +28,11 @@ export class BrowserComponent implements OnInit, OnDestroy {
       .subscribe((controllerReady) => {
         if (controllerReady) {
           this.topNotesContainer = this.notesControllerService.getFromIndex(this.topNotesParentKey);
-          this.notesControllerService.indexChildrenFor(this.topNotesContainer)
+          this.notesControllerService.insertChildrenFromServerFor(this.topNotesContainer)
             .subscribe((initialTopNotes) => {
               console.log('top notes indexed')
               forkJoin(
-                ...initialTopNotes.map(topNote => this.notesControllerService.indexChildrenFor(topNote))
+                ...initialTopNotes.map(topNote => this.notesControllerService.insertChildrenFromServerFor(topNote))
               ).subscribe();
               if (this.topNotesListSub) {
                 this.topNotesListSub.unsubscribe();
