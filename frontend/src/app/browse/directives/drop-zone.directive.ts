@@ -2,9 +2,10 @@ import { Directive, ElementRef, OnInit, HostListener, Input } from '@angular/cor
 import { Note } from 'types';
 import { ApiService } from '@/services/api-service';
 import { ExpandableDirectiveStateKeeperService } from '@/common/services/expandable-directive-state-keeper.service';
-import { DragAndDropModeService, DragModesEnum } from '../services/drag-and-drop-mode';
+import { DragAndDropModeService } from '../services/drag-and-drop-mode';
 import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.class';
 import { NotesControllerService } from '@/services/notes-controller';
+import { DragModesEnum } from '../enums/dragModes.enum';
 
 @Directive({
   selector: '[appDropZone]'
@@ -14,7 +15,6 @@ export class DropZoneDirective implements OnInit {
 
   constructor(
     private el: ElementRef<HTMLElement>,
-    private apiService: ApiService,
     private notesControllerService: NotesControllerService,
     private expandableDirectiveStateKeeperService: ExpandableDirectiveStateKeeperService,
     private dragAndDropModeService: DragAndDropModeService,

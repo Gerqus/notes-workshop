@@ -3,10 +3,11 @@ import { Subscription } from 'rxjs';
 import { Note } from 'types';
 import { DropCheckerService } from '@/browse/services/drop-checker';
 import { ExpandableDirectiveStateKeeperService } from '@/common/services/expandable-directive-state-keeper.service';
-import { DragAndDropModeService, DragModesEnum } from '@/browse/services/drag-and-drop-mode';
+import { DragAndDropModeService } from '@/browse/services/drag-and-drop-mode';
 import { InterfaceEventsService, Events } from '@/services/interface-events';
 import { NotesControllerService } from '@/services/notes-controller';
 import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.class';
+import { DragModesEnum } from '../../enums/dragModes.enum';
 
 @Component({
   selector: 'app-draggable-note-entry',
@@ -42,6 +43,7 @@ export class DraggableNoteEntryComponent implements OnChanges {
     [DragModesEnum.cantDrop]: 'drag-mode-cant-drop', // not from key modifier, but when action is not permitted
   }
   private dragModeSubscription: Subscription;
+  private currentHoverElement: HTMLElement = null;
 
   private mouseUpHandlerBinded = this.mouseUpHandler.bind(this);
   private firstMouseMoveHandlerBinded = this.firstMouseMoveHandler.bind(this);
@@ -99,12 +101,27 @@ export class DraggableNoteEntryComponent implements OnChanges {
       });
       event.target.dispatchEvent(getExpandableItemIdEvent);
     }
-    if ((event.target as HTMLElement).classList.contains('drop-zone') && (event.target as HTMLElement).getAttribute('noteId') !== this.note._id) {
-      const canBeDropped = this.dropCheckerService.canDropHere(event.target as HTMLElement, this.note)
-      if (canBeDropped) {
-        (event.target as HTMLElement).classList.add('indicate-drop-zone');
+    else if ((event.target as HTMLElement).classList.contains('drop-zone')) {
+      this.currentHoverElement = event.target as HTMLElement;
+      this.setProperDragModeClass();
+    }
+  }
+
+  private setProperDragModeClass() {
+    if (!this.currentHoverElement) {
+      this.setDragClass(DragModesEnum.move);
+    } else {
+      if (this.currentHoverElement.getAttribute('noteId') !== this.note._id) {
+        this.currentHoverElement?.classList.add('indicate-drop-zone');
+
+        const canBeDropped = this.dropCheckerService.canDropHere(this.currentHoverElement, this.note);
+        if (canBeDropped) {
+          this.setCurrentDragModeClass();
+        } else {
+          this.setCantDropDragClass();
+        }
       } else {
-        this.setCantDropDragClass();
+        this.setDragClass(DragModesEnum.move);
       }
     }
   }
@@ -126,7 +143,13 @@ export class DraggableNoteEntryComponent implements OnChanges {
     this.browserReference.classList.add(this.dragModeClasses[DragModesEnum.cantDrop]);
   }
 
+  private setDragClass(dragClassToSet: DragModesEnum) {
+    this.clearBorwserElementClasses();
+    this.browserReference.classList.add(this.dragModeClasses[dragClassToSet]);
+  }
+
   private mouseOutHandler(event: MouseEvent) {
+    this.currentHoverElement = null;
     this.setCurrentDragModeClass();
     if (this.hoverExpansion.ref) {
       clearTimeout(this.hoverExpansion.ref);
@@ -138,6 +161,7 @@ export class DraggableNoteEntryComponent implements OnChanges {
   
   private mouseUpHandler(event: MouseEvent) {
     this.readyToDrag = false;
+    this.currentHoverElement = null;
   
     if (this.dragStarted) {
       (this.el as any).nativeElement.style.opacity = this.originalOpacity;
@@ -198,8 +222,7 @@ export class DraggableNoteEntryComponent implements OnChanges {
       
       this.dragModeSubscription = this.dragAndDropModeService
         .subscribe(() => {
-            this.clearBorwserElementClasses();
-            this.setCurrentDragModeClass();
+          this.setProperDragModeClass();
         });
 
       this.originalOpacity = this.el.nativeElement.style.opacity ? (this.el as any).nativeElement.style.opacity : this.originalOpacity;

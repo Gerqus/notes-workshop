@@ -1,15 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Keys, InterfaceEventsService } from '@/services/interface-events';
-
-export enum DragModesEnum {
-  'copy',
-  'link',
-  'reorder',
-  'move',
-  'cantDrop',
-  'previous',
-}
+import { DropCheckerService } from '../drop-checker';
+import { DragModesEnum } from '../../enums/dragModes.enum';
 
 @Injectable({
   providedIn: 'root'

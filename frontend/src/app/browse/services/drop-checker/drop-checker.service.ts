@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { DragAndDropModeService, DragModesEnum } from '../drag-and-drop-mode';
-import { Note } from 'types';
+import { DragAndDropModeService } from '../drag-and-drop-mode';
 import { NotesControllerService } from '@/services/notes-controller';
 import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.class';
+import { DragModesEnum } from '../../enums/dragModes.enum';
 
 @Injectable({
   providedIn: 'root'
