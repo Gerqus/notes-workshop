@@ -18,6 +18,7 @@
       <div class="action-button major" (click)="saveNote()">Save note</div>
       <div class="action-button major" (click)="deleteNote()">Remove {{note.isLink ? 'link' : 'note'}}</div>
       <div class="action-button major" (click)="toggleCategory()">Mark as {{(sourceNote || note).isCategory ? 'regular' : 'category'}}</div>
+      <div class="action-button major" (click)="closeNote()">Close view</div>
     </div>
 
   </div>

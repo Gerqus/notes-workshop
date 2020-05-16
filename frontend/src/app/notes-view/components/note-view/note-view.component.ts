@@ -2,8 +2,8 @@ import { Component, ViewChild, Input, OnChanges, SimpleChanges } from '@angular/
 
 import { NotesControllerService } from '@/services/notes-controller';
 import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.class';
+import { Observable } from 'rxjs';
 import { Note } from 'types';
-import { xor } from 'lodash';
 
 @Component({
   selector: 'app-note-view',
@@ -34,6 +34,7 @@ export class NoteViewComponent {
   public saveNote() {
     const titleToSave = this.noteTitleElement.nativeElement.innerHTML.replace(/<br\/?>$/, '');
     const contentToSave = this.noteContentElement.nativeElement.innerHTML.replace(/<br\/?>$/, '');
+
     this.notesControllerService.saveNote(this.sourceNote ? this.sourceNote : this.note, titleToSave, contentToSave)
       .subscribe();
   }
@@ -50,6 +51,11 @@ export class NoteViewComponent {
   public toggleCategory() {
     this.notesControllerService.toggleCategory(this.sourceNote ? this.sourceNote : this.note)
       .subscribe();
+  }
+
+  public closeNote() {
+    this.saveNote()
+    this.notesControllerService.closeNote(this.note);
   }
 
   public supportTitleHotkeys(e: KeyboardEvent) {
