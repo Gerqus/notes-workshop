@@ -368,4 +368,12 @@ export class NotesControllerService {
         this.updateInParent(this.getFromIndex(siblingLinkNoteId))
       );
   }
+
+  public getNotePath(noteIndexRecord: NoteIndexRecord): string {
+    if (noteIndexRecord._id === this.topNotesParentKey) {
+      return '';
+    } else {
+      return this.getNotePath(this.getFromIndex(noteIndexRecord.parentNoteId)) + '/ ' + noteIndexRecord.title + ' ';
+    }
+  }
 }

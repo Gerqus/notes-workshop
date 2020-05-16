@@ -1,4 +1,4 @@
-<app-widget *ngIf="note" [widgetTitle]="(sourceNote || note).title" [expandableId]="note._id">
+<app-widget *ngIf="note" [widgetTitle]="getNotePath()" [expandableId]="note._id">
   <div class="note-view" *ngIf="note">
 
     <div class="note-title section-secondary">
