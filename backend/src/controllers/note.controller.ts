@@ -74,7 +74,12 @@ function notePatch(req: express.Request, res: express.Response) {
   const sanitizedNote: Partial<Note['Model']> = {};
 
   if ((req.body as Partial<Note['Record']>).title !== undefined) {
-    sanitizedNote.title = sanitizeHtml((req.body as Note['Record']).title, { allowedTags: [] });
+    sanitizedNote.title = sanitizeHtml((req.body as Note['Record']).title, {
+      allowedTags: ['span'],
+      allowedAttributes: {
+        span: ['style'],
+      },
+    });
   }
 
   if ((req.body as Partial<Note['Record']>).content !== undefined) {
