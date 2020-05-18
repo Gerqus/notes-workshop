@@ -7,7 +7,8 @@ import { Subscription, BehaviorSubject } from 'rxjs';
 })
 export class ExpandableDirective implements OnChanges, OnInit, OnDestroy {
   @Input('canExpand') canExpand: boolean = true;
-  @Input('itemId') itemId: string;
+  @Input('expandableIconContainer') expandableIconContainer?: HTMLElement;
+  @Input('expandableItemId') itemId: string;
   @Output('onExpand') onExpand = new EventEmitter<HTMLElement>();
   @Output('onFirstExpand') onFirstExpand = new EventEmitter<HTMLElement>();
   @Output('onCollapse') onCollapse = new EventEmitter<HTMLElement>();
@@ -72,7 +73,8 @@ export class ExpandableDirective implements OnChanges, OnInit, OnDestroy {
       this.hideExpandIcon();
       this.setExpansionState(false);
     }
-    this.el.nativeElement.appendChild(this.iconElement);
+    const iconContainer = this.expandableIconContainer ? this.expandableIconContainer : this.el.nativeElement;
+    iconContainer.appendChild(this.iconElement);
 
     this.expansionStateSubscription = this.expansionStateSubject
       .subscribe((expansionState) => {

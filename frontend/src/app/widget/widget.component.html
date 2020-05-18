@@ -1,6 +1,13 @@
 <div class="widget-wrapper section-primary">
-  <div [itemId]="(expandableId || widgetTitle) + '_widget'" class="widget-title expanded" appExpandable>
+  <div
+  class="widget-title expanded"
+  [expandableItemId]="(expandableId || widgetTitle) + '_widget'"
+  [expandableIconContainer]="widgetExpander"
+  appExpandable
+  >
     <span>{{widgetTitle}}</span>
+    <div #widgetExpander></div>
+    <i class="action-button minor icon close" (click)="onClose()"></i>
   </div>
   <div class="widget-content">
     <ng-content></ng-content>

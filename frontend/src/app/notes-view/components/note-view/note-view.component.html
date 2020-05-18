@@ -1,4 +1,4 @@
-<app-widget *ngIf="note" [widgetTitle]="getNotePath()" [expandableId]="note._id">
+<app-widget (onClose)="closeNote()" *ngIf="note" [widgetTitle]="getNotePath()" [expandableId]="note._id">
   <div class="note-view" *ngIf="note">
 
     <div class="note-title section-secondary">
@@ -18,7 +18,6 @@
       <div class="action-button major" (click)="saveNote()">Save note</div>
       <div class="action-button major" (click)="deleteNote()">Remove {{note.isLink ? 'link' : 'note'}}</div>
       <div class="action-button major" (click)="toggleCategory()">Mark as {{(sourceNote || note).isCategory ? 'regular' : 'category'}}</div>
-      <div class="action-button major" (click)="closeNote()">Close view</div>
     </div>
 
   </div>

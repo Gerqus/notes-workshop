@@ -3,7 +3,7 @@
     <li
     #entryElement
     class="entry"
-    [itemId]="note._id + '_browser'"
+    [expandableItemId]="note._id + '_browser'"
     appExpandable
     (onFirstExpand)="handleNoteExpansion(note)"
     [canExpand]="(note.childNotesIds | async)?.length > 0"
