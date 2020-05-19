@@ -374,11 +374,13 @@ export class NotesControllerService {
       );
   }
 
-  public getNotePath(noteIndexRecord: NoteIndexRecord): string {
-    if (noteIndexRecord._id === this.topNotesParentKey) {
-      return '';
-    } else {
-      return this.getNotePath(this.getFromIndex(noteIndexRecord.parentNoteId)) + '/ ' + noteIndexRecord.title + ' ';
-    }
+  public getNotePath(noteIndexRecord: NoteIndexRecord): string[] {
+    const notePath = [];
+    let currNote = noteIndexRecord;
+    do {
+      notePath.unshift(currNote.title);
+      currNote = this.getFromIndex(currNote.parentNoteId);
+    } while(currNote._id !== this.topNotesParentKey);
+    return notePath;
   }
 }

@@ -1,11 +1,13 @@
 <div class="widget-wrapper section-primary">
   <div
-  class="widget-title expanded"
+  class="widget-title section-secondary expanded"
   [expandableItemId]="(expandableId || widgetTitle) + '_widget'"
   [expandableIconContainer]="widgetExpander"
   appExpandable
   >
-    <span [innerHTML]="widgetTitle | markHTMLsafe"></span>
+    <div class="widget-title-text-container">
+      <span class="widget-title-text" [innerHTML]="widgetTitle | markHTMLsafe"></span>
+    </div>
     <div #widgetExpander></div>
     <i class="action-button minor icon close" (click)="onClose()"></i>
   </div>

@@ -81,9 +81,9 @@ export class NoteViewComponent {
   getNotePath(): string {
     let notePath = this.notesControllerService.getNotePath(this.note);
     if (this.note.isLink) {
-      notePath += this.sourceNote.title;
+      notePath.push(this.sourceNote.title);
     }
-    return notePath;
+    return notePath.join (' / ');
   }
 
   public supportContentHotkeys(e: KeyboardEvent) {
