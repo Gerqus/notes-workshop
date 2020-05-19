@@ -86,7 +86,6 @@ export class DraggableNoteEntryComponent implements OnChanges {
   public dragstartListener() { return false };
 
   private mouseOverHandler(event: MouseEvent): void {
-    console.log(event.target)
     if ((event.target as HTMLElement).classList.contains('expansion-arrow') && !(event.target as HTMLElement).classList.contains('hidden')) {
       const getExpandableItemIdEvent = new CustomEvent('getItemId', {
         bubbles: false,
@@ -109,20 +108,16 @@ export class DraggableNoteEntryComponent implements OnChanges {
   }
 
   private setProperDragModeClass() {
-    if (!this.currentHoverElement) {
-      this.setDragClass(DragModesEnum.move);
-    } else {
-      if (this.currentHoverElement.getAttribute('noteId') !== this.note._id) {
-        this.currentHoverElement?.classList.add('indicate-drop-zone');
+    if (!this.currentHoverElement || this.currentHoverElement.getAttribute('noteId') === this.note._id) {
+      this.setCurrentDragModeClass();
+    } else if (this.currentHoverElement) {
+      this.currentHoverElement.classList.add('indicate-drop-zone');
 
-        const canBeDropped = this.dropCheckerService.canDropHere(this.currentHoverElement, this.note);
-        if (canBeDropped) {
-          this.setCurrentDragModeClass();
-        } else {
-          this.setCantDropDragClass();
-        }
+      const canBeDropped = this.dropCheckerService.canDropHere(this.currentHoverElement, this.note);
+      if (canBeDropped) {
+        this.setCurrentDragModeClass();
       } else {
-        this.setDragClass(DragModesEnum.move);
+        this.setCantDropDragClass();
       }
     }
   }
