@@ -328,10 +328,15 @@ export class NotesControllerService {
     }
   }
 
+  private deleteWithDescendants(parentNoteToDelete: NoteIndexRecord): void {
+    parentNoteToDelete.childNotesIds.getValue().forEach(childNoteId => {
+      const childIndexRecord = this.getFromIndex(childNoteId);
+      this.deleteWithDescendants(childIndexRecord);
+    })
+    this.deleteInParent(parentNoteToDelete);
+  }
+
   private deleteChildIn(parentNote: NoteIndexRecord, childNoteToDelete: NoteIndexRecord): void {
-    if (childNoteToDelete.childNotesIds.getValue().length > 0) {
-      throw new Error('Can\'t delete note that has children. Aborting...');
-    }
     const currentChildrenIds = parentNote.childNotesIds.getValue();
     const childPosition = currentChildrenIds.indexOf(childNoteToDelete._id);
     if (childPosition === -1) {
