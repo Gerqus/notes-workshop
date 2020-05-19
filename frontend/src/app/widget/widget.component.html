@@ -5,7 +5,7 @@
   [expandableIconContainer]="widgetExpander"
   appExpandable
   >
-    <span>{{widgetTitle}}</span>
+    <span [innerHTML]="widgetTitle | markHTMLsafe"></span>
     <div #widgetExpander></div>
     <i class="action-button minor icon close" (click)="onClose()"></i>
   </div>
