@@ -45,9 +45,44 @@ app-entries-list {
   cursor: copy;
 }
 
-:host.drag-mode-move ::ng-deep *,
-:host.drag-mode-reorder ::ng-deep * {
+:host.drag-mode-move ::ng-deep * {
   cursor: move;
+}
+
+:host.drag-mode-reorder {
+  & ::ng-deep .indicate-drop-zone {
+    @border-width: 2px;
+    @marker-height: 0.5rem;
+
+    position: relative;
+
+    &::before, &::after {
+      position: absolute;
+      content: '';
+      border-color: @action-secondary-border-color;
+      border-radius: inherit;
+      height: @marker-height / 2;
+      z-index: 1;
+      pointer-events: none;
+      border-style: solid;
+      left: calc(-@marker-height / 2 - 2px);
+      right: calc(-@marker-height / 2 - 2px);
+    }
+
+    &::before {
+      bottom: calc(-@marker-height / 2 - @border-width);
+      border-width: 0 @border-width@border-width @border-width;
+    }
+
+    &::after {
+      bottom: calc(-@marker-height - @border-width);
+      border-width: @border-width @border-width 0 @border-width;
+    }
+  }
+
+  & ::ng-deep * {
+    cursor: wait;
+  }
 }
 
 :host.drag-mode-link ::ng-deep * {

@@ -64,4 +64,11 @@ export class NoteIndexRecord implements Required<NoteRecord> {
   set isCategory(newFlagValue) {
     this.actualNote.isCategory = newFlagValue;
   }
+
+  get index() {
+    return this.actualNote.index || 0; // || 0 is for transition period when not all notes in DB have index set
+  }
+  set index(newIndex) {
+    this.actualNote.index = newIndex;
+  }
 }

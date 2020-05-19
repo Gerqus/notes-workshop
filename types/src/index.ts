@@ -41,6 +41,7 @@ export interface Note extends DataModel {
     isLink: boolean; // jeżeli notatka traktowana jest jako link, to ignorujemy wszystkie jej parametry poza parentNoteId, originalNoteId opraz isLink a resztę uzupełniamy z oryginału
     sourceNoteId?: Note['Record']['_id'];
     parentNoteId: Note['Record']['_id'];
+    index: number;
   }
 
   Record: Note['Model'] & MongoDBRecord;

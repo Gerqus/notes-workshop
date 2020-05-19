@@ -11,6 +11,7 @@ const noteSchema: IModelDefinition<Note['Model']> = {
   isLink: {type: Boolean, default: false},
   sourceNoteId: {type: String},
   parentNoteId: {type: String, default: 'top'},
+  index: {type: Number, default: 0},
 };
 
 const NoteSchema = new mongoose.Schema<Note['Model']>(noteSchema);

@@ -34,17 +34,21 @@ export class DropCheckerService {
       return this.canCopyHere(targetNote);
     } else
     if (this.dragAndDropModeService.getCurrentDragMode() === DragModesEnum.reorder) {
-      return this.canReorderHere(targetNote);
+      return this.canReorderHere(targetNote, draggedNote);
     } else {
       return false;
     }
   }
 
-  private canReorderHere(targetNote: NoteIndexRecord): boolean {
-    if (targetNote._id === this.notesControllerService.topNotesParentKey) {
-      return false;
-    } else {
+  private canReorderHere(targetNote: NoteIndexRecord, draggedNote: NoteIndexRecord): boolean {
+    if (
+      (draggedNote.parentNoteId === targetNote._id ||
+      this.canMoveHere(targetNote, draggedNote)) &&
+      targetNote._id !== this.notesControllerService.topNotesParentKey
+    ) {
       return true;
+    } else {
+      return false;
     }
   }
 
@@ -58,13 +62,13 @@ export class DropCheckerService {
 
   private canMoveHere(targetNote: NoteIndexRecord, draggedNote: NoteIndexRecord): boolean {
     if (
-    targetNote._id === draggedNote._id ||
-    targetNote._id === draggedNote.parentNoteId ||
-    targetNote.isLink
+      targetNote._id === draggedNote._id ||
+      targetNote._id === draggedNote.parentNoteId ||
+      targetNote.isLink
     ) {
       return false;
     } else if (
-    targetNote._id === this.notesControllerService.topNotesParentKey
+      targetNote._id === this.notesControllerService.topNotesParentKey
     ) {
       return true;
     } else {
@@ -77,8 +81,8 @@ export class DropCheckerService {
       return true;
     } else
     if (
-    noteToCheck.parentNoteId === this.notesControllerService.topNotesParentKey ||
-    !potentialParent._id
+      noteToCheck.parentNoteId === this.notesControllerService.topNotesParentKey ||
+      !potentialParent._id
     ) {
       return false;
     } else {

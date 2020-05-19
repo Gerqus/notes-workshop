@@ -34,6 +34,7 @@ export interface Note extends DataModel {
         isLink: boolean;
         sourceNoteId?: Note['Record']['_id'];
         parentNoteId: Note['Record']['_id'];
+        index: number;
     };
     Record: Note['Model'] & MongoDBRecord;
     Response: {

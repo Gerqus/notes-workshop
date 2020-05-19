@@ -99,6 +99,10 @@ function notePatch(req: express.Request, res: express.Response) {
     sanitizedNote.isCategory = req.body.isCategory;
   }
 
+  if ((req.body as Partial<Note['Record']>).index !== undefined) {
+    sanitizedNote.index = req.body.index;
+  }
+
   console.log('Updating note of id', req.params.noteId, 'to be', sanitizedNote);
 
   noteModel.findByIdAndUpdate(

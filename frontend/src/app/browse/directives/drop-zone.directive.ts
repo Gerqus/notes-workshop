@@ -11,7 +11,7 @@ import { DragModesEnum } from '../enums/dragModes.enum';
   selector: '[appDropZone]'
 })
 export class DropZoneDirective implements OnInit {
-  @Input('appDropZone') parentNoteId: Note['Record']['_id'];
+  @Input('appDropZone') targetNoteId: Note['Record']['_id'];
 
   constructor(
     private el: ElementRef<HTMLElement>,
@@ -22,34 +22,37 @@ export class DropZoneDirective implements OnInit {
 
   ngOnInit(): void {
     this.el.nativeElement.classList.add('drop-zone');
-    this.el.nativeElement.setAttribute('noteId', this.parentNoteId);
+    this.el.nativeElement.setAttribute('noteId', this.targetNoteId);
   }
 
   @HostListener('notedrop', ['$event'])
   public handleNoteDrop(e: CustomEvent<NoteIndexRecord>) {
     const currentDragMode = this.dragAndDropModeService.getCurrentDragMode();
-    // TODO: use notesControllerService instead of apiService for ntoes manipulations
+    let shouldExpandTarget = true;
     switch (currentDragMode) {
       case DragModesEnum.move: 
-        this.notesControllerService.moveNote(e.detail.actualNote, this.parentNoteId).subscribe();
+        this.notesControllerService.moveNote(e.detail.actualNote, this.targetNoteId).subscribe();
         break;
       case DragModesEnum.copy:
       // case DragModesEnum.copyShallow: 
-        this.notesControllerService.copyNoteShallow(e.detail.actualNote, this.parentNoteId).subscribe();
+        this.notesControllerService.copyNoteShallow(e.detail.actualNote, this.targetNoteId).subscribe();
         break;
       // case DragModesEnum.copyDeep: 
       //   this.apiService.note.copyNoteDeep(e.detail, this.parentNoteId);
       //   break;
       case DragModesEnum.link: 
-        this.notesControllerService.linkNote(e.detail.actualNote, this.parentNoteId).subscribe();
+        this.notesControllerService.linkNote(e.detail.actualNote, this.targetNoteId).subscribe();
         break;
       case DragModesEnum.reorder: 
-        // this.apiService.note.reorderNote(e.detail, this.parentNoteId);
+        this.notesControllerService.reorderNote(e.detail.actualNote, this.targetNoteId).subscribe();
+        shouldExpandTarget = false;
         break;
       default:
         // void
         break;
     }
-    this.expandableDirectiveStateKeeperService.setState(this.parentNoteId + '_browser', true); // will set value also for 'top' noteId, but it shouldn't be an issue (it's never read)
+    if (shouldExpandTarget) {
+      this.expandableDirectiveStateKeeperService.setState(this.targetNoteId + '_browser', true); // will set value also for 'top' noteId, but it shouldn't be an issue (it's never read)
+    }
   }
 }

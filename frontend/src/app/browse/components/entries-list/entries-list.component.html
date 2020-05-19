@@ -23,7 +23,7 @@
       <app-entries-list
       *ngIf="(note.childNotesIds | async)?.length > 0"
       class="subentries"
-      [notesIds]="((note.childNotesIds | async) || []).concat()"
+      [notesIds]="((note.childNotesIds | async) || [])"
       [browserReference]="browserReference"
       ></app-entries-list>
 

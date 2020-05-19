@@ -3,7 +3,6 @@ import { Note } from 'types';
 import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.class';
 import { NotesControllerService } from '@/services/notes-controller';
 import { forkJoin } from 'rxjs';
-import { xor } from 'lodash';
 
 @Component({
   selector: 'app-entries-list',
@@ -22,9 +21,7 @@ export class EntriesListComponent implements OnChanges{
   ) { }
 
   ngOnChanges(changes: SimpleChanges) {
-    if(xor(changes.notesIds.currentValue, changes.notesIds.previousValue).length !== 0) {
-      this.notes = (changes.notesIds.currentValue as Note['Record']['_id'][]).map(noteId => this.notesControllerService.getFromIndex(noteId));
-    }
+    this.notes = (changes.notesIds.currentValue as Note['Record']['_id'][]).map(noteId => this.notesControllerService.getFromIndex(noteId));
   }
 
   // public notesTrackingFn = (index: number, note: Note['Record']) => [note._id, ...((this.notesChildren[note._id] || []).map(note => note._id).sort())].join('.');
