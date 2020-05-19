@@ -86,14 +86,15 @@ export class DraggableNoteEntryComponent implements OnChanges {
   public dragstartListener() { return false };
 
   private mouseOverHandler(event: MouseEvent): void {
-    if ((event.target as HTMLElement).classList.contains('expansion-arrow') && (event.target as HTMLElement).style.opacity === "1") {
+    console.log(event.target)
+    if ((event.target as HTMLElement).classList.contains('expansion-arrow') && !(event.target as HTMLElement).classList.contains('hidden')) {
       const getExpandableItemIdEvent = new CustomEvent('getItemId', {
         bubbles: false,
         detail: {
           cb: (itemId: Note['Record']['_id']) => {
             this.hoverExpansion.ref = setTimeout(() => {
               this.hoverExpansion.itemId = itemId;
-              this.expandableDirectiveStateKeeperService.setState(itemId + '_browser', true);
+              this.expandableDirectiveStateKeeperService.setState(itemId, true);
               delete this.hoverExpansion.ref;
             }, this.hoverExpansion.timeout) as any;
           }

@@ -113,9 +113,9 @@ export class ExpandableDirective implements OnChanges, OnInit, OnDestroy {
   }
 
   private showExpandIcon() {
-    this.iconElement.style.removeProperty('display');
+    this.iconElement.classList.remove('hidden');
   }
   private hideExpandIcon() {
-    this.iconElement.style.display = 'none';
+    this.iconElement.classList.add('hidden');
   }
 }
