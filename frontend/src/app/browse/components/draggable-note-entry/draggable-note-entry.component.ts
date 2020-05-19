@@ -193,6 +193,8 @@ export class DraggableNoteEntryComponent implements OnChanges {
     document.removeEventListener('mouseout', this.mouseOutHandlerBinded);
     document.removeEventListener('mouseup', this.mouseUpHandlerBinded);
 
+    this.dragAndDropModeService.resetDragMode();
+
     event.preventDefault();
     return false;
   }

@@ -40,10 +40,8 @@ export class NoteViewComponent {
   }
 
   public deleteNote() {
-    console.log(0)
     this.notesControllerService.deleteNote(this.note)
       .subscribe(() => {
-        console.log(13)
         this.notesControllerService.closeNote(this.note);
       });
   }

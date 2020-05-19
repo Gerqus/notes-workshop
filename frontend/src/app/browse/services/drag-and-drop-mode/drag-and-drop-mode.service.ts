@@ -40,6 +40,10 @@ export class DragAndDropModeService {
       .subscribe(cb);
   }
 
+  public resetDragMode() {
+    this.dragMode.next(this.defaultDragMode);
+  }
+
   private handleDragMode() {
     let keysCount = 0;
     let matchedKey = '';
