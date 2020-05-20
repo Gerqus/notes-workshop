@@ -35,42 +35,11 @@ export class NoteApiService extends GenericApiService<Note> {
     return this._fetchItemsQuery({parentNoteId: parentNote._id});
   }
 
-  public noteHasChildren(parentNote: Note['Record']): Observable<boolean> {
-    return this.getNotesChildren(parentNote)
-      .pipe(map(childNotes => childNotes.length > 0))
-  }
-
   public deleteNote(note: Note['Record']): Observable<null> {
       return this._deleteItem(note);
   }
 
   public updateNote(noteToSave: PartialWith<Note['Record'], '_id'>): Observable<Note['Record']> {
     return this._updateItem(noteToSave);
-  }
-
-  public toggleCategory(noteToBeToggled: Note['Record']): Observable<Note['Record']> {
-    return this.updateNote(noteToBeToggled)
-  }
-
-  public copyNoteShallow(noteToBeCopied: Note['Record'], copyParentId: Note['Record']['_id']) {
-    this._copyItem(noteToBeCopied)
-      .subscribe((newNote) => {
-        newNote.parentNoteId = copyParentId;
-        this._updateItem(newNote)
-          .subscribe();
-      });
-  }
-
-  public linkNote(noteToBeLinked: Note['Record'], linkParentId: Note['Record']['_id']): void {
-    if (noteToBeLinked.isLink) {
-      console.error('Can\'t create link to antoher link. Aborting...');
-      return;
-    }
-    const noteLinkToCreate: PartialWith<Note['Model'], 'parentNoteId'> = {
-      parentNoteId: linkParentId,
-      sourceNoteId: noteToBeLinked._id,
-      isLink: true,
-    };
-    this._addItem(noteLinkToCreate).subscribe();
   }
 }

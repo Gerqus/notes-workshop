@@ -13,6 +13,7 @@ export class EntriesListComponent implements OnChanges{
   @ViewChild('entryElement') entryElement: ElementRef<HTMLElement>;
   @Input() notesIds: Note['Record']['_id'][];
   @Input() browserReference: HTMLElement;
+  @Input() parentNoteId: Note['Record']['_id'];
 
   public notes: NoteIndexRecord[] = [];
 
@@ -24,7 +25,7 @@ export class EntriesListComponent implements OnChanges{
     this.notes = (changes.notesIds.currentValue as Note['Record']['_id'][]).map(noteId => this.notesControllerService.getFromIndex(noteId));
   }
 
-  // public notesTrackingFn = (index: number, note: Note['Record']) => [note._id, ...((this.notesChildren[note._id] || []).map(note => note._id).sort())].join('.');
+  // public notesTrackingFn = (index: number, note: NoteIndexRecord) => [note._id, ...(note.childNotesIds.getValue() || []), note.title].join('.');
   public notesTrackingFn = (index: number, note: Note['Record']) => note._id;
 
   public handleNoteExpansion(noteToLoadChildrenFor: NoteIndexRecord) {

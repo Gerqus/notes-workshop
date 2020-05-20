@@ -14,39 +14,21 @@ export class DropCheckerService {
     private notesControllerService: NotesControllerService,
   ) { }
   
-  public canDropHere(elementToCheck: HTMLElement, draggedNote: NoteIndexRecord): boolean {
-    const targetNote = this.notesControllerService.getFromIndex(elementToCheck.getAttribute('noteId'))
-
+  public canDropHere(dropTargetElement: HTMLElement, draggedNote: NoteIndexRecord): boolean {
     if (
-    !targetNote ||
-    !targetNote._id ||
-    !elementToCheck.classList.contains('drop-zone')
+    !dropTargetElement.getAttribute('noteId') ||
+    !dropTargetElement.classList.contains('drop-zone')
     ) {
       return false;
     } else
     if (this.dragAndDropModeService.getCurrentDragMode() === DragModesEnum.move) {
-      return this.canMoveHere(targetNote, draggedNote);
+      return this.canMoveHere(draggedNote, dropTargetElement);
     } else
     if (this.dragAndDropModeService.getCurrentDragMode() === DragModesEnum.link) {
       return this.canLinkHere(draggedNote);
     } else
     if (this.dragAndDropModeService.getCurrentDragMode() === DragModesEnum.copy) {
-      return this.canCopyHere(targetNote);
-    } else
-    if (this.dragAndDropModeService.getCurrentDragMode() === DragModesEnum.reorder) {
-      return this.canReorderHere(targetNote, draggedNote);
-    } else {
-      return false;
-    }
-  }
-
-  private canReorderHere(targetNote: NoteIndexRecord, draggedNote: NoteIndexRecord): boolean {
-    if (
-      (draggedNote.parentNoteId === targetNote._id ||
-      this.canMoveHere(targetNote, draggedNote)) &&
-      targetNote._id !== this.notesControllerService.topNotesParentKey
-    ) {
-      return true;
+      return this.canCopyHere(dropTargetElement);
     } else {
       return false;
     }
@@ -56,23 +38,34 @@ export class DropCheckerService {
     return !draggedNote.isLink;
   }
 
-  private canCopyHere(targetNote: NoteIndexRecord): boolean {
+  private canCopyHere(dropTargetElement: HTMLElement): boolean {
+    const targetNote = this.notesControllerService.getFromIndex(dropTargetElement.getAttribute('noteId'));
     return !targetNote.isLink;
   }
 
-  private canMoveHere(targetNote: NoteIndexRecord, draggedNote: NoteIndexRecord): boolean {
-    if (
-      targetNote._id === draggedNote._id ||
-      targetNote._id === draggedNote.parentNoteId ||
-      targetNote.isLink
-    ) {
-      return false;
-    } else if (
-      targetNote._id === this.notesControllerService.topNotesParentKey
-    ) {
-      return true;
+  private canMoveHere(draggedNote: NoteIndexRecord, dropTargetElement: HTMLElement): boolean {
+    const targetNote = this.notesControllerService.getFromIndex(dropTargetElement.getAttribute('noteId'));
+    if (dropTargetElement.classList.contains('drop-between')) {
+      const orderIndex = parseInt(dropTargetElement.getAttribute('orderIndex'));
+      if (draggedNote.parentNoteId === targetNote._id) {
+        return orderIndex !== draggedNote.index && orderIndex - 1 !== draggedNote.index
+      } else {
+        return !this.isNoteInTreeOf(targetNote, draggedNote);
+      }
     } else {
-      return !this.isNoteInTreeOf(targetNote, draggedNote);
+      if (
+        targetNote._id === draggedNote._id ||
+        targetNote._id === draggedNote.parentNoteId ||
+        targetNote.isLink
+      ) {
+        return false;
+      } else if (
+        targetNote._id === this.notesControllerService.topNotesParentKey
+      ) {
+        return true;
+      } else {
+        return !this.isNoteInTreeOf(targetNote, draggedNote);
+      }
     }
   }
 
@@ -82,6 +75,7 @@ export class DropCheckerService {
     } else
     if (
       noteToCheck.parentNoteId === this.notesControllerService.topNotesParentKey ||
+      noteToCheck._id === this.notesControllerService.topNotesParentKey ||
       !potentialParent._id
     ) {
       return false;

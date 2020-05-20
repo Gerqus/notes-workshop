@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
-import { flatMap, tap, map } from 'rxjs/operators';
+import { flatMap, tap, map, mapTo, delayWhen } from 'rxjs/operators';
 import { Note } from 'types';
 import { compact, some } from 'lodash';
 
@@ -24,9 +24,9 @@ export class NotesControllerService {
     private apiService: ApiService,
   ) {
     (window as any).notesIndex = this.notesIndex;
-    this.indexNote({_id: this.topNotesParentKey} as Note['Record'])
+    this.indexNote({_id: this.topNotesParentKey} as Note['Record'], false)
       .subscribe(() => {
-          this.isReady.next(true);
+        this.isReady.next(true);
       });
   }
 
@@ -106,7 +106,8 @@ export class NotesControllerService {
     }))
   }
 
-  public moveNote(noteToBeMoved: Note['Record'], newParentId: Note['Record']['_id']): Observable<NoteIndexRecord> {
+  public moveNote(noteToBeMoved: Note['Record'], newParentId: Note['Record']['_id'], noteDropOrderIndex?: Note['Record']['index']): Observable<NoteIndexRecord> {
+    noteDropOrderIndex = noteDropOrderIndex || 0;
     const noteToBeMovedIndexRecord = this.getFromIndex(noteToBeMoved._id);
     if (newParentId === noteToBeMoved._id) {
       console.error('Note can\'t be child of itself. Aborting note moving.');
@@ -119,20 +120,20 @@ export class NotesControllerService {
       return of(noteToBeMovedIndexRecord);
     }
     const oldParentIndexRecord = this.getFromIndex(noteToBeMoved.parentNoteId);
-    return this.updateNote(noteToBeMoved._id, {parentNoteId: newParentId})
+    const positionInOldParent = this.getPositionInParent(noteToBeMovedIndexRecord);
+    return this.updateNote(noteToBeMoved._id, {parentNoteId: newParentId, index: noteDropOrderIndex})
       .pipe(tap(() => {
         const movedNoteIndexRecord = this.getFromIndex(noteToBeMoved._id);
-        this.insertChildIn(newParentIndexRecord, movedNoteIndexRecord);
         this.deleteChildIn(oldParentIndexRecord, movedNoteIndexRecord);
-      }));
+      }))
+      .pipe(delayWhen((movedNoteIndexRecord) => this.insertChildIn(newParentIndexRecord, movedNoteIndexRecord, noteDropOrderIndex)))
+      .pipe(delayWhen(() => this.refreshChildrenOrderIndexies(oldParentIndexRecord, positionInOldParent)));
   }
 
   private updateNote(
     noteToSaveId: Note['Record']['_id'],
     updateModel: Partial<Note['Model']>,
   ): Observable<NoteIndexRecord> {
-
-    console.log('updating', noteToSaveId, 'properties', updateModel)
     const initialNoteIndex = this.notesIndex[noteToSaveId];
 
     let needsSending = false;
@@ -144,7 +145,6 @@ export class NotesControllerService {
       }
     });
 
-    console.log('needsSending', needsSending)
     if (!needsSending) {
       return of(initialNoteIndex);
     }
@@ -213,9 +213,9 @@ export class NotesControllerService {
   }
 
   /**
-   *  Creates index record for a note record in internal service notes index.
-   *  @param noteToIndex - note for which record will be created
-   *  @param [updateParent=true] - if should insert/modify note in it's parent childNotes property. IMPORTANT! If set to false, parent must be notfied later in function that uses #indexNote method to keep notes index up to date reflection of database structure
+   * Creates index record for a note record in internal service notes index.
+   * @param noteToIndex - note for which record will be created
+   * @param [updateParent=true] - if should insert/modify note in it's parent childNotes property. IMPORTANT! If set to false, parent must be notfied later in function that uses #indexNote method to keep notes index up to date reflection of database structure
    */
 
   private indexNote(noteToIndex: Note['Record'], updateParent = true): Observable<NoteIndexRecord> {
@@ -224,24 +224,24 @@ export class NotesControllerService {
     }
     const indexedNote = this.notesIndex[noteToIndex._id];
 
-    return new Observable<NoteIndexRecord>(subscriber => {
-      this.getSourceNoteIndexFor(noteToIndex)
-        .subscribe(sourceNoteIndex => {
+    let observable = this.getSourceNoteIndexFor(noteToIndex)
+      .pipe(
+        tap(sourceNoteIndex => {
           if (sourceNoteIndex) {
             this.addLinkNoteToIndexRecord(sourceNoteIndex, indexedNote);
           }
-          if (updateParent) {
-            const parentIndex = this.getParentOf(noteToIndex);
-            if (parentIndex && some(parentIndex.childNotesIds.getValue(), (childNoteId) => childNoteId === indexedNote._id)) {
-              this.updateChildIn(parentIndex, indexedNote);
-            } else if(parentIndex) {
-              this.insertChildIn(parentIndex, indexedNote);
-            }
-          }
-          subscriber.next(indexedNote);
-          subscriber.complete();
-        })
-    })
+        }),
+        mapTo(indexedNote)
+      );
+    if (updateParent) {
+      const parentIndex = this.getParentOf(noteToIndex);
+      if (this.getPositionInParent(indexedNote) !== -1) {
+        observable = observable.pipe(tap(() => this.updateInParent(indexedNote)))
+      } else {
+        observable = observable.pipe(delayWhen(() => this.insertChildIn(parentIndex, indexedNote)));
+      }
+    }
+    return observable;
   }
 
   private addLinkNoteToIndexRecord(sourceNote: NoteIndexRecord, linkNote: NoteIndexRecord): void {
@@ -306,12 +306,11 @@ export class NotesControllerService {
         if (childNotes.length) {
           return forkJoin<NoteIndexRecord[]>(
             ...childNotes.map(childNote => this.indexNote(childNote, false))
-          )
-            .pipe(tap(() => {
-              const childrenIds = compact(childNotes.map((childNote) => childNote._id));
-              noteToIndexChildrenIn.childNotesIds.next(childrenIds);
-              this.sortChildrenOf(noteToIndexChildrenIn);
-            }));
+          ).pipe(tap(() => {
+            const childrenIds = compact(childNotes.map((childNote) => childNote._id));
+            this.setChildrenOf(noteToIndexChildrenIn, childrenIds);
+            this.sortChildrenOf(noteToIndexChildrenIn);
+          }));
         } else {
           return of([]);
         }
@@ -327,8 +326,7 @@ export class NotesControllerService {
     if (currentChildrenIds.includes(modifiedChild._id)) {
       console.error('Child', modifiedChild, 'was not found for parent', parentNote);
     } else {
-      this.sortChildrenOf(parentNote);
-      parentNote.childNotesIds.next([...currentChildrenIds]);
+      this.setChildrenOf(parentNote, [...currentChildrenIds]);
     }
   }
 
@@ -347,23 +345,29 @@ export class NotesControllerService {
       console.error('Child', childNoteToDelete, 'was not found for parent', parentNote);
     } else {
       currentChildrenIds.splice(childPosition, 1);
-      parentNote.childNotesIds.next([...currentChildrenIds]);
+      this.setChildrenOf(parentNote, [...currentChildrenIds]);
     }
   }
 
-  private insertChildIn(parentNote: NoteIndexRecord, childNoteToInsert: NoteIndexRecord, position?: number): void {
+  private insertChildIn(parentNote: NoteIndexRecord, childNoteToInsert: NoteIndexRecord, noteDropOrderIndex?: Note['Record']['index']): Observable<void> {
+    noteDropOrderIndex = noteDropOrderIndex || 0;
     const currentChildrenIds = parentNote.childNotesIds.getValue();
     const childPosition = currentChildrenIds.indexOf(childNoteToInsert._id);
     if (childPosition !== -1) {
       console.error('Child', childNoteToInsert, 'is already present in parent', parentNote);
     } else {
-      if (position) {
-        currentChildrenIds.splice(position, 0, childNoteToInsert._id);
+      if (noteDropOrderIndex === 0) {
+        currentChildrenIds.unshift(childNoteToInsert._id);
+      } else if (noteDropOrderIndex === currentChildrenIds.length) {
+        currentChildrenIds.push(childNoteToInsert._id)
       } else {
-        currentChildrenIds.push(childNoteToInsert._id);
+        currentChildrenIds.splice(noteDropOrderIndex, 0, childNoteToInsert._id); // performance. Unshift/push are much fister than splice
       }
       this.sortChildrenOf(parentNote);
-      parentNote.childNotesIds.next([...currentChildrenIds]);
+      return this.refreshChildrenOrderIndexies(parentNote, noteDropOrderIndex)
+      .pipe(tap(() => {
+        this.setChildrenOf(parentNote, [...currentChildrenIds]);
+      }));
     }
   }
 
@@ -393,29 +397,33 @@ export class NotesControllerService {
     return notePath;
   }
 
-  public reorderNote(noteToReorder: Note['Record'], targetNoteId: Note['Record']['_id'], insertBefore = false): Observable<NoteIndexRecord>  {
+  public reorderNoteInParent(noteToReorder: Note['Record'], newPositionIndex: Note['Record']['index']): Observable<NoteIndexRecord> {
+    const noteToReorderIndexRecord = this.getFromIndex(noteToReorder._id);
+    const targetParentNote = this.getFromIndex(noteToReorder.parentNoteId);
+    const siblingsIds = targetParentNote.childNotesIds.getValue();
+    const movedNoteInitialPosition = this.getPositionInParent(noteToReorderIndexRecord);
 
-    return this.moveNote(noteToReorder, this.getFromIndex(targetNoteId).parentNoteId)
-      .pipe(flatMap((movedNoteIndexRecord) => {
-        const targetNoteIndexRecord = this.getFromIndex(targetNoteId);
-        const targetParentNote = this.getFromIndex(targetNoteIndexRecord.parentNoteId);
-        const targetPositionInParent = this.getPositionInParent(targetNoteIndexRecord) + (insertBefore ? -1 : 0);
-        const siblingsIds = targetParentNote.childNotesIds.getValue();
-        const movedNotePositionInParent = this.getPositionInParent(movedNoteIndexRecord);
+    if (newPositionIndex > movedNoteInitialPosition) {
+      siblingsIds.splice(newPositionIndex, 0, noteToReorderIndexRecord._id);
+      siblingsIds.splice(movedNoteInitialPosition, 1);
+    } else {
+      siblingsIds.splice(movedNoteInitialPosition, 1);
+      siblingsIds.splice(newPositionIndex, 0, noteToReorderIndexRecord._id);
+    }
 
-        siblingsIds.splice(movedNotePositionInParent, 1);
-        siblingsIds.splice(targetPositionInParent + 1, 0, movedNoteIndexRecord._id);
+    const updateStartIndex = Math.min(newPositionIndex, movedNoteInitialPosition);
+    return this.refreshChildrenOrderIndexies(targetParentNote, updateStartIndex)
+      .pipe(mapTo(noteToReorderIndexRecord));
+  }
 
-        console.log(siblingsIds.slice(targetPositionInParent - 1));
-
-        const updateStartIndex = Math.min(targetPositionInParent, movedNotePositionInParent);
-        return forkJoin(
-          ...siblingsIds.slice(updateStartIndex).map((siblingId, siblingIndex) => this.updateNote(siblingId, { index: siblingIndex + updateStartIndex }))
-        )
-        .pipe(tap(() => {
-          targetParentNote.childNotesIds.next([...siblingsIds]);
-        }));
-      }));
+  private refreshChildrenOrderIndexies(parentToWorkOn: NoteIndexRecord, updateStartIndex: Note['Record']['index']): Observable<void> {
+    const childrenIds = parentToWorkOn.childNotesIds.getValue();
+    return forkJoin(
+      ...childrenIds.slice(updateStartIndex).map((siblingId, siblingIndex) => this.updateNote(siblingId, { index: siblingIndex + updateStartIndex }))
+    )
+    .pipe(tap(() => {
+      this.setChildrenOf(parentToWorkOn, [...childrenIds]);
+    }));
   }
 
   private getPositionInParent(childNote: NoteIndexRecord): number {
@@ -428,6 +436,10 @@ export class NotesControllerService {
     newChildrenArray.sort((a, b) => {
       return this.getFromIndex(a).index - this.getFromIndex(b).index;
     });
-    parentNote.childNotesIds.next([...newChildrenArray]);
+    this.setChildrenOf(parentNote, [...newChildrenArray]);
+  }
+
+  private setChildrenOf(parentNote: NoteIndexRecord, newChildrenIdsArray: Note['Record']['_id'][]): void {
+    parentNote.childNotesIds.next(newChildrenIdsArray);
   }
 }

@@ -66,7 +66,7 @@ export class NoteIndexRecord implements Required<NoteRecord> {
   }
 
   get index() {
-    return this.actualNote.index || 0; // || 0 is for transition period when not all notes in DB have index set
+    return this.actualNote.index;
   }
   set index(newIndex) {
     this.actualNote.index = newIndex;

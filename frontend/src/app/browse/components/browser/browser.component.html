@@ -1,9 +1,11 @@
 <app-entries-list
 *ngIf="notesIds"
 [notesIds]="notesIds"
+[parentNoteId]="topNotesParentKey"
 [browserReference]="browser.nativeElement"
 ></app-entries-list>
 <div
-[appDropZone]="topNotesParentKey"
+appDropZone
+[targetNoteId]="topNotesParentKey"
 class="top-drop action-button minor"
 >Move to top</div>

@@ -38,7 +38,6 @@ export class DraggableNoteEntryComponent implements OnChanges {
   private dragModeClasses = {
     [DragModesEnum.copy]: 'drag-mode-copy', // is set on key modifier press
     [DragModesEnum.link]: 'drag-mode-link', // is set on key modifier press
-    [DragModesEnum.reorder]: 'drag-mode-reorder', // is set on key modifier press
     [DragModesEnum.move]: 'drag-mode-move', // is set when default mode should be used
     [DragModesEnum.cantDrop]: 'drag-mode-cant-drop', // is set when action is not permitted
   }

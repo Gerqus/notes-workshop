@@ -1,5 +1,5 @@
 <ul *ngIf="notes.length > 0">
-  <ng-container *ngFor="let note of notes; trackBy: notesTrackingFn">
+  <ng-container *ngFor="let note of notes; index as noteOrderIndex; trackBy: notesTrackingFn">
     <li
     #entryElement
     class="entry"
@@ -8,15 +8,32 @@
     (onFirstExpand)="handleNoteExpansion(note)"
     [canExpand]="(note.childNotesIds | async)?.length > 0"
     >
-      <app-draggable-note-entry
-      [ngClass]="{
-        'action-button note-title minor': true,
-        'category': getContentSourceNote(note)?.isCategory
-      }"
-      [appDropZone]="note._id"
-      [noteId]="note._id"
-      [browserReference]="browserReference"
-      ></app-draggable-note-entry>
+      <div>
+        <div
+        class="drop-between drop-before"
+        appDropZone
+        [targetNoteId]="parentNoteId"
+        [targetOrderIndex]="noteOrderIndex"
+        ></div>
+
+        <app-draggable-note-entry
+        [ngClass]="{
+          'action-button note-title minor': true,
+          'category': getContentSourceNote(note)?.isCategory
+        }"
+        appDropZone
+        [targetNoteId]="note._id"
+        [noteId]="note._id"
+        [browserReference]="browserReference"
+        ></app-draggable-note-entry>
+
+        <div
+        class="drop-between drop-after"
+        appDropZone
+        [targetNoteId]="parentNoteId"
+        [targetOrderIndex]="noteOrderIndex + 1"
+        ></div>
+      </div>
 
       <!-- icon for expandable note placeholder -->
 
@@ -24,6 +41,7 @@
       *ngIf="(note.childNotesIds | async)?.length > 0"
       class="subentries"
       [notesIds]="((note.childNotesIds | async) || [])"
+      [parentNoteId]="note._id"
       [browserReference]="browserReference"
       ></app-entries-list>
 

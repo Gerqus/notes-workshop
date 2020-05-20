@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Keys, InterfaceEventsService } from '@/services/interface-events';
-import { DropCheckerService } from '../drop-checker';
 import { DragModesEnum } from '../../enums/dragModes.enum';
 
 @Injectable({
@@ -13,7 +12,6 @@ export class DragAndDropModeService {
   private dragModifiersModes = {
     [Keys.f1]: DragModesEnum.copy,
     [Keys.f2]: DragModesEnum.link,
-    [Keys.f3]: DragModesEnum.reorder,
   }
   private registeredModifiersKeys: Keys[]; // will be populated with keys of #dragModifiersModes in constructor
 

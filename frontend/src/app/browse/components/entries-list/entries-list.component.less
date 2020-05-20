@@ -4,24 +4,25 @@
 @expand-icons-size: 1rem;
 @space-for-expand-icons: @expand-icons-size;
 @level-indentation: 1rem;
-@list-elements-spacing: 0.5rem;
-@list-elements-padding: 0.1rem;
+@entry-elements-spacing: 0.5rem;
+@entry-elements-padding: 0.1rem;
+@entry-element-min-height: 1.5rem;
 
 .entry {
   display: grid;
   grid-template-columns: 13rem @space-for-expand-icons;
   grid-template-areas: "title icon";
-  column-gap: @list-elements-spacing;
+  column-gap: @entry-elements-spacing;
   user-select: none;
   align-items: center;
+  min-height: @entry-element-min-height;
 
   .note-title {
-    padding: @list-elements-padding 6*@list-elements-padding;
+    padding: @entry-elements-padding 6*@entry-elements-padding;
     font-size: 1rem;
     line-height: 1rem;
     grid-area: title;
     justify-content: left;
-    margin-bottom: 0.5rem;
 
     &.category {
       font-size: 1.2rem;
@@ -36,9 +37,8 @@
   }
 
   & > ::ng-deep .icon {
-    padding: @list-elements-padding;
+    padding: @entry-elements-padding;
     grid-area: icon;
-    margin-bottom: 0.5rem;
   }
 
   & > .subentries {
@@ -48,5 +48,62 @@
 
   &.expanded > .subentries {
     display: initial;
+  }
+}
+
+.drop-between {
+  @border-width: 2px;
+  @marker-height: @entry-element-min-height / 2;
+
+  position: relative;
+  height: @marker-height;
+  width: calc(13.5rem - 2px);
+  margin-left: -0.25rem;
+  z-index: 1;
+
+  &.drop-before {
+    margin-bottom: -@marker-height / 2;
+
+    &::before {
+      top: -@marker-height / 4;
+    }
+  
+    &::after {
+      top: @marker-height / 4;
+    }
+  }
+
+  &.drop-after {
+    margin-top: -@marker-height / 2;
+
+    &::before {
+      bottom: @marker-height / 4;
+    }
+  
+    &::after {
+      bottom: -@marker-height / 4;
+    }
+  }
+  
+  &::before, &::after {
+    display: none;
+    position: absolute;
+    content: '';
+    border-color: mix(black, @action-secondary-border-color, 5%);
+    height: @marker-height / 4;
+    z-index: 1;
+    pointer-events: none;
+    border-style: solid;
+    width: 100%;
+  }
+
+  &::before {
+    border-radius: 0 0 0.25rem 0.25rem;
+    border-width: 0 @border-width/2 @border-width @border-width/2;
+  }
+
+  &::after {
+    border-radius: 0.25rem 0.25rem 0 0;
+    border-width: @border-width @border-width/2 0 @border-width/2;
   }
 }

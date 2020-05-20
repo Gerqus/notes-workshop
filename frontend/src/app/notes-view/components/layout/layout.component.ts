@@ -16,7 +16,6 @@ export class LayoutComponent implements OnInit {
   ) {
     this.notesControllerService.getOpenedNotesIdsObservable()
       .subscribe(openedNotesIds => {
-        console.log(openedNotesIds);
         this.openedNotesIds = openedNotesIds;
       })
     

@@ -30,7 +30,6 @@ export class BrowserComponent implements OnInit, OnDestroy {
           this.topNotesContainer = this.notesControllerService.getFromIndex(this.topNotesParentKey);
           this.notesControllerService.insertChildrenFromServerFor(this.topNotesContainer)
             .subscribe((initialTopNotes) => {
-              console.log('top notes indexed')
               forkJoin(
                 ...initialTopNotes.map(topNote => this.notesControllerService.insertChildrenFromServerFor(topNote))
               ).subscribe();
@@ -39,7 +38,6 @@ export class BrowserComponent implements OnInit, OnDestroy {
               }
               this.topNotesListSub = this.topNotesContainer.childNotesIds
                 .subscribe((topNotesIds) => {
-                  console.log('top notes fetched; from browser', topNotesIds)
                   this.notesIds = [...topNotesIds];
                 });
             });
