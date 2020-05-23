@@ -7,15 +7,16 @@
     appExpandable
     (onFirstExpand)="handleNoteExpansion(note)"
     [canExpand]="(note.childNotesIds | async)?.length > 0"
+    [expanderContainer]="expanderContainer"
     >
-      <div>
-        <div
-        class="drop-between drop-before"
-        appDropZone
-        [targetNoteId]="parentNoteId"
-        [targetOrderIndex]="noteOrderIndex"
-        ></div>
+      <div *ngIf="parentNoteId === topNotesParentKey && noteOrderIndex === 0"
+      class="drop-between"
+      appDropZone
+      [targetNoteId]="parentNoteId"
+      [targetOrderIndex]="noteOrderIndex"
+      ></div>
 
+      <div class="entry-content">
         <app-draggable-note-entry
         [ngClass]="{
           'action-button note-title minor': true,
@@ -27,15 +28,30 @@
         [browserReference]="browserReference"
         ></app-draggable-note-entry>
 
+        <div class="expander-container" #expanderContainer></div>
+      </div>
+
+      <div
+      #dropIndicator
+      class="drop-between-container"
+      >
         <div
-        class="drop-between drop-after"
+        class="drop-between entry-drop-between"
         appDropZone
+        [dropIndicator]="dropIndicator"
         [targetNoteId]="parentNoteId"
         [targetOrderIndex]="noteOrderIndex + 1"
         ></div>
-      </div>
 
-      <!-- icon for expandable note placeholder -->
+        <div
+        *ngIf="(note.childNotesIds | async)?.length > 0"
+        class="drop-between subentries-drop-between"
+        appDropZone
+        [dropIndicator]="dropIndicator"
+        [targetNoteId]="note._id"
+        [targetOrderIndex]="0"
+        ></div>
+      </div>
 
       <app-entries-list
       *ngIf="(note.childNotesIds | async)?.length > 0"

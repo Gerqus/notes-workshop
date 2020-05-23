@@ -1,5 +1,4 @@
 import { Component, Input, ElementRef, HostListener, OnChanges, SimpleChanges } from '@angular/core';
-import { Subscription } from 'rxjs';
 import { Note } from 'types';
 import { DropCheckerService } from '@/browse/services/drop-checker';
 import { ExpandableDirectiveStateKeeperService } from '@/common/services/expandable-directive-state-keeper.service';
@@ -7,7 +6,7 @@ import { DragAndDropModeService } from '@/browse/services/drag-and-drop-mode';
 import { InterfaceEventsService, Events } from '@/services/interface-events';
 import { NotesControllerService } from '@/services/notes-controller';
 import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.class';
-import { DragModesEnum } from '../../enums/dragModes.enum';
+// import { DragModesEnum } from '../../enums/dragModes.enum';
 
 @Component({
   selector: 'app-draggable-note-entry',
@@ -30,18 +29,20 @@ export class DraggableNoteEntryComponent implements OnChanges {
   private noteClone: HTMLElement;
   private clickCoordinates = {x: 0, y: 0};
   private hoverExpansion: {
-    ref?: number, readonly timeout: number, itemId?: Note['Record']['_id']
+    readonly timeout: number,
+    ref?: number,
+    itemId?: Note['Record']['_id']
   } = {
     timeout: 500,
   };
 
-  private dragModeClasses = {
-    [DragModesEnum.copy]: 'drag-mode-copy', // is set on key modifier press
-    [DragModesEnum.link]: 'drag-mode-link', // is set on key modifier press
-    [DragModesEnum.move]: 'drag-mode-move', // is set when default mode should be used
-    [DragModesEnum.cantDrop]: 'drag-mode-cant-drop', // is set when action is not permitted
-  }
-  private dragModeSubscription: Subscription;
+  // private dragModeClasses = {
+  //   [DragModesEnum.copy]: 'drag-mode-copy', // is set on key modifier press
+  //   [DragModesEnum.link]: 'drag-mode-link', // is set on key modifier press
+  //   [DragModesEnum.move]: 'drag-mode-move', // is set when default mode should be used
+  //   [DragModesEnum.cantDrop]: 'drag-mode-cant-drop', // is set when action is not permitted
+  // }
+  // private dragModeSubscription: Subscription;
   private currentHoverElement: HTMLElement = null;
 
   private mouseUpHandlerBinded = this.mouseUpHandler.bind(this);
@@ -68,10 +69,6 @@ export class DraggableNoteEntryComponent implements OnChanges {
     }
   }
 
-  public openNote(): void {
-    this.notesControllerService.openNote(this.note);
-  }
-
   @HostListener('mousedown', ['$event'])
   public mousedownListener(event: MouseEvent) {
     this.clickCoordinates.x = event.clientX;
@@ -85,11 +82,12 @@ export class DraggableNoteEntryComponent implements OnChanges {
   public dragstartListener() { return false };
 
   private mouseOverHandler(event: MouseEvent): void {
-    if ((event.target as HTMLElement).classList.contains('expansion-arrow') && !(event.target as HTMLElement).classList.contains('hidden')) {
+    if ((event.target as HTMLElement).classList.contains('expansion-button') && !(event.target as HTMLElement).classList.contains('hidden')) {
       const getExpandableItemIdEvent = new CustomEvent('getItemId', {
         bubbles: false,
         detail: {
           cb: (itemId: Note['Record']['_id']) => {
+            console.log(itemId);
             this.hoverExpansion.ref = setTimeout(() => {
               this.hoverExpansion.itemId = itemId;
               this.expandableDirectiveStateKeeperService.setState(itemId, true);
@@ -101,57 +99,61 @@ export class DraggableNoteEntryComponent implements OnChanges {
       event.target.dispatchEvent(getExpandableItemIdEvent);
     }
     else if ((event.target as HTMLElement).classList.contains('drop-zone')) {
+      const dragOverEvent = new CustomEvent<NoteIndexRecord>('app-dragover', {
+        bubbles: false,
+        detail: this.note,
+      });
+      event.target.dispatchEvent(dragOverEvent);
       this.currentHoverElement = event.target as HTMLElement;
-      this.setProperDragModeClass();
+      // this.setProperDragModeClass();
     }
   }
 
-  private setProperDragModeClass() {
-    if (!this.currentHoverElement || this.currentHoverElement.getAttribute('noteId') === this.note._id) {
-      this.setCurrentDragModeClass();
-    } else if (this.currentHoverElement) {
-      this.currentHoverElement.classList.add('indicate-drop-zone');
-
-      const canBeDropped = this.dropCheckerService.canDropHere(this.currentHoverElement, this.note);
-      if (canBeDropped) {
-        this.setCurrentDragModeClass();
-      } else {
-        this.setCantDropDragClass();
-      }
-    }
-  }
+  // private setProperDragModeClass() {
+    // if (!this.currentHoverElement || this.currentHoverElement.getAttribute('noteId') === this.note._id) {
+      // this.setCurrentDragModeClass();
+    // } else if (this.currentHoverElement) {
+      // const canBeDropped = this.dropCheckerService.canDropHere(this.currentHoverElement, this.note);
+      // if (canBeDropped) {
+        // this.setCurrentDragModeClass();
+      // } else {
+        // this.setCantDropDragClass();
+      // }
+    // }
+  // }
   
-  private clearBorwserElementClasses(): void {
-    Object.values(this.dragModeClasses).forEach(modeclass => {
-      this.browserReference.classList.remove(modeclass);
-    });
-  }
+  // private clearBorwserElementClasses(): void {
+  //   Object.values(this.dragModeClasses).forEach(modeclass => {
+  //     this.browserReference.classList.remove(modeclass);
+  //   });
+  // }
 
-  private setCurrentDragModeClass() {
-    const dragModeToSetClassFor = this.dragAndDropModeService.getCurrentDragMode();
-    this.clearBorwserElementClasses();
-    this.browserReference.classList.add(this.dragModeClasses[dragModeToSetClassFor]);
-  }
+  // private setCurrentDragModeClass() {
+  //   const dragModeToSetClassFor = this.dragAndDropModeService.getCurrentDragMode();
+  //   this.clearBorwserElementClasses();
+  //   this.browserReference.classList.add(this.dragModeClasses[dragModeToSetClassFor]);
+  // }
 
-  private setCantDropDragClass() {
-    this.clearBorwserElementClasses();
-    this.browserReference.classList.add(this.dragModeClasses[DragModesEnum.cantDrop]);
-  }
-
-  private setDragClass(dragClassToSet: DragModesEnum) {
-    this.clearBorwserElementClasses();
-    this.browserReference.classList.add(this.dragModeClasses[dragClassToSet]);
-  }
+  // private setCantDropDragClass() {
+  //   this.clearBorwserElementClasses();
+  //   this.browserReference.classList.add(this.dragModeClasses[DragModesEnum.cantDrop]);
+  // }
 
   private mouseOutHandler(event: MouseEvent) {
+    if ((event.target as HTMLElement).classList.contains('drop-zone')) {
+      const dragOutEvent = new CustomEvent<NoteIndexRecord>('app-dragout', {
+        bubbles: false,
+        detail: this.note,
+      });
+      event.target.dispatchEvent(dragOutEvent);
+    }
     this.currentHoverElement = null;
-    this.setCurrentDragModeClass();
+    // this.setCurrentDragModeClass();
     if (this.hoverExpansion.ref) {
       clearTimeout(this.hoverExpansion.ref);
       delete this.hoverExpansion.ref;
     }
     delete this.hoverExpansion.itemId;
-    (event.target as HTMLElement).classList.remove('indicate-drop-zone');
   }
   
   private mouseUpHandler(event: MouseEvent) {
@@ -164,26 +166,23 @@ export class DraggableNoteEntryComponent implements OnChanges {
       this.dragStarted = false;
       this.mouseOutHandler(event);
 
-      const canBeDropped = this.dropCheckerService.canDropHere(event.target as HTMLElement, this.note)
-      if (canBeDropped) {
-        const noteDropEvent = new CustomEvent<NoteIndexRecord>('notedrop', {
-          bubbles: false,
-          detail: this.note,
-        });
-        event.target.dispatchEvent(noteDropEvent);
-      }
+      const noteDropEvent = new CustomEvent<NoteIndexRecord>('notedrop', {
+        bubbles: false,
+        detail: this.note,
+      });
+      event.target.dispatchEvent(noteDropEvent);
 
-        document.body.classList.remove('drag-ongoing');
-        this.browserReference.classList.remove('drag-ongoing');
-    
-        this.dragModeSubscription?.unsubscribe();
-        this.clearBorwserElementClasses();
+      // document.body.classList.remove('drag-ongoing');
+      this.browserReference.classList.remove('drag-ongoing');
+  
+      // this.dragModeSubscription?.unsubscribe();
+      // this.clearBorwserElementClasses();
 
-        this.interfaceEventsService.subscribeForEvent(this.dragAndDropModeService.getRegisteredModifiersKeys(), Events.keyup, () => {
-          () => this.interfaceEventsService.preventDefaultFor(this.dragAndDropModeService.getRegisteredModifiersKeys(), false);
-        }, { afterStateCallback: true });
+      this.interfaceEventsService.subscribeForEvent(this.dragAndDropModeService.getRegisteredModifiersKeys(), Events.keyup, () => {
+        () => this.interfaceEventsService.preventDefaultFor(this.dragAndDropModeService.getRegisteredModifiersKeys(), false);
+      }, { afterStateCallback: true });
     } else {
-      this.openNote()
+      this.notesControllerService.openNote(this.note);
     }
 
     document.removeEventListener('mousemove', this.positionNoteShadowBinded);
@@ -213,14 +212,14 @@ export class DraggableNoteEntryComponent implements OnChanges {
       this.dragStarted = true;
 
       this.browserReference.classList.add('drag-ongoing');
-      document.body.classList.add('drag-ongoing');
+      // document.body.classList.add('drag-ongoing');
 
       this.interfaceEventsService.preventDefaultFor(this.dragAndDropModeService.getRegisteredModifiersKeys());
       
-      this.dragModeSubscription = this.dragAndDropModeService
-        .subscribe(() => {
-          this.setProperDragModeClass();
-        });
+      // this.dragModeSubscription = this.dragAndDropModeService
+      //   .subscribe(() => {
+      //     // this.setProperDragModeClass();
+      //   });
 
       this.originalOpacity = this.el.nativeElement.style.opacity ? (this.el as any).nativeElement.style.opacity : this.originalOpacity;
       this.el.nativeElement.style.opacity = this.fadedOpacity;
@@ -230,15 +229,15 @@ export class DraggableNoteEntryComponent implements OnChanges {
       this.noteClone.style.opacity = this.fadedOpacity;
       this.noteClone.style.position = 'absolute';
       this.noteClone.style.pointerEvents = 'none';
-      this.noteClone.style.zIndex = '1000';
-      this.noteClone.style.cursor = "move";
+      this.noteClone.style.zIndex = '10';
       this.noteClone.style.width = noteLabelSize.width + 'px';
       this.noteClone.style.height = noteLabelSize.height + 'px';
+      this.noteClone.style.marginLeft = -1 * noteLabelSize.width / 2 + 'px';
+      this.noteClone.style.marginTop = -1 * noteLabelSize.height / 2 + 'px';
+
       this.positionNoteShadow(event);
 
       document.body.append(this.noteClone);
-      this.noteClone.style.marginLeft = -1 * noteLabelSize.width / 2 + 'px';
-      this.noteClone.style.marginTop = -1 * noteLabelSize.height / 2 + 'px';
     }
   }
 

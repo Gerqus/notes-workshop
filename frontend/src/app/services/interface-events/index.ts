@@ -8,7 +8,6 @@ export enum Keys {
   'shift' = 'Shift',
   'f1' = 'F1',
   'f2' = 'F2',
-  'f3' = 'F3',
 }
 
 export enum Events {
@@ -164,7 +163,6 @@ export class InterfaceEventsService {
   }
 
   public getStateSubject(keyName: Keys): BehaviorSubject<boolean> {
-    return this.keyEvents[keyName]
-      .isPressed;
+    return this.keyEvents[keyName].isPressed;
   }
 }

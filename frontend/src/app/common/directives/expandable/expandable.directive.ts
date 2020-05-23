@@ -7,7 +7,7 @@ import { Subscription, BehaviorSubject } from 'rxjs';
 })
 export class ExpandableDirective implements OnChanges, OnInit, OnDestroy {
   @Input('canExpand') canExpand: boolean = true;
-  @Input('expandableIconContainer') expandableIconContainer?: HTMLElement;
+  @Input('expanderContainer') expanderContainer?: HTMLElement;
   @Input('expandableItemId') itemId: string;
   @Output('onExpand') onExpand = new EventEmitter<HTMLElement>();
   @Output('onFirstExpand') onFirstExpand = new EventEmitter<HTMLElement>();
@@ -15,6 +15,7 @@ export class ExpandableDirective implements OnChanges, OnInit, OnDestroy {
   private firstExpansionHandled = false
 
   private iconElement: HTMLElement;
+  private expanderElement: HTMLElement;
   private expansionStateSubscription: Subscription;
   private expansionStateSubject: BehaviorSubject<boolean>;
   private initialized = false;
@@ -25,11 +26,14 @@ export class ExpandableDirective implements OnChanges, OnInit, OnDestroy {
   ) {
     this.iconElement = document.createElement('i');
     this.iconElement.classList.add('icon');
-    this.iconElement.classList.add('action-button');
-    this.iconElement.classList.add('minor');
     this.iconElement.classList.add('expansion-arrow');
-    this.iconElement.addEventListener('getItemId', (e: CustomEvent) => {e.detail.cb(this.itemId)});
-    this.iconElement.addEventListener('click', () => this.onIconClick());
+    this.expanderElement = document.createElement('div');
+    this.expanderElement.appendChild(this.iconElement);
+    this.expanderElement.classList.add('action-button');
+    this.expanderElement.classList.add('minor');
+    this.expanderElement.classList.add('expansion-button');
+    this.expanderElement.addEventListener('getItemId', (e: CustomEvent) => {e.detail.cb(this.itemId)});
+    this.expanderElement.addEventListener('click', () => this.onIconClick());
   }
 
   ngOnChanges(): void {
@@ -46,7 +50,6 @@ export class ExpandableDirective implements OnChanges, OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.expansionStateSubject = this.expandableDirectiveStateKeeperService.getStateSubject(this.itemId);
-
     
     this.expansionStateSubject.
       subscribe((isExpanded) => {
@@ -73,8 +76,8 @@ export class ExpandableDirective implements OnChanges, OnInit, OnDestroy {
       this.hideExpandIcon();
       this.setExpansionState(false);
     }
-    const iconContainer = this.expandableIconContainer ? this.expandableIconContainer : this.el.nativeElement;
-    iconContainer.appendChild(this.iconElement);
+    const iconContainer = this.expanderContainer ? this.expanderContainer : this.el.nativeElement;
+    iconContainer.appendChild(this.expanderElement);
 
     this.expansionStateSubscription = this.expansionStateSubject
       .subscribe((expansionState) => {
@@ -113,9 +116,9 @@ export class ExpandableDirective implements OnChanges, OnInit, OnDestroy {
   }
 
   private showExpandIcon() {
-    this.iconElement.classList.remove('hidden');
+    this.expanderElement.classList.remove('hidden');
   }
   private hideExpandIcon() {
-    this.iconElement.classList.add('hidden');
+    this.expanderElement.classList.add('hidden');
   }
 }

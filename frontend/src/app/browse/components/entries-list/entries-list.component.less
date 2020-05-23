@@ -2,43 +2,113 @@
 @import '../../../../styles/destyle-lists.less';
 
 @expand-icons-size: 1rem;
-@space-for-expand-icons: @expand-icons-size;
 @level-indentation: 1rem;
 @entry-elements-spacing: 0.5rem;
 @entry-elements-padding: 0.1rem;
-@entry-element-min-height: 1.5rem;
+@insertion-marker-height: 0.33rem;
+@expanded-insertion-marker-height: 1.1rem;
+@entry-title-inner-width: 13rem;
+@entry-title-outer-width: @entry-title-inner-width + 2 * @note-title-horizontal-padding;
+@note-title-vertical-padding: @entry-elements-padding;
+@note-title-horizontal-padding: 6*@entry-elements-padding;
+@insertion-indicator-overflow: 2px;
 
 .entry {
-  display: grid;
-  grid-template-columns: 13rem @space-for-expand-icons;
-  grid-template-areas: "title icon";
-  column-gap: @entry-elements-spacing;
   user-select: none;
-  align-items: center;
-  min-height: @entry-element-min-height;
+  position: relative;
 
-  .note-title {
-    padding: @entry-elements-padding 6*@entry-elements-padding;
-    font-size: 1rem;
-    line-height: 1rem;
-    grid-area: title;
-    justify-content: left;
-
-    &.category {
-      font-size: 1.2rem;
-      line-height: 1.2rem;
-      font-weight: bold;
-      font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-      border-width: 1px;
-      background-color: transparent;
-      border-color: transparent;
-      border-left-color: @action-secondary-border-color;
+  &.expanded {
+    & > .subentries {
+      display: block;
+    }
+    
+    & > .drop-between-container .drop-between {
+      width: calc((@entry-title-inner-width + 2 * @note-title-horizontal-padding + @level-indentation) / 2 + 2px);
+    }
+    
+    & > .drop-between-container > .subentries-drop-between {
+      display: block;
     }
   }
 
-  & > ::ng-deep .icon {
-    padding: @entry-elements-padding;
-    grid-area: icon;
+  & > .entry-content {
+    display: grid;
+    grid-template-columns: @entry-title-outer-width @expand-icons-size;
+    column-gap: @entry-elements-spacing;
+    align-items: center;
+
+    & > .note-title {
+      display: inline-block;
+      padding: @note-title-vertical-padding @note-title-horizontal-padding;
+      font-size: 1rem;
+      line-height: 1rem;
+      width: @entry-title-inner-width;
+      margin-right: @entry-elements-spacing;
+  
+      &.category {
+        font-size: 1.2rem;
+        line-height: 1.2rem;
+        font-weight: bold;
+        font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        border-width: 1px;
+        background-color: transparent;
+        border-left-color: @action-secondary-border-color;
+      }
+      
+      &.highlight-drop-zone {
+        margin-left: 0.125rem;
+      }
+    }
+  
+    & > .expander-container {
+      & > ::ng-deep .action-button {
+        width: @expand-icons-size;
+        height: @expand-icons-size;
+        padding: @entry-elements-padding;
+        & > .icon {
+          pointer-events: none;
+        }
+      }
+    }
+  }
+
+  & > .drop-between-container {
+    width: @entry-title-outer-width;
+
+    & > .subentries-drop-between {
+      display: none;
+      left: calc((@entry-title-inner-width + 2 * @note-title-horizontal-padding + @level-indentation) / 2);
+      margin-top: -@insertion-marker-height;
+
+      &::before, &::after {
+        margin-left: 0;
+        margin-right: -@insertion-indicator-overflow / 2;
+        right: 0;
+      }
+    }
+
+    &.highlight-drop-zone {
+      height: @expanded-insertion-marker-height;
+      margin-top: -(@expanded-insertion-marker-height - @insertion-marker-height) / 2;
+      margin-bottom: -(@expanded-insertion-marker-height - @insertion-marker-height) / 2;
+
+      & > .subentries-drop-between {
+        margin-top: -@expanded-insertion-marker-height;
+      }
+
+      & > .drop-between {
+        height: @expanded-insertion-marker-height;
+
+        &:hover {
+          z-index: 3;
+
+          &::before, &::after {
+            display: block;
+            z-index: 3;
+          }
+        }
+      }
+    }
   }
 
   & > .subentries {
@@ -46,64 +116,53 @@
     display: none;
   }
 
-  &.expanded > .subentries {
-    display: initial;
-  }
-}
+  & .drop-between {
+    @border-width: 2px;
 
-.drop-between {
-  @border-width: 2px;
-  @marker-height: @entry-element-min-height / 2;
-
-  position: relative;
-  height: @marker-height;
-  width: calc(13.5rem - 2px);
-  margin-left: -0.25rem;
-  z-index: 1;
-
-  &.drop-before {
-    margin-bottom: -@marker-height / 2;
-
-    &::before {
-      top: -@marker-height / 4;
-    }
-  
-    &::after {
-      top: @marker-height / 4;
-    }
-  }
-
-  &.drop-after {
-    margin-top: -@marker-height / 2;
-
-    &::before {
-      bottom: @marker-height / 4;
-    }
-  
-    &::after {
-      bottom: -@marker-height / 4;
-    }
-  }
-  
-  &::before, &::after {
-    display: none;
-    position: absolute;
-    content: '';
-    border-color: mix(black, @action-secondary-border-color, 5%);
-    height: @marker-height / 4;
+    width: @entry-title-outer-width;
+    position: relative;
+    height: @insertion-marker-height;
+    // background: white;
+    // outline: 1px solid black;
     z-index: 1;
-    pointer-events: none;
-    border-style: solid;
-    width: 100%;
-  }
 
-  &::before {
-    border-radius: 0 0 0.25rem 0.25rem;
-    border-width: 0 @border-width/2 @border-width @border-width/2;
-  }
+    &.highlight-drop-zone {
+      height: @expanded-insertion-marker-height;
+      margin-top: -(@expanded-insertion-marker-height - @insertion-marker-height) / 2;
+      margin-bottom: -(@expanded-insertion-marker-height - @insertion-marker-height) / 2;
+      z-index: 3;
 
-  &::after {
-    border-radius: 0.25rem 0.25rem 0 0;
-    border-width: @border-width @border-width/2 0 @border-width/2;
+      &:hover { 
+        &::before, &::after {
+          display: block;
+          z-index: 3;
+        }
+      }
+    }
+    
+    &::before, &::after {
+      display: none;
+      position: absolute;
+      content: '';
+      border-color: mix(black, @action-secondary-border-color, 5%);
+      height: @insertion-marker-height / 2;
+      z-index: 2;
+      pointer-events: none;
+      border-style: solid;
+      width: calc(@entry-title-outer-width + @insertion-indicator-overflow);
+      margin-left: -@insertion-indicator-overflow / 2;
+    }
+
+    &::before {
+      border-radius: 0 0 0.25rem 0.25rem;
+      border-width: 0 @border-width/2 @border-width @border-width/2;
+      top: calc(50% - @insertion-marker-height / 2 - 1px);
+    }
+
+    &::after {
+      border-radius: 0.25rem 0.25rem 0 0;
+      border-width: @border-width @border-width/2 0 @border-width/2;
+      top: calc(50% - 1px);
+    }
   }
 }

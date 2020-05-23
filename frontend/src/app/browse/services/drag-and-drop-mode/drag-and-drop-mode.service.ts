@@ -21,38 +21,29 @@ export class DragAndDropModeService {
     this.registeredModifiersKeys = Object.keys(this.dragModifiersModes) as Keys[];
     this.registeredModifiersKeys.forEach(key => {
       this.interfaceEventsService.getStateSubject(key)
-        .subscribe(this.handleDragMode.bind(this));
+        .subscribe((isPressed) => this.handleDragMode(isPressed, key));
     });
   }
 
-  public getCurrentDragMode() {
+  public getCurrentDragMode(): DragModesEnum {
     return this.dragMode.getValue();
   }
 
-  public getRegisteredModifiersKeys() {
+  public getRegisteredModifiersKeys(): Keys[] {
     return this.registeredModifiersKeys;
   }
 
   public subscribe(cb: () => void) {
-    return this.dragMode
-      .subscribe(cb);
+    return this.dragMode.subscribe(cb);
   }
 
-  public resetDragMode() {
+  public resetDragMode(): void {
     this.dragMode.next(this.defaultDragMode);
   }
 
-  private handleDragMode() {
-    let keysCount = 0;
-    let matchedKey = '';
-    this.registeredModifiersKeys.forEach(key => {
-      if (this.interfaceEventsService.getStateSubject(key).getValue()) {
-        ++keysCount;
-        matchedKey = key;
-      }
-    });
-    if (keysCount === 1) {
-      this.dragMode.next(this.dragModifiersModes[matchedKey]);
+  private handleDragMode(isPressed: boolean, key: Keys): void {
+    if (isPressed) {
+      this.dragMode.next(this.dragModifiersModes[key]);
     } else {
       this.dragMode.next(this.defaultDragMode);
     }

@@ -15,7 +15,11 @@ export class EntriesListComponent implements OnChanges{
   @Input() browserReference: HTMLElement;
   @Input() parentNoteId: Note['Record']['_id'];
 
+  @ViewChild('afterEntryDropBetween') afterEntryDropBetween: ElementRef<HTMLElement>;
+  @ViewChild('subentriesDropBetween') subentriesDropBetween: ElementRef<HTMLElement>;
+
   public notes: NoteIndexRecord[] = [];
+  public topNotesParentKey = this.notesControllerService.topNotesParentKey;
 
   constructor(
     private notesControllerService: NotesControllerService

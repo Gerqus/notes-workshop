@@ -16,53 +16,7 @@ app-entries-list {
     display: flex;
   }
 
-  .top-drop.indicate-drop-zone {
+  .top-drop.highlight-drop-zone {
     opacity: 1;
   }
-
-  & ::ng-deep .note-title.category {
-    &.drop-zone {
-      &.indicate-drop-zone {
-        border-color: @action-secondary-border-color;
-      }
-    }
-  }
-
-  & ::ng-deep .note-title:not(.category) {
-    &.drop-zone {
-      &.indicate-drop-zone {
-        margin-left: 0.125rem;
-        margin-right: -0.125rem;
-      }
-    }
-  }
-
-  & ::ng-deep .drop-between {
-    &.drop-zone {
-      @border-width: 2px;
-      @marker-height: 0.5rem;
-
-      &.indicate-drop-zone {
-        &::before, &::after {
-          display: block;
-        }
-      }
-    }
-  }
-}
-
-:host.drag-mode-copy ::ng-deep * {
-  cursor: copy;
-}
-
-:host.drag-mode-move ::ng-deep * {
-  cursor: move;
-}
-
-:host.drag-mode-link ::ng-deep * {
-  cursor: alias;
-}
-
-:host.drag-mode-cant-drop ::ng-deep * {
-  cursor: no-drop;
 }

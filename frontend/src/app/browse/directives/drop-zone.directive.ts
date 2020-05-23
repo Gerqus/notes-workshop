@@ -1,35 +1,52 @@
 import { Directive, ElementRef, OnChanges, HostListener, Input } from '@angular/core';
 import { Note } from 'types';
+import { DropCheckerService } from '@/browse/services/drop-checker';
 import { ExpandableDirectiveStateKeeperService } from '@/common/services/expandable-directive-state-keeper.service';
 import { DragAndDropModeService } from '../services/drag-and-drop-mode';
 import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.class';
 import { NotesControllerService } from '@/services/notes-controller';
 import { DragModesEnum } from '../enums/dragModes.enum';
-import { Observable, of } from 'rxjs';
+import { Observable, of, Subscription } from 'rxjs';
 import { flatMap } from 'rxjs/operators';
 
 @Directive({
   selector: '[appDropZone]'
 })
 export class DropZoneDirective implements OnChanges {
-  @Input('targetNoteId') targetNoteId: Note['Record']['_id'];
-  @Input('targetOrderIndex') targetOrderIndex: Note['Record']['index'];
+  @Input() targetNoteId: Note['Record']['_id'];
+  @Input() targetOrderIndex: Note['Record']['index'];
+  @Input() dropIndicator: HTMLElement;
+
+  private readonly dragModeClasses = {
+    [DragModesEnum.copy]: 'drag-mode-copy', // is set on key modifier press
+    [DragModesEnum.link]: 'drag-mode-link', // is set on key modifier press
+    [DragModesEnum.move]: 'drag-mode-move', // is set when default mode should be used
+    [DragModesEnum.cantDrop]: 'drag-mode-cant-drop', // is set when action is not permitted
+  }
+  private dragModeSubscription: Subscription;
 
   constructor(
     private el: ElementRef<HTMLElement>,
     private notesControllerService: NotesControllerService,
     private expandableDirectiveStateKeeperService: ExpandableDirectiveStateKeeperService,
     private dragAndDropModeService: DragAndDropModeService,
+    private dropCheckerService: DropCheckerService,
   ) { }
 
   ngOnChanges(): void {
+    this.dropIndicator = this.dropIndicator || this.el.nativeElement;
     this.el.nativeElement.classList.add('drop-zone');
     this.targetNoteId !== undefined && this.el.nativeElement.setAttribute('noteId', this.targetNoteId);
     this.targetOrderIndex !== undefined && this.el.nativeElement.setAttribute('orderIndex', this.targetOrderIndex.toString());
   }
 
   @HostListener('notedrop', ['$event'])
-  public handleNoteDrop(e: CustomEvent<NoteIndexRecord>) {
+  public handleNoteDrop(e: CustomEvent<NoteIndexRecord>): void {
+    const canBeDropped = this.dropCheckerService.canDropHere(this.el.nativeElement, e.detail);
+    if (!canBeDropped) {
+      return;
+    }
+
     const currentDragMode = this.dragAndDropModeService.getCurrentDragMode();
     let shouldExpandTarget = true;
     switch (currentDragMode) {
@@ -64,5 +81,56 @@ export class DropZoneDirective implements OnChanges {
       resolver = resolver.pipe(flatMap(() => this.notesControllerService.reorderNoteInParent(noteToMove, this.targetOrderIndex)));
     }
     return resolver;
+  }
+
+  @HostListener('app-dragover', ['$event'])
+  public dragEnterHandler(e: CustomEvent<NoteIndexRecord>): void {
+    const draggedNote = e.detail;
+    if (draggedNote._id !== this.targetNoteId) {
+      this.setCurrentDropzoneClass();
+    }
+    this.dragModeSubscription = this.dragAndDropModeService
+      .subscribe(() => {
+        this.removeAllDragModeClasses();
+        const canBeDropped = this.dropCheckerService.canDropHere(this.el.nativeElement, draggedNote);
+        if (canBeDropped) {
+          this.setCurrentDragModeClass();
+        } else if (draggedNote._id !== this.targetNoteId) {
+          this.setForbiddenDragModeClass();
+        }
+      });
+  }
+
+  @HostListener('app-dragout')
+  public dragLeaveHandler(): void {
+    this.dragModeSubscription?.unsubscribe();
+    this.clearClasses();
+  }
+
+  private clearClasses(): void {
+    this.removeCurrentDropzoneClass();
+    this.removeAllDragModeClasses();
+  }
+
+  private setCurrentDropzoneClass(): void {
+    this.dropIndicator.classList.add('highlight-drop-zone');
+  }
+
+  private removeCurrentDropzoneClass(): void {
+    this.dropIndicator.classList.remove('highlight-drop-zone');
+  }
+
+  private setCurrentDragModeClass(): void {
+    const currentDragMode = this.dragAndDropModeService.getCurrentDragMode();
+    this.dropIndicator.classList.add(this.dragModeClasses[currentDragMode]);
+  }
+  private setForbiddenDragModeClass(): void {
+    this.dropIndicator.classList.add(this.dragModeClasses[DragModesEnum.cantDrop]);
+  }
+
+  private removeAllDragModeClasses(): void {
+    Object.values(this.dragModeClasses).forEach(modeclass => {
+      this.dropIndicator.classList.remove(modeclass);
+    });
   }
 }
