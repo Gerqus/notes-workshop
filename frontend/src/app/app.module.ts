@@ -2,6 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 
+import { WorkspaceModule } from './workspace/workspace.module';
 import { AppRoutingModule } from './app-routing.module';
 import { HeaderModule } from './header/header.module';
 import { BrowseModule } from './browse/browse.module';
@@ -15,6 +16,7 @@ import { AppComponent } from './app.component';
     AppComponent,
   ],
   imports: [
+    WorkspaceModule,
     BrowserModule,
     AppRoutingModule,
     HeaderModule,

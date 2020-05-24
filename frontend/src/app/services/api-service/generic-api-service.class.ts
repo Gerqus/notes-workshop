@@ -17,16 +17,16 @@ export class GenericApiService<T extends DataModel> {
     protected apiRootEndpoint: string,
     protected endpointName: string,
   ) {
-    if (this.configService.api[this.endpointName] === undefined) {
+    if (this.configService.config.api[this.endpointName] === undefined) {
       throw new Error(`Endpoint "${this.endpointName}" is not defined in config. Add it's url to config.`);
     }
 
-    this.endpoint = this.configService.api.protocol +
+    this.endpoint = this.configService.config.api.protocol +
       "://" +
       joinURLSegments(
-        this.configService.api.host,
+        this.configService.config.api.host,
         this.apiRootEndpoint,
-        this.configService.api[this.endpointName]
+        this.configService.config.api[this.endpointName]
       );
   }
 

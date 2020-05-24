@@ -1,22 +1,20 @@
 import { Injectable } from '@angular/core';
-import config from '@/../assets/config.json';
 import { freezeDeep } from '@/utils';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ConfigService {
-  public api: {
-    protocol: string,
-    host: string,
-    root: string,
-    note: string
-  };
+  public config = {
+    "api": {
+      "protocol": "http",
+      "host": "localhost:6040",
+      "root": "api",
+      "note": "note"
+    },
+  }
 
   constructor() {
-    Object.keys(config).forEach(key => {
-      this[key] = config[key];
-    });
     freezeDeep(this);
   }
 }

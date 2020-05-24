@@ -8,42 +8,19 @@
   @title-height: @line-height + 2 * @widget-padding;
 
   padding: @widget-padding;
-  // position: relative;
   border-radius: 0.5rem;
-  margin-bottom: @title-height / 1.75;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+  width: calc(100% - 2 * @widget-padding);
 
   .widget-title {
-    // position: absolute;
-    // top: -(@title-height / 2);
-    // left: 2 * @widget-padding;
     display: grid;
     grid-template-columns: 1fr (@title-height / 2) (@title-height / 2);
     column-gap: @widget-padding;
-    // padding: @widget-padding/2 calc(@widget-padding+2px) 0 @widget-padding;
     padding: @widget-padding;
     line-height: @line-height;
-    // background-color: inherit;
     font-family: Philosopher;
-    // border-radius: 0.5rem 0.5rem 0 0;
-    // border-color: inherit;
-    width: calc(100% - 2 * @widget-padding);
-
-    // &::before {
-    //   content: '';
-    //   position: absolute;
-    //   top: -@border-width;
-    //   left: -@border-width;
-    //   height: calc(@title-height / 2 - @border-width);
-    //   width: 100%;
-    //   border-style: solid;
-    //   border-color: inherit;
-    //   border-width: @border-width;
-    //   border-bottom: 0;
-    //   border-radius: 0.5rem 0.5rem 0 0;
-    //   z-index: 0;
-    //   padding: 0;
-    //   margin: 0;
-    // }
 
     & > ::ng-deep .icon {
       width: @title-height / 2;
@@ -54,15 +31,11 @@
       z-index: 1;
     }
 
-    & ~ .widget-content {
-      display: none;
-    }
-
     &.expanded {
       margin-bottom: 0.5rem;
 
       & ~ .widget-content {
-        display: initial;
+        display: block;
       }
     }
 
@@ -74,5 +47,10 @@
         margin: 0 @widget-padding 0 0;
       }
     }
+  }
+
+  .widget-content {
+    display: none;
+    overflow: auto;
   }
 }

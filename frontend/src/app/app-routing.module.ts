@@ -1,13 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { NoteViewComponent } from './notes-view/components/note-view/note-view.component';
 
-const routes: Routes = [
-  {
-    path: 'note/:noteId',
-    component: NoteViewComponent
-  }
-];
+const routes: Routes = [];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],

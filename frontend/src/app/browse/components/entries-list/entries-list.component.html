@@ -25,6 +25,7 @@
           'category': getContentSourceNote(note)?.isCategory
         }"
         appDraggable
+        [useShadowClone]="true"
         appDropZone
         [targetNoteId]="note._id"
         ></app-draggable-note-entry>

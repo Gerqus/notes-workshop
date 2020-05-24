@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, HostListener } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, HostListener, ElementRef } from '@angular/core';
 import { Note } from 'types';
 import { ExpandableDirectiveStateKeeperService } from '@/common/services/expandable-directive-state-keeper.service';
 import { NotesControllerService } from '@/services/notes-controller';
@@ -26,8 +26,10 @@ export class DraggableNoteEntryComponent implements OnChanges {
     timeout: 500,
   };
   private dragOngoing = false;
+  private canOpenNote = true;
 
   constructor(
+    private el: ElementRef<HTMLSpanElement>,
     private notesControllerService: NotesControllerService,
     private expandableDirectiveStateKeeperService: ExpandableDirectiveStateKeeperService,
   ) { }
@@ -98,13 +100,16 @@ export class DraggableNoteEntryComponent implements OnChanges {
   @HostListener('appDragStart', ['$event'])
   public dragStartHandler() {
     this.dragOngoing = true;
+    this.canOpenNote = false;
     this.browserReference.classList.add('drag-ongoing');
   }
   
-  @HostListener('mouseup', ['$event'])
+  @HostListener('click', ['$event'])
   public mouseUpHandler(event: MouseEvent) {
-    if (!this.dragOngoing) {
-      this.notesControllerService.openNote(this.note);
+    if (!this.dragOngoing && this.canOpenNote) {
+        this.notesControllerService.openNote(this.note);
+    } else {
+      this.canOpenNote = true;
     }
   }
 }

@@ -1,0 +1,22 @@
+.workspace {
+  height: 100%;
+  width: 100%;
+
+  .content {
+    position: relative;
+
+    app-widget.browser-widget {
+      width: 17rem;
+      height: 21rem;
+    }
+
+    app-widget.note-view-widget {
+      width: 38rem;
+      height: 25rem;
+    }
+
+    & [appDraggable] {
+      position: absolute;
+    }
+  }
+}

@@ -2,8 +2,8 @@ import { Component, ViewChild, Input, OnChanges, SimpleChanges } from '@angular/
 
 import { NotesControllerService } from '@/services/notes-controller';
 import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.class';
-import { Observable } from 'rxjs';
 import { Note } from 'types';
+import { debounce } from 'lodash';
 
 @Component({
   selector: 'app-note-view',
@@ -31,29 +31,20 @@ export class NoteViewComponent {
     }
   }
 
-  public saveNote() {
-    const titleToSave = this.noteTitleElement.nativeElement.innerHTML.replace(/<br\/?>$/, '');
-    const contentToSave = this.noteContentElement.nativeElement.innerHTML.replace(/<br\/?>$/, '');
-
-    this.notesControllerService.saveNote(this.sourceNote ? this.sourceNote : this.note, titleToSave, contentToSave)
-      .subscribe();
+  public saveNote(): void {
+    this.notesControllerService.saveNote(this.noteId).subscribe();
   }
 
   public deleteNote() {
     this.notesControllerService.deleteNote(this.note)
       .subscribe(() => {
-        this.notesControllerService.closeNote(this.note);
+        this.notesControllerService.closeNote(this.noteId);
       });
   }
 
   public toggleCategory() {
     this.notesControllerService.toggleCategory(this.sourceNote ? this.sourceNote : this.note)
       .subscribe();
-  }
-
-  public closeNote() {
-    this.saveNote()
-    this.notesControllerService.closeNote(this.note);
   }
 
   public supportTitleHotkeys(e: KeyboardEvent) {
@@ -76,12 +67,14 @@ export class NoteViewComponent {
     }
   }
 
-  getNotePath(): string {
-    let notePath = this.notesControllerService.getNotePath(this.note);
-    if (this.note.isLink) {
-      notePath.push(this.sourceNote.title);
-    }
-    return notePath.join (' / ');
+  public syncTitleDebounced = debounce(this.syncTitle, 330);
+  private syncTitle(): void {
+    this.note.title = this.noteTitleElement.nativeElement.innerHTML.replace(/<br\/?>$/, '');
+  }
+
+  public syncContentDebounced = debounce(this.syncContent, 330);
+  private syncContent(): void {
+    this.note.content = this.noteContentElement.nativeElement.innerHTML.replace(/<br\/?>$/, '');
   }
 
   public supportContentHotkeys(e: KeyboardEvent) {

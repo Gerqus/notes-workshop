@@ -1,24 +1,20 @@
-<app-widget (onClose)="closeNote()" *ngIf="note" [widgetTitle]="getNotePath()" [expandableId]="note._id">
-  <div class="note-view" *ngIf="note">
-
-    <div class="note-title section-secondary">
-      <i class="icon link link-indicator-icon" *ngIf="note.isLink"></i>
-      <div #noteTitle class="input" contenteditable [innerHTML]="(sourceNote || note).title | markHTMLsafe" (keydown)="supportTitleHotkeys($event)"></div>
-    </div>
-
-    <div class="note-variables section-secondary">
-      notes variables will be listed here
-    </div>
-
-    <div class="note-content section-secondary">
-      <pre #noteContent class="input" contenteditable [innerHTML]="(sourceNote || note).content | markHTMLsafe" (keydown)="supportContentHotkeys($event)"></pre>
-    </div>
-
-    <div class="note-actions section-secondary">
-      <div class="action-button major" (click)="saveNote()">Save note</div>
-      <div class="action-button major" (click)="deleteNote()">Remove {{note.isLink ? 'link' : 'note'}}</div>
-      <div class="action-button major" (click)="toggleCategory()">Mark as {{(sourceNote || note).isCategory ? 'regular' : 'category'}}</div>
-    </div>
-
+<div class="note-view" *ngIf="note">
+  <div class="note-title section-secondary">
+    <i class="icon link link-indicator-icon" *ngIf="note.isLink"></i>
+    <div #noteTitle class="input" contenteditable [innerHTML]="(sourceNote || note).title | markHTMLsafe" (keydown)="supportTitleHotkeys($event); syncTitleDebounced();"></div>
   </div>
-</app-widget>
+
+  <div class="note-variables section-secondary">
+    notes variables will be listed here
+  </div>
+
+  <div class="note-content section-secondary">
+    <pre #noteContent class="input" contenteditable [innerHTML]="(sourceNote || note).content | markHTMLsafe" (keydown)="supportContentHotkeys($event); syncContentDebounced();"></pre>
+  </div>
+
+  <div class="note-actions section-secondary">
+    <div class="action-button major" (click)="saveNote()">Save note</div>
+    <div class="action-button major" (click)="deleteNote()">Remove {{note.isLink ? 'link' : 'note'}}</div>
+    <div class="action-button major" (click)="toggleCategory()">Mark as {{(sourceNote || note).isCategory ? 'regular' : 'category'}}</div>
+  </div>
+</div>

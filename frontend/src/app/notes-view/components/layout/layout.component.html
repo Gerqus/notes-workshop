@@ -1,9 +1,0 @@
-<div class="layout">
-  <div class="content" *ngIf="controllerReady">
-    <ng-container *ngFor="let noteId of openedNotesIds">
-      <app-note-view
-      [noteId]="noteId"
-      ></app-note-view>
-    </ng-container>
-  </div>
-</div>

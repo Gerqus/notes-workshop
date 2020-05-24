@@ -1,0 +1,29 @@
+<div class="workspace">
+  <div class="content" *ngIf="controllerReady">
+    <app-widget
+    widgetTitle="Browser"
+    class="browser-widget"
+    appDraggable
+    [dragGrid]="dragGrid"
+    [dragZeroPoint]="coordinates"
+    >
+      <app-browser></app-browser>
+    </app-widget>
+
+    <ng-container *ngFor="let noteId of openedNotesIds">
+      <app-widget
+      class="note-view-widget"
+      (onClose)="closeNote(noteId)"
+      [widgetTitle]="getNotePath(noteId)"
+      [expandableId]="noteId"
+      appDraggable
+      [dragGrid]="dragGrid"
+      [dragZeroPoint]="coordinates"
+      >
+        <app-note-view
+        [noteId]="noteId"
+        ></app-note-view>
+      </app-widget>
+    </ng-container>
+  </div>
+</div>

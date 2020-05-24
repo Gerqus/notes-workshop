@@ -2,25 +2,21 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppRoutingModule } from '@/app-routing.module';
 
-import { WidgetModule } from '@/widget/widget.module';
-
-import { LayoutComponent } from './components/layout/layout.component';
-import { NoteViewComponent } from './components/note-view/note-view.component';
 import { ProjectCommonModule } from '@/common/common.module';
+
+import { NoteViewComponent } from './components/note-view/note-view.component';
 
 @NgModule({
   declarations: [
-    LayoutComponent,
-    NoteViewComponent
+    NoteViewComponent,
   ],
   imports: [
     CommonModule,
-    WidgetModule,
-    AppRoutingModule,
     ProjectCommonModule,
+    AppRoutingModule,
   ],
   exports: [
-    LayoutComponent,
+    NoteViewComponent,
   ]
 })
 export class NotesViewModule { }

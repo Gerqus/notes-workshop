@@ -31,14 +31,14 @@ export class NotesControllerService {
   }
 
   public openNote(noteToOpen: NoteIndexRecord): void {
-    if (!this.isNoteOpened(noteToOpen)) {
+    if (!this.isNoteOpened(noteToOpen._id)) {
       this.addNoteToOpened(noteToOpen);
     }
   }
 
-  public closeNote(noteToCloseIndex: NoteIndexRecord): void {
-    if (this.isNoteOpened(noteToCloseIndex)) {
-      this.removeNoteFromOpened(noteToCloseIndex);
+  public closeNote(noteId: Note['Record']['_id']): void {
+    if (this.isNoteOpened(noteId)) {
+      this.removeNoteFromOpened(noteId);
     }
   }
 
@@ -49,8 +49,8 @@ export class NotesControllerService {
       }))
   }
 
-  private isNoteOpened(noteToCheck: Note['Record']): boolean{
-    return this.openedNotesIdsObservable.getValue().map(noteId => noteId).includes(noteToCheck._id);
+  private isNoteOpened(noteId: Note['Record']['_id']): boolean{
+    return this.openedNotesIdsObservable.getValue().map(noteId => noteId).includes(noteId);
   }
 
   private addNoteToOpened(noteToOpen: NoteIndexRecord): void {
@@ -60,15 +60,15 @@ export class NotesControllerService {
     this.openedNotesIdsObservable.next(updatedList);
   }
 
-  private removeNoteFromOpened(noteToCloseIndex: NoteIndexRecord): void {
+  private removeNoteFromOpened(noteToCloseId: Note['Record']['_id']): void {
     const currentList = this.openedNotesIdsObservable.getValue();
-    const noteToClosePosition = currentList.map(noteId => noteId).indexOf(noteToCloseIndex._id);
+    const noteToClosePosition = currentList.map(noteId => noteId).indexOf(noteToCloseId);
     if (noteToClosePosition !== -1) {
       currentList.splice(noteToClosePosition, 1);
       const updatedList = currentList; // just for code semantics
       this.openedNotesIdsObservable.next(updatedList);
     } else {
-      console.error('Note', noteToCloseIndex, 'was never opened, so can\'t close it');
+      console.error('Note', noteToCloseId, 'was not opened, so can\'t close it');
     }
   }
 
@@ -76,22 +76,32 @@ export class NotesControllerService {
     return this.openedNotesIdsObservable;
   }
 
-  public saveNote(
-    noteToSaveIndexRecord: NoteIndexRecord,
-    notesNewTitle: Note['Record']['title'],
-    notesNewContent: Note['Record']['content'],
-  ): Observable<Note['Record']> {
-    return this.updateNote(
-      noteToSaveIndexRecord.isLink ? noteToSaveIndexRecord.sourceNoteId : noteToSaveIndexRecord._id,
-      { title: notesNewTitle, content: notesNewContent },
-    ).pipe(tap(() => {
-      if (noteToSaveIndexRecord.isLink) {
-        this.updateSourceAndItsLinksInParentsFor(noteToSaveIndexRecord);
-      } else {
-        this.updateInParent(noteToSaveIndexRecord);
-      }
-    }))
+  public saveNote(noteId: Note['Record']['_id']): Observable<Note['Record']> {
+    const saveRequestNoteRecord = this.getFromIndex(noteId);
+    const noteToSaveIndexRecord = saveRequestNoteRecord.isLink ? this.getFromIndex(saveRequestNoteRecord.sourceNoteId) : saveRequestNoteRecord;
+    return this.apiService.note.updateNote({
+      _id: noteToSaveIndexRecord._id,
+      title: noteToSaveIndexRecord.title,
+      content: noteToSaveIndexRecord.content,
+    });
   }
+
+  // public saveNote(
+  //   noteToSaveIndexRecord: NoteIndexRecord,
+  //   notesNewTitle: Note['Record']['title'],
+  //   notesNewContent: Note['Record']['content'],
+  // ): Observable<Note['Record']> {
+  //   return this.updateNote(
+  //     noteToSaveIndexRecord.isLink ? noteToSaveIndexRecord.sourceNoteId : noteToSaveIndexRecord._id,
+  //     { title: notesNewTitle, content: notesNewContent },
+  //   ).pipe(tap(() => {
+  //     if (noteToSaveIndexRecord.isLink) {
+  //       this.updateSourceAndItsLinksInParentsFor(noteToSaveIndexRecord);
+  //     } else {
+  //       this.updateInParent(noteToSaveIndexRecord);
+  //     }
+  //   }))
+  // }
 
   public toggleCategory(noteToToggle: NoteIndexRecord): Observable<Note['Record']> {
     return this.updateNote(
@@ -189,7 +199,7 @@ export class NotesControllerService {
       this.deleteInParent(noteToDelete);
       noteToDelete.childNotesIds.complete();
       delete this.notesIndex[noteToDelete._id];
-      this.closeNote(noteToDelete);
+      this.closeNote(noteToDelete._id);
       return this.apiService.note.deleteNote(noteToDelete);
     }))
   }
@@ -200,7 +210,7 @@ export class NotesControllerService {
         sourceNote.linkNotesIds.map((linkNoteId) => {
           const linkNoteIndexRecord = this.getFromIndex(linkNoteId);
           this.deleteInParent(linkNoteIndexRecord)
-          this.closeNote(linkNoteIndexRecord);
+          this.closeNote(linkNoteIndexRecord._id);
           delete this.notesIndex[linkNoteId];
           return this.apiService.note.deleteNote(linkNoteIndexRecord);
         })

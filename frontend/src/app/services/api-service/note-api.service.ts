@@ -13,7 +13,7 @@ export class NoteApiService extends GenericApiService<Note> {
     configService: ConfigService,
     httpClient: HttpClient,
   ) {
-    super(configService, httpClient, configService.api.root, 'note');
+    super(configService, httpClient, configService.config.api.root, 'note');
   }
 
   public addNote(noteData?: Partial<Note['Model']>): Observable<Note['Record']> {
