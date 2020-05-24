@@ -42,6 +42,7 @@ export class DropZoneDirective implements OnChanges {
 
   @HostListener('notedrop', ['$event'])
   public handleNoteDrop(e: CustomEvent<NoteIndexRecord>): void {
+    this.dragCleanup();
     const canBeDropped = this.dropCheckerService.canDropHere(this.el.nativeElement, e.detail);
     if (!canBeDropped) {
       return;
@@ -83,7 +84,7 @@ export class DropZoneDirective implements OnChanges {
     return resolver;
   }
 
-  @HostListener('app-dragover', ['$event'])
+  @HostListener('appDragOverDropzone', ['$event'])
   public dragEnterHandler(e: CustomEvent<NoteIndexRecord>): void {
     const draggedNote = e.detail;
     if (draggedNote._id !== this.targetNoteId) {
@@ -95,19 +96,19 @@ export class DropZoneDirective implements OnChanges {
         const canBeDropped = this.dropCheckerService.canDropHere(this.el.nativeElement, draggedNote);
         if (canBeDropped) {
           this.setCurrentDragModeClass();
-        } else if (draggedNote._id !== this.targetNoteId) {
+        } else {
           this.setForbiddenDragModeClass();
         }
       });
   }
 
-  @HostListener('app-dragout')
+  @HostListener('appDragOutDropzone')
   public dragLeaveHandler(): void {
-    this.dragModeSubscription?.unsubscribe();
-    this.clearClasses();
+    this.dragCleanup();
   }
 
-  private clearClasses(): void {
+  private dragCleanup(): void {
+    this.dragModeSubscription?.unsubscribe();
     this.removeCurrentDropzoneClass();
     this.removeAllDragModeClasses();
   }

@@ -70,10 +70,12 @@ export class DropCheckerService {
   }
 
   private isNoteInTreeOf(noteToCheck: NoteIndexRecord, potentialParent: NoteIndexRecord): boolean {
-    if (noteToCheck.parentNoteId === potentialParent._id) {
-      return true;
-    } else
     if (
+      noteToCheck._id === potentialParent._id ||
+      noteToCheck.parentNoteId === potentialParent._id
+    ) {
+      return true;
+    } else if (
       noteToCheck.parentNoteId === this.notesControllerService.topNotesParentKey ||
       noteToCheck._id === this.notesControllerService.topNotesParentKey ||
       !potentialParent._id

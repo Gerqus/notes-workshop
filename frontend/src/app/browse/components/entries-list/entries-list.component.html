@@ -18,14 +18,15 @@
 
       <div class="entry-content">
         <app-draggable-note-entry
+        [noteId]="note._id"
+        [browserReference]="browserReference"
         [ngClass]="{
           'action-button note-title minor': true,
           'category': getContentSourceNote(note)?.isCategory
         }"
+        appDraggable
         appDropZone
         [targetNoteId]="note._id"
-        [noteId]="note._id"
-        [browserReference]="browserReference"
         ></app-draggable-note-entry>
 
         <div class="expander-container" #expanderContainer></div>
