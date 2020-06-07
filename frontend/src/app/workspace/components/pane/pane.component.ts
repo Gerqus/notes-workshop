@@ -3,11 +3,11 @@ import { NotesControllerService } from '@/services/notes-controller';
 import { Note } from 'types';
 
 @Component({
-  selector: 'app-layout',
-  templateUrl: './layout.component.html',
-  styleUrls: ['./layout.component.less']
+  selector: 'app-pane',
+  templateUrl: './pane.component.html',
+  styleUrls: ['./pane.component.less']
 })
-export class LayoutComponent implements AfterViewInit {
+export class PaneComponent implements AfterViewInit {
   public openedNotesIds: Note['Record']['_id'][];
   public controllerReady = false;
 

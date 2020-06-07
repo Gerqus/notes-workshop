@@ -1,14 +1,23 @@
+@import '../styles/constants.less';
+
 .layout {
+  @header-height: 5rem;
+  @header-content-gap: 2rem;
+
   width: 100%;
   height: 100%;
 
   .header {
     display: block;
-    margin-bottom: 2rem;
-    height: 5rem;
+    height: @header-height;
+    position: fixed;
+    left: @body-padding;
+    right: @body-padding;
   }
 
   .content {
     display: block;
+    position: relative;
+    top: @header-height + @header-content-gap;
   }
 }

@@ -44,9 +44,9 @@ export class DraggableDirective implements OnInit {
     document.addEventListener('mousemove', this.firstMouseMoveHandlerBinded);
     document.addEventListener('mouseup', this.mouseUpHandlerBinded);
     
-    event.preventDefault();
-    event.stopPropagation();
-    return false 
+    // event.preventDefault();
+    // event.stopPropagation();
+    // return false 
   }
 
   @HostListener('dragstart')

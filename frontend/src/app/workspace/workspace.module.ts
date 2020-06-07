@@ -6,11 +6,11 @@ import { ProjectCommonModule } from '@/common/common.module';
 import { NotesViewModule } from '@/notes-view/notes-view.module';
 import { BrowseModule } from '@/browse/browse.module';
 
-import { LayoutComponent } from './components/layout/layout.component';
+import { PaneComponent } from './components/pane/pane.component';
 
 @NgModule({
   declarations: [
-    LayoutComponent,
+    PaneComponent,
   ],
   imports: [
     CommonModule,
@@ -20,7 +20,7 @@ import { LayoutComponent } from './components/layout/layout.component';
     BrowseModule,
   ],
   exports: [
-    LayoutComponent,
+    PaneComponent,
   ],
 })
 export class WorkspaceModule { }

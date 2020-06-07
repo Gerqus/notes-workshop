@@ -32,6 +32,8 @@ export class NoteViewComponent {
   }
 
   public saveNote(): void {
+    this.syncTitle();
+    this.syncContent();
     this.notesControllerService.saveNote(this.noteId).subscribe();
   }
 
