@@ -27,7 +27,7 @@ function noteGet(req: express.Request, res: express.Response) {
 }
 
 function notePost(req: express.Request, res: express.Response) {
-  const newNote: INoteDocument = new noteModel<Note['Model']>(req.body as Note['Model']);
+  const newNote: INoteDocument = new noteModel(req.body as Note['Model']);
   console.log('note to be saved', req.body as Note['Model']);
   dbService.save(newNote)
     .then(({response}) => {
