@@ -1,7 +1,5 @@
 import { Directive, HostListener, ElementRef, Input, Output, EventEmitter, OnInit } from '@angular/core';
 
-import { debounce } from 'lodash';
-
 @Directive({
   selector: '[appDraggable]'
 })
@@ -43,10 +41,12 @@ export class DraggableDirective implements OnInit {
     this.readyToDrag = true;
     document.addEventListener('mousemove', this.firstMouseMoveHandlerBinded);
     document.addEventListener('mouseup', this.mouseUpHandlerBinded);
-    
-    // event.preventDefault();
-    // event.stopPropagation();
-    // return false 
+      
+    if (event.target === this.el.nativeElement) { //propagation stopps on first parent instance of directive
+      event.preventDefault();
+      event.stopPropagation();
+      return false 
+    }
   }
 
   @HostListener('dragstart')
