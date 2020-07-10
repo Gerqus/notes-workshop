@@ -3,7 +3,7 @@ import { Component, ViewChild, Input, OnChanges, SimpleChanges } from '@angular/
 import { NotesControllerService } from '@/services/notes-controller';
 import { NoteIndexRecord } from '@/services/notes-controller/note-index-record.class';
 import { Note } from 'types';
-import { debounce } from 'lodash';
+import { debounce } from 'lodash-es';
 
 @Component({
   selector: 'app-note-view',

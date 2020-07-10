@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
 import { flatMap, tap, map, mapTo, delayWhen } from 'rxjs/operators';
 import { Note } from 'types';
-import { compact, some } from 'lodash';
+import { compact, some } from 'lodash-es';
 
 import { ApiService } from '@/services/api-service';
 import { NoteIndexRecord } from './note-index-record.class';
